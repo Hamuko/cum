@@ -1,0 +1,223 @@
+from scrapers import series_by_url
+import click
+import db
+import output
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+@click.argument('alias')
+@click.argument('new_alias')
+def alias(alias, new_alias):
+    """Assign a new alias to series."""
+    s = db.Series.alias_lookup(alias)
+    s.alias = new_alias
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+    else:
+        output.chapter('Changing alias "{}" to "{}"'.format(alias, new_alias))
+
+
+@cli.command()
+@click.argument('alias')
+def chapters(alias):
+    """List all chapters for a manga series.
+
+    Chapter listing will contain the flag value for the chapter ('n' for new,
+    'i' for ignored and blank for downloaded), the chapter identifier ("chapter
+    number") and the possible chapter title and group.
+    """
+    s = db.Series.alias_lookup(alias)
+    if s.chapters:
+        click.secho('f  chapter  title [group]', bold=True)
+        for chapter in s.ordered_chapters:
+            name_len = click.get_terminal_size()[0] - 11
+            name = '{} {}'.format(chapter.title, chapter.group_tag)[:name_len]
+            row = '{}  {:>7} {}'.format(chapter.status, chapter.chapter, name)
+            if row[0] == 'n':
+                style = {'fg': 'white', 'bold': True}
+            elif row[0] == ' ':
+                style = {'bold': True}
+            else:
+                style = {}
+            click.secho(row, **style)
+
+
+@cli.command()
+@click.argument('alias', required=False)
+def download(alias):
+    """Download all available chapters.
+
+    If an optional alias is specified, the command will only download new
+    chapters for that alias.
+    """
+    chapters = db.Chapter.find_new(alias=alias)
+    output.chapter('Downloading {} chapters'.format(len(chapters)))
+    for chapter in chapters:
+        chapter.download()
+
+
+@cli.command()
+@click.argument('urls', required=True, nargs=-1)
+@click.option('--ignore/--no-ignore', default=False, help='')
+def follow(urls, ignore):
+    """Follow a series."""
+    for url in urls:
+        series = series_by_url(url)
+        if ignore:
+            series.follow(ignore=True)
+            output.chapter('Ignoring {} chapters'.format(len(series.chapters)))
+        else:
+            series.follow()
+
+
+@cli.command()
+def follows():
+    """List all follows.
+
+    Will list all of the active follows in the database as a list of aliases.
+    To find out more information on an alias, use the info command.
+    """
+    query = (db.session.query(db.Series)
+             .filter_by(following=True)
+             .order_by(db.Series.alias)
+             .all())
+    output.list([x.alias for x in query])
+
+
+@cli.command()
+@click.argument('urls', required=True, nargs=-1)
+def get(urls):
+    """Follow a series and download its chapters.
+
+    Adds one or more specified URLs into the database as follows and
+    immediately begins to downloads their chapters.
+    """
+    chapters = []
+    for url in urls:
+        series = series_by_url(url)
+        series.follow()
+        chapters += db.Chapter.find_new(alias=series.alias)
+
+    output.chapter('Downloading {} chapters'.format(len(chapters)))
+    for chapter in chapters:
+        chapter.download()
+
+
+@cli.command()
+@click.argument('alias')
+@click.argument('chapters', required=True, nargs=-1)
+def ignore(alias, chapters):
+    """Ignore chapters for a series.
+
+    Enter one or more chapters after the alias to ignore them. Enter the
+    chapter identifiers as they are listed when using the chapters command. To
+    ignore all of the chapters for a particular series, use the word "all" in
+    place of the chapters.
+    """
+    s = db.Series.alias_lookup(alias)
+    query = db.session.query(db.Chapter).filter(db.Chapter.series == s,
+                                                db.Chapter.downloaded == 0)
+    if len(chapters) == 1 and chapters[0].lower() == 'all':
+        click.echo('Ignoring {} chapters for {}'.format(len(s.chapters),
+                                                        s.name))
+        click.confirm('Do you want to continue',
+                      prompt_suffix='? ', abort=True)
+    else:
+        query = query.filter(db.Chapter.chapter.in_(chapters))
+
+    chapters = [x.to_object() for x in query.all()]
+    for chapter in chapters:
+        chapter.ignore()
+    if len(chapters) == 1:
+        output.chapter('Ignored chapter {} for {}'.format(chapters[0].chapter,
+                                                          s.name))
+    else:
+        output.series('Ignored {} chapters for {}'.format(len(chapters),
+                                                          s.name))
+
+
+@cli.command()
+def new():
+    """List all new chapters."""
+    items = {}
+    for chapter in db.Chapter.find_new():
+        try:
+            items[chapter.alias].append(chapter.chapter)
+        except KeyError:
+            items[chapter.alias] = [chapter.chapter]
+
+    for series in sorted(items):
+        click.secho(series, bold=True)
+        click.echo(click.wrap_text('  '.join([x for x in items[series]]),
+                                   width=click.get_terminal_size()[0]))
+
+
+@cli.command()
+@click.argument('alias')
+def unfollow(alias):
+    """Unfollow manga.
+
+    Will mark a series as unfollowed. In order not to lose history of
+    downloaded chapters, the series is merely marked as unfollowed in the
+    database rather than removed.
+    """
+    s = db.Series.alias_lookup(alias)
+    s.following = False
+    db.session.commit()
+    output.series('Removing follow for {}'.format(s.name))
+
+
+@cli.command()
+@click.argument('alias')
+@click.argument('chapters', required=True, nargs=-1)
+def unignore(alias, chapters):
+    """Unignore chapters for a series.
+
+    Enter one or more chapters after the alias to mark them as new. Enter the
+    chapter identifiers as they are listed when using the chapters command. To
+    unignore all of the chapters for a particular series, use the word "all" in
+    place of the chapters.
+    """
+    s = db.Series.alias_lookup(alias)
+    query = db.session.query(db.Chapter).filter(db.Chapter.series == s,
+                                                db.Chapter.downloaded == -1)
+    if len(chapters) == 1 and chapters[0].lower() == 'all':
+        click.echo('Unignoring {} chapters for {}'.format(len(s.chapters),
+                                                          s.name))
+        click.confirm('Do you want to continue',
+                      prompt_suffix='? ', abort=True)
+    else:
+        query = query.filter(db.Chapter.chapter.in_(chapters))
+
+    chapters = [x.to_object() for x in query.all()]
+    for chapter in chapters:
+        chapter.mark_new()
+    if len(chapters) == 1:
+        output.chapter('Unignored chapter {} for {}'.format(
+            chapters[0].chapter, s.name
+        ))
+    else:
+        output.series('Unignored {} chapters for {}'.format(
+            len(chapters), s.name
+        ))
+
+
+@cli.command()
+def update():
+    """Gather new chapters from followed series."""
+    query = db.session.query(db.Series).filter_by(following=True).all()
+    output.series('Updating {} series'.format(len(query)))
+    for follow in query:
+        series = series_by_url(follow.url)
+        series.update()
+
+
+if __name__ == '__main__':
+    cli()
