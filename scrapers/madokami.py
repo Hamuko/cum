@@ -7,8 +7,8 @@ import output
 import re
 import requests
 
-name_re = r'-? c([0-9-]+)(?: \(v[0-9]*\))? \[(.*)\]'
-fallback_re = r'\- (.*) \[(.*)\]'
+name_re = r'-? c([0-9-]+).*?(?: \[(.*)\])?'
+fallback_re = r'\- (.*) (?:\[(.*)\])?'
 
 
 class MadokamiSeries(BaseSeries):
@@ -43,7 +43,10 @@ class MadokamiSeries(BaseSeries):
             if not name_parts:
                 name_parts = re.search(fallback_re, name)
             chapter = name_parts.group(1)
-            groups = name_parts.group(2).split('][')
+            if name_parts.group(2):
+                groups = name_parts.group(2).split('][')
+            else:
+                groups = []
 
             c = MadokamiChapter(name=self.name, alias=self.alias,
                                 chapter=chapter, url=url, groups=groups)

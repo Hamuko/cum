@@ -195,10 +195,13 @@ class BaseChapter(metaclass=ABCMeta):
         """Save a chapter to database."""
         try:
             c = db.Chapter(self, series)
-            if ignore:
-                c.downloaded = -1
         except IntegrityError:
             db.session.rollback()
         else:
+            if ignore:
+                c.downloaded = -1
             db.session.add(c)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
