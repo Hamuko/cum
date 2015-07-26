@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from scrapers import series_by_url
 import click
 import db
