@@ -7,7 +7,7 @@ import output
 import re
 import requests
 
-name_re = r'-? c([0-9-]+).*?(?: \[(.*)\])?'
+name_re = r'-? c([0-9-]+).*?(?: \[(.*)\])?\.'
 fallback_re = r'\- (.*) (?:\[(.*)\])?'
 
 

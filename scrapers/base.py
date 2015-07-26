@@ -114,7 +114,10 @@ class BaseChapter(metaclass=ABCMeta):
         else:
             chapter = 'c000 [{}]'.format(self.chapter)
 
-        group = ''.join('[{}]'.format(g) for g in self.groups)
+        if self.groups:
+            group = ''.join('[{}]'.format(g) for g in self.groups)
+        else:
+            group = '[Unknown]'
 
         if config.cbz:
             ext = 'cbz'
