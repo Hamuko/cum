@@ -34,6 +34,7 @@ follows   List all follows.
 get       Follow a series and download its chapters.
 ignore    Ignore chapters for a series.
 new       List all new chapters.
+open      Open the series URL in a browser.
 unfollow  Unfollow manga.
 unignore  Unignore chapters for a series.
 update    Gather new chapters from followed series.
