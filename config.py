@@ -30,14 +30,8 @@ class BaseConfig(object):
         self.madokami = MadokamiConfig(j.get('madokami', {}))
 
     def write(self):
-        config = {
-            'cbz': self.cbz,
-            'download_directory': self.download_directory,
-            'madokami': {
-                'username': self.madokami.username,
-                'password': self.madokami.password
-            }
-        }
+        config = self.__dict__
+        config['madokami'] = self.madokami.__dict__
 
         with open(config_path, 'w') as file:
             json.dump(config, file, indent=2)
