@@ -28,6 +28,7 @@ class BaseConfig(object):
         self.cbz = j.get('cbz', False)
         self.download_directory = j.get('download_directory', home_dir)
         self.madokami = MadokamiConfig(j.get('madokami', {}))
+        self.html_parser = j.get('html_parser', 'html.parser')
 
     def write(self):
         config = self.__dict__

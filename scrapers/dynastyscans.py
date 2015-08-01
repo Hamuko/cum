@@ -3,6 +3,7 @@ from mimetypes import guess_extension
 from scrapers.base import BaseChapter, BaseSeries
 from tempfile import NamedTemporaryFile
 from urllib.parse import urljoin
+from config import config
 import re
 import requests
 
@@ -14,7 +15,7 @@ class DynastyScansSeries(BaseSeries):
     def __init__(self, url):
         r = requests.get(url)
         self.url = url
-        self.soup = BeautifulSoup(r.text)
+        self.soup = BeautifulSoup(r.text, config.html_parser)
         self.chapters = self.get_chapters()
 
     @property
@@ -72,12 +73,12 @@ class DynastyScansChapter(BaseChapter):
 
     def get_groups(self):
         r = requests.get(self.url)
-        soup = BeautifulSoup(r.text)
+        soup = BeautifulSoup(r.text, config.html_parser)
         links = soup.find('span', class_='scanlators').find_all('a')
         groups = []
         for link in links:
             r = requests.get(urljoin(self.url, link.get('href')))
-            s = BeautifulSoup(r.text)
+            s = BeautifulSoup(r.text, config.html_parser)
             g = s.find('h2', class_='tag-title').b.string
             groups.append(g)
         return groups
