@@ -28,16 +28,11 @@ class BaseConfig(object):
         self.cbz = j.get('cbz', False)
         self.download_directory = j.get('download_directory', home_dir)
         self.madokami = MadokamiConfig(j.get('madokami', {}))
+        self.html_parser = j.get('html_parser', 'html.parser')
 
     def write(self):
-        config = {
-            'cbz': self.cbz,
-            'download_directory': self.download_directory,
-            'madokami': {
-                'username': self.madokami.username,
-                'password': self.madokami.password
-            }
-        }
+        config = dict(self.__dict__)
+        config['madokami'] = dict(self.madokami.__dict__)
 
         with open(config_path, 'w') as file:
             json.dump(config, file, indent=2)

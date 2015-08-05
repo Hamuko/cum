@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from mimetypes import guess_extension, guess_type
 from scrapers.base import BaseChapter, BaseSeries
 from tempfile import NamedTemporaryFile
+from config import config
 import os
 import re
 import requests
@@ -14,7 +15,7 @@ class BatotoSeries(BaseSeries):
     def __init__(self, url):
         r = requests.get(url)
         self.url = url
-        self.soup = BeautifulSoup(r.text)
+        self.soup = BeautifulSoup(r.text, config.html_parser)
         self.chapters = self.get_chapters()
 
     @property
@@ -57,7 +58,7 @@ class BatotoChapter(BaseChapter):
 
     def download(self):
         r = requests.get(self.url)
-        soup = BeautifulSoup(r.text)
+        soup = BeautifulSoup(r.text, config.html_parser)
         if soup.find('a', href='?supress_webtoon=t'):
             pages = [''.join(i) for i in re.findall(img_path_re, r.text)]
         else:
@@ -73,7 +74,7 @@ class BatotoChapter(BaseChapter):
                     image = page
                 else:
                     r = requests.get(page)
-                    soup = BeautifulSoup(r.text)
+                    soup = BeautifulSoup(r.text, config.html_parser)
                     image = soup.find('img', id='comic_page').get('src')
                 r = requests.get(image, stream=True)
                 ext = guess_extension(r.headers.get('content-type'))

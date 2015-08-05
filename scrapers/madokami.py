@@ -15,7 +15,7 @@ class MadokamiSeries(BaseSeries):
     def __init__(self, url):
         r = requests.get(url)
         self.url = url
-        self.soup = BeautifulSoup(r.text)
+        self.soup = BeautifulSoup(r.text, config.html_parser)
         self.chapters = self.get_chapters()
 
     @property
