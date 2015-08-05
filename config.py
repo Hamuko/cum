@@ -31,8 +31,8 @@ class BaseConfig(object):
         self.html_parser = j.get('html_parser', 'html.parser')
 
     def write(self):
-        config = self.__dict__
-        config['madokami'] = self.madokami.__dict__
+        config = dict(self.__dict__)
+        config['madokami'] = dict(self.madokami.__dict__)
 
         with open(config_path, 'w') as file:
             json.dump(config, file, indent=2)
