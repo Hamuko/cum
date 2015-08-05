@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from mimetypes import guess_extension
+from mimetypes import guess_extension, guess_type
 from scrapers.base import BaseChapter, BaseSeries
 from tempfile import NamedTemporaryFile
 import os
@@ -7,6 +7,7 @@ import re
 import requests
 
 name_re = r'Ch\.([A-Za-z0-9\.\-]*)(?:\: (.*))?'
+img_path_re = r'(http://img.bato.to/comics/.*?/img)([0-9]*)(\.[A-Za-z]+)'
 
 
 class BatotoSeries(BaseSeries):
@@ -57,14 +58,23 @@ class BatotoChapter(BaseChapter):
     def download(self):
         r = requests.get(self.url)
         soup = BeautifulSoup(r.text)
-        pages = [x.get('value') for x in soup.find('select', id='page_select')
-                                             .find_all('option')]
+        if soup.find('a', href='?supress_webtoon=t'):
+            pages = [''.join(i) for i in re.findall(img_path_re, r.text)]
+        else:
+            pages = [x.get('value') for x in
+                     soup.find('select', id='page_select').find_all('option')]
+            # Replace the first URL with the first image URL to avoid scraping
+            # the first page twice.
+            pages[0] = soup.find('img', id='comic_page').get('src')
         files = []
         with self.progress_bar(pages) as bar:
             for page in bar:
-                r = requests.get(page)
-                soup = BeautifulSoup(r.text)
-                image = soup.find('img', id='comic_page').get('src')
+                if guess_type(page)[0]:
+                    image = page
+                else:
+                    r = requests.get(page)
+                    soup = BeautifulSoup(r.text)
+                    image = soup.find('img', id='comic_page').get('src')
                 r = requests.get(image, stream=True)
                 ext = guess_extension(r.headers.get('content-type'))
                 f = NamedTemporaryFile(suffix=ext)
