@@ -1,4 +1,5 @@
-from config import cum_dir
+from cum import output
+from cum.config import cum_dir
 from natsort import humansorted
 from sqlalchemy import (
     Boolean,
@@ -14,7 +15,6 @@ from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 from urllib.parse import urlparse
 import os
-import output
 
 Base = declarative_base()
 
@@ -132,13 +132,13 @@ class Chapter(Base):
                   'url': self.url,
                   'groups': self.groups}
         if parse.netloc == 'bato.to':
-            from scrapers.batoto import BatotoChapter
+            from cum.scrapers.batoto import BatotoChapter
             return BatotoChapter(**kwargs)
         elif parse.netloc == 'dynasty-scans.com':
-            from scrapers.dynastyscans import DynastyScansChapter
+            from cum.scrapers.dynastyscans import DynastyScansChapter
             return DynastyScansChapter(**kwargs)
         elif parse.netloc == 'manga.madokami.com':
-            from scrapers.madokami import MadokamiChapter
+            from cum.scrapers.madokami import MadokamiChapter
             return MadokamiChapter(**kwargs)
         else:
             return None

@@ -1,9 +1,9 @@
 from bs4 import BeautifulSoup
+from cum.config import config
+from cum.scrapers.base import BaseChapter, BaseSeries
 from mimetypes import guess_extension
-from scrapers.base import BaseChapter, BaseSeries
 from tempfile import NamedTemporaryFile
 from urllib.parse import urljoin
-from config import config
 import re
 import requests
 

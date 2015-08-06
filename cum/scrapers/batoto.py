@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup
+from cum.config import config
+from cum.scrapers.base import BaseChapter, BaseSeries
 from mimetypes import guess_extension, guess_type
-from scrapers.base import BaseChapter, BaseSeries
 from tempfile import NamedTemporaryFile
-from config import config
 import os
 import re
 import requests

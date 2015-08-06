@@ -1,9 +1,8 @@
 from bs4 import BeautifulSoup
-from config import config
-from scrapers.base import BaseChapter, BaseSeries
+from cum import output
+from cum.config import config
+from cum.scrapers.base import BaseChapter, BaseSeries
 from urllib.parse import urljoin
-import db
-import output
 import re
 import requests
 
