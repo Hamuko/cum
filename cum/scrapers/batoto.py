@@ -1,8 +1,9 @@
 from bs4 import BeautifulSoup
+from cum import output
+from cum.config import config
+from cum.scrapers.base import BaseChapter, BaseSeries
 from mimetypes import guess_extension, guess_type
-from scrapers.base import BaseChapter, BaseSeries
 from tempfile import NamedTemporaryFile
-from config import config
 import os
 import re
 import requests
@@ -64,6 +65,11 @@ class BatotoChapter(BaseChapter):
         else:
             pages = [x.get('value') for x in
                      soup.find('select', id='page_select').find_all('option')]
+            if not pages:
+                output.warning('Skipping {s.name} {s.chapter}: '
+                               'chapter has no pages'
+                               .format(s=self))
+                return
             # Replace the first URL with the first image URL to avoid scraping
             # the first page twice.
             pages[0] = soup.find('img', id='comic_page').get('src')

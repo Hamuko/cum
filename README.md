@@ -4,6 +4,10 @@ comic updater, mangafied
 ## Description
 cum (comic updater, mangafied) is a tool designed for automated manga downloads from various online manga aggregate sites. Currently, the code is young and messy, so you should expect there to be issues and missing functionality. Please open up an issue on the tracker or submit a pull request to help out.
 
+## Installation
+
+You can install cum on your system by executing `python setup.py install`. You can also execute the `cum.py` file directly, but it's not nearly as nice to use as the installed version.
+
 ## Usage
 
 To print out a list of available commands, use `cum --help`. For help with a particular command, use `cum COMMAND --help`.

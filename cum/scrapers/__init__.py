@@ -1,6 +1,6 @@
-from scrapers.batoto import BatotoSeries
-from scrapers.dynastyscans import DynastyScansSeries
-from scrapers.madokami import MadokamiSeries
+from cum.scrapers.batoto import BatotoSeries
+from cum.scrapers.dynastyscans import DynastyScansSeries
+from cum.scrapers.madokami import MadokamiSeries
 from urllib.parse import urlparse
 import click
 

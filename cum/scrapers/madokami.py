@@ -1,9 +1,8 @@
 from bs4 import BeautifulSoup
-from config import config
-from scrapers.base import BaseChapter, BaseSeries
+from cum import output
+from cum.config import config
+from cum.scrapers.base import BaseChapter, BaseSeries
 from urllib.parse import urljoin
-import db
-import output
 import re
 import requests
 
@@ -42,7 +41,10 @@ class MadokamiSeries(BaseSeries):
             name_parts = re.search(name_re, name)
             if not name_parts:
                 name_parts = re.search(fallback_re, name)
-            chapter = name_parts.group(1)
+            try:
+                chapter = name_parts.group(1)
+            except:
+                continue
             if name_parts.group(2):
                 groups = name_parts.group(2).split('][')
             else:
