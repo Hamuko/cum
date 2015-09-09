@@ -74,7 +74,11 @@ class DynastyScansChapter(BaseChapter):
     def get_groups(self):
         r = requests.get(self.url)
         soup = BeautifulSoup(r.text, config.html_parser)
-        links = soup.find('span', class_='scanlators').find_all('a')
+        scanlators = soup.find('span', class_='scanlators')
+        if scanlators:
+            links = scanlators.find_all('a')
+        else:
+            links = []
         groups = []
         for link in links:
             r = requests.get(urljoin(self.url, link.get('href')))
