@@ -154,17 +154,7 @@ def open(alias):
 @cli.command()
 def new():
     """List all new chapters."""
-    items = {}
-    for chapter in db.Chapter.find_new():
-        try:
-            items[chapter.alias].append(chapter.chapter)
-        except KeyError:
-            items[chapter.alias] = [chapter.chapter]
-
-    for series in sorted(items):
-        click.secho(series, bold=True)
-        click.echo(click.wrap_text('  '.join([x for x in items[series]]),
-                                   width=click.get_terminal_size()[0]))
+    db.Chapter.print_new()
 
 
 @cli.command()
@@ -225,6 +215,7 @@ def update():
     for follow in query:
         series = series_by_url(follow.url)
         series.update()
+    db.Chapter.print_new()
 
 
 if __name__ == '__main__':
