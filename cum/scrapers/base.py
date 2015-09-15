@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 import click
 import os
+import requests
 import zipfile
 
 
@@ -81,6 +82,29 @@ class BaseChapter(metaclass=ABCMeta):
     def __init__(self, name=None, alias=None, chapter=None,
                  url=None, groups=[], title=None):
         pass
+
+    def available(self):
+        """Checks if chapter URL returns HTTP 404 or not, and returns a boolean
+        value based on it. Broken links are pruned from the database.
+
+        Some sites might not return HTTP 404 on missing chapters and require
+        custom version of this method to work.
+        """
+        r = requests.head(self.url)
+        if r.status_code == 404:
+            self.prune_deleted()
+            return False
+        else:
+            return True
+
+    def db_remove(self):
+        """Removes the chapter from the database."""
+        c = db.session.query(db.Chapter).filter_by(url=self.url).one()
+        db.session.delete(c)
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
 
     @abstractmethod
     def download(self):
@@ -192,6 +216,11 @@ class BaseChapter(metaclass=ABCMeta):
         return click.progressbar(iterable=iterable, length=length,
                                  fill_char='>', empty_char=' ',
                                  show_pos=self.uses_pages, show_percent=True)
+
+    def prune_deleted(self):
+        output.warning('Removing {} {}: missing from remote'
+                       .format(self.name, self.chapter))
+        self.db_remove()
 
     def save(self, series, ignore=False):
         """Save a chapter to database."""

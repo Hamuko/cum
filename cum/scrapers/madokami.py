@@ -69,6 +69,9 @@ class MadokamiChapter(BaseChapter):
         self.groups = groups
 
     def download(self):
+        if not self.available():
+            return
+
         auth = requests.auth.HTTPBasicAuth(*config.madokami.login)
         r = requests.get(self.url, auth=auth, stream=True)
         total_length = r.headers.get('content-length')
