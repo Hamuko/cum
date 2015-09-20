@@ -13,6 +13,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
+import sqlalchemy.engine.url
 from urllib.parse import urlparse
 import click
 import os
@@ -172,8 +173,10 @@ class Group(Base):
     def __str__(self):
         return self.name
 
-db_path = cum_dir + '/cum.db'
-engine = create_engine('sqlite:///' + db_path)
+
+db_path = os.path.join(cum_dir, 'cum.db')
+db_url = sqlalchemy.engine.url.URL('sqlite', database=db_path)
+engine = create_engine(db_url)
 if not os.path.exists(db_path):
     Base.metadata.create_all(bind=engine)
 Session = sessionmaker(bind=engine)
