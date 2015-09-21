@@ -31,12 +31,6 @@ class BaseSeries(metaclass=ABCMeta):
         # Return the string where all characters are matched to allowed_re.
         return ''.join(c for c in name if match(allowed_re, c))
 
-    @property
-    @abstractmethod
-    def name(self):
-        """Returns a string containing the title of the series."""
-        pass
-
     def follow(self, ignore=False):
         """Adds the series details to database and all current chapters."""
         output.series('Adding follow for {}'.format(self.name))
@@ -62,6 +56,12 @@ class BaseSeries(metaclass=ABCMeta):
         """Returns a list of objects that represent all of the series' chapters
         and are based on the Chapter class.
         """
+        pass
+
+    @property
+    @abstractmethod
+    def name(self):
+        """Returns a string containing the title of the series."""
         pass
 
     def update(self):
@@ -96,6 +96,18 @@ class BaseChapter(metaclass=ABCMeta):
             return False
         else:
             return True
+
+    def create_zip(self, files):
+        """Takes a list of named temporary files, makes a ZIP out of them and
+        closes the temporary files, deleting them. Files inside the .zip are
+        organized based on the list order with rolling numbering padded to six
+        digits and with the prefix 'image'.
+        """
+        with zipfile.ZipFile(self.filename, 'w') as z:
+            for num, f in enumerate(files):
+                root, ext = os.path.splitext(f.name)
+                z.write(f.name, 'img{num:0>6}{ext}'.format(num=num, ext=ext))
+                f.close()
 
     def db_remove(self):
         """Removes the chapter from the database."""
@@ -170,17 +182,16 @@ class BaseChapter(metaclass=ABCMeta):
 
         return target
 
-    def create_zip(self, files):
-        """Takes a list of named temporary files, makes a ZIP out of them and
-        closes the temporary files, deleting them. Files inside the .zip are
-        organized based on the list order with rolling numbering padded to six
-        digits and with the prefix 'image'.
+    def get(self, db_remove=True):
+        """Downloads the chapter if it is available.
+
+        Optionally does not attempt to remove the chapter from the database if
+        `db_remove` is set to False.
         """
-        with zipfile.ZipFile(self.filename, 'w') as z:
-            for num, f in enumerate(files):
-                root, ext = os.path.splitext(f.name)
-                z.write(f.name, 'img{num:0>6}{ext}'.format(num=num, ext=ext))
-                f.close()
+        if self.available():
+            self.download()
+        elif db_remove:
+            self.db_remove()
 
     def ignore(self):
         """Fetches the chapter from the database and marks it ignored."""
