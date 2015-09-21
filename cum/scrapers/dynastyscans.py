@@ -54,9 +54,6 @@ class DynastyScansChapter(BaseChapter):
             self.groups = self.get_groups()
 
     def download(self):
-        if not self.available():
-            return
-
         r = requests.get(self.url)
         pages = re.findall(r'"image":"(.*?)"', r.text)
         files = []
