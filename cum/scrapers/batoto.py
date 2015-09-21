@@ -57,6 +57,14 @@ class BatotoChapter(BaseChapter):
         self.url = url
         self.groups = groups
 
+    def available(self):
+        r = requests.get(self.url)
+        if re.search(r'404-Error.jpg', r.text):
+            self.prune_deleted()
+            return False
+        else:
+            return True
+
     def download(self):
         r = requests.get(self.url)
         soup = BeautifulSoup(r.text, config.html_parser)

@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 import click
 import os
+import requests
 import zipfile
 
 
@@ -29,12 +30,6 @@ class BaseSeries(metaclass=ABCMeta):
 
         # Return the string where all characters are matched to allowed_re.
         return ''.join(c for c in name if match(allowed_re, c))
-
-    @property
-    @abstractmethod
-    def name(self):
-        """Returns a string containing the title of the series."""
-        pass
 
     def follow(self, ignore=False):
         """Adds the series details to database and all current chapters."""
@@ -63,6 +58,12 @@ class BaseSeries(metaclass=ABCMeta):
         """
         pass
 
+    @property
+    @abstractmethod
+    def name(self):
+        """Returns a string containing the title of the series."""
+        pass
+
     def update(self):
         """Iterates through the currently available chapters and saves them in
         the database.
@@ -81,6 +82,41 @@ class BaseChapter(metaclass=ABCMeta):
     def __init__(self, name=None, alias=None, chapter=None,
                  url=None, groups=[], title=None):
         pass
+
+    def available(self):
+        """Checks if chapter URL returns HTTP 404 or not, and returns a boolean
+        value based on it. Broken links are pruned from the database.
+
+        Some sites might not return HTTP 404 on missing chapters and require
+        custom version of this method to work.
+        """
+        r = requests.head(self.url)
+        if r.status_code == 404:
+            self.prune_deleted()
+            return False
+        else:
+            return True
+
+    def create_zip(self, files):
+        """Takes a list of named temporary files, makes a ZIP out of them and
+        closes the temporary files, deleting them. Files inside the .zip are
+        organized based on the list order with rolling numbering padded to six
+        digits and with the prefix 'image'.
+        """
+        with zipfile.ZipFile(self.filename, 'w') as z:
+            for num, f in enumerate(files):
+                root, ext = os.path.splitext(f.name)
+                z.write(f.name, 'img{num:0>6}{ext}'.format(num=num, ext=ext))
+                f.close()
+
+    def db_remove(self):
+        """Removes the chapter from the database."""
+        c = db.session.query(db.Chapter).filter_by(url=self.url).one()
+        db.session.delete(c)
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
 
     @abstractmethod
     def download(self):
@@ -146,17 +182,16 @@ class BaseChapter(metaclass=ABCMeta):
 
         return target
 
-    def create_zip(self, files):
-        """Takes a list of named temporary files, makes a ZIP out of them and
-        closes the temporary files, deleting them. Files inside the .zip are
-        organized based on the list order with rolling numbering padded to six
-        digits and with the prefix 'image'.
+    def get(self, db_remove=True):
+        """Downloads the chapter if it is available.
+
+        Optionally does not attempt to remove the chapter from the database if
+        `db_remove` is set to False.
         """
-        with zipfile.ZipFile(self.filename, 'w') as z:
-            for num, f in enumerate(files):
-                root, ext = os.path.splitext(f.name)
-                z.write(f.name, 'img{num:0>6}{ext}'.format(num=num, ext=ext))
-                f.close()
+        if self.available():
+            self.download()
+        elif db_remove:
+            self.db_remove()
 
     def ignore(self):
         """Fetches the chapter from the database and marks it ignored."""
@@ -192,6 +227,11 @@ class BaseChapter(metaclass=ABCMeta):
         return click.progressbar(iterable=iterable, length=length,
                                  fill_char='>', empty_char=' ',
                                  show_pos=self.uses_pages, show_percent=True)
+
+    def prune_deleted(self):
+        output.warning('Removing {} {}: missing from remote'
+                       .format(self.name, self.chapter))
+        self.db_remove()
 
     def save(self, series, ignore=False):
         """Save a chapter to database."""
