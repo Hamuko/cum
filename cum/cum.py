@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import click
 
+
 @click.group()
 def cli():
     global db, output, series_by_url
