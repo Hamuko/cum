@@ -82,10 +82,10 @@ class MadokamiChapter(BaseChapter):
             else:
                 total_length = int(total_length)
                 with self.progress_bar(total_length) as bar:
-                    for chunk in r.iter_content(chunk_size=1024):
+                    for chunk in r.iter_content(chunk_size=4096):
                         if chunk:
                             bar.update(len(chunk))
                             f.write(chunk)
-                            f.flush()
+                f.flush()
 
         self.mark_downloaded()

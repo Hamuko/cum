@@ -62,10 +62,9 @@ class DynastyScansChapter(BaseChapter):
                 r = requests.get(urljoin(self.url, page), stream=True)
                 ext = guess_extension(r.headers.get('content-type'))
                 f = NamedTemporaryFile(suffix=ext)
-                for chunk in r.iter_content(chunk_size=1024):
+                for chunk in r.iter_content(chunk_size=4096):
                     if chunk:
                         f.write(chunk)
-                        f.flush()
                 files.append(f)
 
         self.create_zip(files)
