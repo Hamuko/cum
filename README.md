@@ -36,8 +36,10 @@ alias     Assign a new alias to series.
 chapters  List all chapters for a manga series.
 download  Download all available chapters.
 follow    Follow a series.
+  --download    Downloads the chapters for the added follows.
+  --ignore      Ignores the chapters for the added follows.
 follows   List all follows.
-get       Follow a series and download its chapters.
+get       Download chapters by URL.
 ignore    Ignore chapters for a series.
 new       List all new chapters.
 open      Open the series URL in a browser.

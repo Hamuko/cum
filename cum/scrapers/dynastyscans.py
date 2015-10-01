@@ -12,6 +12,8 @@ fallback_re = r'^([A-Za-z0-9 ]*)(?:\: (.*))?'
 
 
 class DynastyScansSeries(BaseSeries):
+    url_re = re.compile(r'http://dynasty-scans\.com/series/')
+
     def __init__(self, url):
         r = requests.get(url)
         self.url = url
@@ -40,6 +42,7 @@ class DynastyScansSeries(BaseSeries):
 
 
 class DynastyScansChapter(BaseChapter):
+    url_re = re.compile(r'http://dynasty-scans\.com/chapters/')
     uses_pages = True
 
     def __init__(self, name=None, alias=None, chapter=None,
@@ -69,7 +72,17 @@ class DynastyScansChapter(BaseChapter):
                 files.append(f)
 
         self.create_zip(files)
-        self.mark_downloaded()
+
+    def from_url(url):
+        r = requests.get(url)
+        soup = BeautifulSoup(r.text, config.html_parser)
+        series_url = urljoin(url,
+                             soup.find('h3', id='chapter-title').a['href'])
+        series = DynastyScansSeries(series_url)
+        for chapter in series.chapters:
+            if chapter.url == url:
+                return chapter
+        return None
 
     def get_groups(self):
         r = requests.get(self.url)

@@ -69,9 +69,8 @@ class BaseSeries(metaclass=ABCMeta):
         the database.
         """
         s = db.session.query(db.Series).filter_by(url=self.url).one()
-        chapters = self.get_chapters()
 
-        for chapter in chapters:
+        for chapter in self.chapters:
             chapter.save(s)
 
 
@@ -182,15 +181,23 @@ class BaseChapter(metaclass=ABCMeta):
 
         return target
 
-    def get(self, db_remove=True):
+    @staticmethod
+    @abstractmethod
+    def from_url(url):
+        """Method to initialize a Chapter object from the chapter URL."""
+        pass
+
+    def get(self, use_db=True):
         """Downloads the chapter if it is available.
 
-        Optionally does not attempt to remove the chapter from the database if
-        `db_remove` is set to False.
+        Optionally does not attempt to remove the chapter from the database or
+        mark the chapter as downloaded if `db_remove` is set to False.
         """
         if self.available():
             self.download()
-        elif db_remove:
+            if use_db:
+                self.mark_downloaded()
+        elif use_db:
             self.db_remove()
 
     def ignore(self):

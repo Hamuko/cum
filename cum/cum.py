@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from cum import db, output
-from cum.scrapers import series_by_url
+from cum.scrapers import chapter_by_url, series_by_url
 import click
 
 
@@ -65,9 +65,13 @@ def download(alias):
 
 @cli.command()
 @click.argument('urls', required=True, nargs=-1)
-@click.option('--ignore/--no-ignore', default=False, help='')
-def follow(urls, ignore):
+@click.option('--download', is_flag=True,
+              help='Downloads the chapters for the added follows.')
+@click.option('--ignore', is_flag=True,
+              help='Ignores the chapters for the added follows.')
+def follow(urls, download, ignore):
     """Follow a series."""
+    chapters = []
     for url in urls:
         series = series_by_url(url)
         if ignore:
@@ -75,6 +79,12 @@ def follow(urls, ignore):
             output.chapter('Ignoring {} chapters'.format(len(series.chapters)))
         else:
             series.follow()
+            chapters += db.Chapter.find_new(alias=series.alias)
+
+    if download:
+        output.chapter('Downloading {} chapters'.format(len(chapters)))
+        for chapter in chapters:
+            chapter.download()
 
 
 @cli.command()
@@ -94,20 +104,12 @@ def follows():
 @cli.command()
 @click.argument('urls', required=True, nargs=-1)
 def get(urls):
-    """Follow a series and download its chapters.
+    """Download chapters by URL.
 
-    Adds one or more specified URLs into the database as follows and
-    immediately begins to downloads their chapters.
-    """
-    chapters = []
+    The command will not add the downloaded chapters into the cum database."""
     for url in urls:
-        series = series_by_url(url)
-        series.follow()
-        chapters += db.Chapter.find_new(alias=series.alias)
-
-    output.chapter('Downloading {} chapters'.format(len(chapters)))
-    for chapter in chapters:
-        chapter.download()
+        chapter = chapter_by_url(url)
+        chapter.get(use_db=False)
 
 
 @cli.command()

@@ -11,6 +11,8 @@ fallback_re = r'\- (.*) (?:\[(.*)\])?'
 
 
 class MadokamiSeries(BaseSeries):
+    url_re = re.compile(r'https://manga\.madokami\.com/Manga/[^.]+$')
+
     def __init__(self, url):
         r = requests.get(url)
         self.url = url
@@ -57,6 +59,7 @@ class MadokamiSeries(BaseSeries):
 
 
 class MadokamiChapter(BaseChapter):
+    url_re = re.compile(r'https://manga\.madokami\.com/Manga/.*/.*/.*\..*')
     uses_pages = False
 
     def __init__(self, name=None, alias=None, chapter=None,
@@ -67,6 +70,14 @@ class MadokamiChapter(BaseChapter):
         self.title = title
         self.url = url
         self.groups = groups
+
+    def from_url(url):
+        series_url = re.search(r'(.*manga\.madokami\.com/.*/)', url).group(1)
+        series = MadokamiSeries(series_url)
+        for chapter in series.chapters:
+            if chapter.url == url:
+                return chapter
+        return None
 
     def download(self):
         auth = requests.auth.HTTPBasicAuth(*config.madokami.login)
@@ -87,5 +98,3 @@ class MadokamiChapter(BaseChapter):
                             bar.update(len(chunk))
                             f.write(chunk)
                             f.flush()
-
-        self.mark_downloaded()

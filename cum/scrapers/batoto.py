@@ -13,6 +13,8 @@ img_path_re = r'(http://img.bato.to/comics/.*?/img)([0-9]*)(\.[A-Za-z]+)'
 
 
 class BatotoSeries(BaseSeries):
+    url_re = re.compile(r'https?://bato\.to/comic/_/comics/')
+
     def __init__(self, url):
         r = requests.get(url)
         self.url = url
@@ -46,6 +48,7 @@ class BatotoSeries(BaseSeries):
 
 
 class BatotoChapter(BaseChapter):
+    url_re = re.compile(r'https?://bato\.to/read/_/')
     uses_pages = True
 
     def __init__(self, name=None, alias=None, chapter=None,
@@ -64,6 +67,15 @@ class BatotoChapter(BaseChapter):
             return False
         else:
             return True
+
+    def from_url(url):
+        r = requests.get(url)
+        soup = BeautifulSoup(r.text, config.html_parser)
+        series_url = soup.find('a', href=BatotoSeries.url_re)['href']
+        series = BatotoSeries(series_url)
+        for chapter in series.chapters:
+            if chapter.url == url:
+                return chapter
 
     def download(self):
         r = requests.get(self.url)
@@ -100,4 +112,3 @@ class BatotoChapter(BaseChapter):
                 files.append(f)
 
         self.create_zip(files)
-        self.mark_downloaded()
