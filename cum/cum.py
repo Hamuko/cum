@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-from cum import db, output
-from cum.scrapers import chapter_by_url, series_by_url
 import click
 
 
 @click.group()
 def cli():
-    pass
+    global db, output, series_by_url
+    from cum import db, output
+    from cum.scrapers import series_by_url
 
 
 @cli.command()
