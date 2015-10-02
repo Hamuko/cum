@@ -39,7 +39,7 @@ follow    Follow a series.
   --download    Downloads the chapters for the added follows.
   --ignore      Ignores the chapters for the added follows.
 follows   List all follows.
-get       Download chapters by URL.
+get       Download chapters by URL or by alias:chapter.
 ignore    Ignore chapters for a series.
 new       List all new chapters.
 open      Open the series URL in a browser.

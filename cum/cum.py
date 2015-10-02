@@ -4,9 +4,9 @@ import click
 
 @click.group()
 def cli():
-    global db, output, series_by_url
+    global db, chapter_by_url, output, series_by_url
     from cum import db, output
-    from cum.scrapers import series_by_url
+    from cum.scrapers import chapter_by_url, series_by_url
 
 
 @cli.command()
@@ -102,14 +102,30 @@ def follows():
 
 
 @cli.command()
-@click.argument('urls', required=True, nargs=-1)
-def get(urls):
-    """Download chapters by URL.
+@click.argument('input', required=True, nargs=-1)
+def get(input):
+    """Download chapters by URL or by alias:chapter.
 
-    The command will not add the downloaded chapters into the cum database."""
-    for url in urls:
-        chapter = chapter_by_url(url)
-        chapter.get(use_db=False)
+    The command accepts input as either the chapter of the URL or the
+    alias:chapter combination (e.g. 'bakuon:11'), if the chapter is already
+    found in the database through a follow. The command will not enter the
+    downloads in the database in case of URLs and ignores downloaded status
+    in case of alias:chapter, so it can be used to download one-shots that
+    don't require follows or for redownloading already downloaded chapters.
+    """
+    for i in input:
+        chapter = chapter_by_url(i)
+        if not chapter:
+            a, c = i.split(':')
+            chapters = (db.session.query(db.Chapter)
+                        .join(db.Series)
+                        .filter(db.Series.alias == a,
+                                db.Chapter.chapter == c)
+                        .all())
+            for chapter in chapters:
+                chapter.to_object().get(use_db=False)
+        else:
+            chapter.get(use_db=False)
 
 
 @cli.command()
