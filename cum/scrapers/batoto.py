@@ -108,6 +108,7 @@ class BatotoChapter(BaseChapter):
                 for chunk in r.iter_content(chunk_size=4096):
                     if chunk:
                         f.write(chunk)
+                f.flush()
                 files.append(f)
 
         self.create_zip(files)
