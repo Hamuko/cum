@@ -84,7 +84,7 @@ def follow(urls, download, ignore):
     if download:
         output.chapter('Downloading {} chapters'.format(len(chapters)))
         for chapter in chapters:
-            chapter.download()
+            chapter.get()
 
 
 @cli.command()
