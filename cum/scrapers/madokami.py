@@ -6,8 +6,8 @@ from urllib.parse import urljoin
 import re
 import requests
 
-name_re = r'-? c([0-9-]+).*?(?: \[(.*)\])?\.'
-fallback_re = r'\- (.*) (?:\[(.*)\])?'
+name_re = re.compile(r'-? c([0-9-]+).*?(?: \[(.*)\])?\.')
+fallback_re = re.compile(r'\- (.*) (?:\[(.*)\])?')
 
 
 class MadokamiSeries(BaseSeries):
