@@ -25,19 +25,41 @@ class DynastyScansSeries(BaseSeries):
         return self.soup.find('h2', class_='tag-title').contents[0].string
 
     def get_chapters(self):
+
+        class VolumeIter:
+            def __init__(self, volume):
+                self.prev = volume
+
+            def __iter__(self):
+                return self
+
+            def __next__(self):
+                n_tag = self.prev.find_next_sibling()
+                if not n_tag:
+                    raise StopIteration()
+                if n_tag.name == 'dd':
+                    self.prev = n_tag
+                    return(self.prev.find('a', class_='name'))
+                elif n_tag.name == 'dt':
+                    raise StopIteration()
+
+
         chapter_list = self.soup.find('dl', class_='chapter-list')
-        links = chapter_list.find_all('a', class_='name')
+        volumes = chapter_list.find_all('dt')
         chapters = []
-        for link in links:
-            name_parts = re.search(name_re, link.string)
-            if not name_parts:
-                name_parts = re.search(fallback_re, link.string)
-            chapter = name_parts.group(1)
-            title = name_parts.group(2)
-            url = urljoin(self.url, link.get('href'))
-            c = DynastyScansChapter(name=self.name, alias=self.alias,
-                                    chapter=chapter, url=url, title=title)
-            chapters.append(c)
+        for vol in volumes:
+            for link in VolumeIter(vol):
+                name_parts = re.search(name_re, link.string)
+                if not name_parts:
+                    name_parts = re.search(fallback_re, link.string)
+                chapter = name_parts.group(1)
+                title = name_parts.group(2)
+                url = urljoin(self.url, link.get('href'))
+                if vol.string.lower().startswith("special"):
+                        chapter = "Special %s" % chapter
+                c = DynastyScansChapter(name=self.name, alias=self.alias,
+                                        chapter=chapter, url=url, title=title)
+                chapters.append(c)
         return chapters
 
 
