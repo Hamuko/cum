@@ -39,7 +39,7 @@ def chapters(alias):
         for chapter in s.ordered_chapters:
             name_len = click.get_terminal_size()[0] - 11
             name = '{} {}'.format(chapter.title, chapter.group_tag)[:name_len]
-            row = '{}  {:>7} {}'.format(chapter.status, chapter.chapter, name)
+            row = '{}  {:>7}  {}'.format(chapter.status, chapter.chapter, name)
             if row[0] == 'n':
                 style = {'fg': 'white', 'bold': True}
             elif row[0] == ' ':

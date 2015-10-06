@@ -33,7 +33,7 @@ class BaseSeries(metaclass=ABCMeta):
 
     def follow(self, ignore=False):
         """Adds the series details to database and all current chapters."""
-        output.series('Adding follow for {}'.format(self.name))
+        output.series('Adding follow for {s.name} ({s.alias})'.format(s=self))
 
         try:
             s = db.session.query(db.Series).filter_by(url=self.url).one()
