@@ -7,8 +7,8 @@ from urllib.parse import urljoin
 import re
 import requests
 
-name_re = re.compile(r'^[A-Za-z]* ([0-9\-]+)(?:\: (.*))?')
 fallback_re = re.compile(r'^([A-Za-z0-9 ]*)(?:\: (.*))?')
+name_re = re.compile(r'^[A-Za-z]* ([0-9\-]+)(?:\: (.*))?')
 
 
 class DynastyScansSeries(BaseSeries):

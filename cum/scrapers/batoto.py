@@ -8,8 +8,10 @@ import os
 import re
 import requests
 
+img_path_re = re.compile(
+    r'(http://img.bato.to/comics/.*?/img)([0-9]*)(\.[A-Za-z]+)'
+)
 name_re = re.compile(r'Ch\.([A-Za-z0-9\.\-]*)(?:\: (.*))?')
-img_path_re = re.compile(r'(http://img.bato.to/comics/.*?/img)([0-9]*)(\.[A-Za-z]+)')
 
 
 class BatotoSeries(BaseSeries):
@@ -48,8 +50,8 @@ class BatotoSeries(BaseSeries):
 
 
 class BatotoChapter(BaseChapter):
-    url_re = re.compile(r'https?://bato\.to/read/_/')
     available_re = re.compile(r'404-Error.jpg')
+    url_re = re.compile(r'https?://bato\.to/read/_/')
     uses_pages = True
 
     def __init__(self, name=None, alias=None, chapter=None,
