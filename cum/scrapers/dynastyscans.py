@@ -7,8 +7,8 @@ from urllib.parse import urljoin
 import re
 import requests
 
-fallback_re = re.compile(r'^([A-Za-z0-9 ]*)(?:\: (.*))?')
-name_re = re.compile(r'^[A-Za-z]* ([0-9\-]+)(?:\: (.*))?')
+name_re = re.compile(r'Chapter ([0-9\.]+)(?:$|\: )(.*)')
+fallback_re = re.compile(r'(.*?)(?:$|\: )(.*)')
 
 
 class DynastyScansSeries(BaseSeries):
@@ -78,10 +78,15 @@ class DynastyScansChapter(BaseChapter):
         soup = BeautifulSoup(r.text, config.html_parser)
         series_url = urljoin(url,
                              soup.find('h3', id='chapter-title').a['href'])
-        series = DynastyScansSeries(series_url)
-        for chapter in series.chapters:
-            if chapter.url == url:
-                return chapter
+        try:
+            series = DynastyScansSeries(series_url)
+        except:
+            name = soup.find('h3', id='chapter-title').b.text
+            return DynastyScansChapter(name=name, chapter='0', url=url)
+        else:
+            for chapter in series.chapters:
+                if chapter.url == url:
+                    return chapter
         return None
 
     def get_groups(self):
