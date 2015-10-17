@@ -78,10 +78,15 @@ class DynastyScansChapter(BaseChapter):
         soup = BeautifulSoup(r.text, config.html_parser)
         series_url = urljoin(url,
                              soup.find('h3', id='chapter-title').a['href'])
-        series = DynastyScansSeries(series_url)
-        for chapter in series.chapters:
-            if chapter.url == url:
-                return chapter
+        try:
+            series = DynastyScansSeries(series_url)
+        except:
+            name = soup.find('h3', id='chapter-title').b.text
+            return DynastyScansChapter(name=name, chapter='0', url=url)
+        else:
+            for chapter in series.chapters:
+                if chapter.url == url:
+                    return chapter
         return None
 
     def get_groups(self):
