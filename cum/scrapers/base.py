@@ -91,7 +91,6 @@ class BaseChapter(metaclass=ABCMeta):
         """
         r = requests.head(self.url)
         if r.status_code == 404:
-            self.prune_deleted()
             return False
         else:
             return True
@@ -198,6 +197,8 @@ class BaseChapter(metaclass=ABCMeta):
             if use_db:
                 self.mark_downloaded()
         elif use_db:
+            output.warning('Removing {} {}: missing from remote'
+                           .format(self.name, self.chapter))
             self.db_remove()
 
     def ignore(self):
@@ -234,11 +235,6 @@ class BaseChapter(metaclass=ABCMeta):
         return click.progressbar(iterable=iterable, length=length,
                                  fill_char='>', empty_char=' ',
                                  show_pos=self.uses_pages, show_percent=True)
-
-    def prune_deleted(self):
-        output.warning('Removing {} {}: missing from remote'
-                       .format(self.name, self.chapter))
-        self.db_remove()
 
     def save(self, series, ignore=False):
         """Save a chapter to database."""
