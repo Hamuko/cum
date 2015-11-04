@@ -123,21 +123,6 @@ class Chapter(Base):
         return humansorted([x.to_object() for x in query],
                            key=lambda x: x.chapter)
 
-    @staticmethod
-    def print_new():
-        """Prints all new chapters."""
-        items = {}
-        for chapter in Chapter.find_new():
-            try:
-                items[chapter.alias].append(chapter.chapter)
-            except KeyError:
-                items[chapter.alias] = [chapter.chapter]
-
-        for series in sorted(items):
-            click.secho(series, bold=True)
-            click.echo(click.wrap_text('  '.join([x for x in items[series]]),
-                                       width=click.get_terminal_size()[0]))
-
     def to_object(self):
         """Turns a database entry into a chapter object for the respective
         site by parsing the URL.

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from cum.config import config
 import click
 
 
@@ -172,7 +173,25 @@ def open(alias):
 @cli.command()
 def new():
     """List all new chapters."""
-    db.Chapter.print_new()
+    items = {}
+    for chapter in db.Chapter.find_new():
+        try:
+            items[chapter.alias].append(chapter.chapter)
+        except KeyError:
+            items[chapter.alias] = [chapter.chapter]
+
+    for series in sorted(items):
+        if config.compact_new:
+            name = click.style(series, bold=True)
+            chapters = '  '.join([x for x in items[series]])
+            line = click.wrap_text(' '.join([name, chapters]),
+                                   subsequent_indent=' ' * (len(series) + 1),
+                                   width=click.get_terminal_size()[0])
+            click.echo(line)
+        else:
+            click.secho(series, bold=True)
+            click.echo(click.wrap_text('  '.join([x for x in items[series]]),
+                                       width=click.get_terminal_size()[0]))
 
 
 @cli.command()

@@ -26,16 +26,17 @@ class BaseConfig(object):
             f.close()
 
         self.cbz = j.get('cbz', False)
+        self.compact_new = j.get('compact_new', False)
         self.download_directory = j.get('download_directory', home_dir)
-        self.madokami = MadokamiConfig(j.get('madokami', {}))
         self.html_parser = j.get('html_parser', 'html.parser')
+        self.madokami = MadokamiConfig(j.get('madokami', {}))
 
     def write(self):
         config = dict(self.__dict__)
         config['madokami'] = dict(self.madokami.__dict__)
 
         with open(config_path, 'w') as file:
-            json.dump(config, file, indent=2)
+            json.dump(config, file, sort_keys=True, indent=2)
 
 
 class MadokamiConfig(object):

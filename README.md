@@ -20,8 +20,10 @@ Config is stored at `~/.cum/config.json` and is automatically created with defau
 
 ```javascript
 {
-  "download_directory": "/path/to/manga",  // Directory where manga is downloaded.
   "cbz": false,  // If true, the archive extension will be .cbz instead of .zip.
+  "compact_new": true,  // Uses compact listing mode for `cum new`.
+  "download_directory": "/path/to/manga",  // Directory where manga is downloaded.
+  "html_parser": "html.parser",  // HTML parser used by cum.
   "madokami": {
     "username": "", // Username to use with Madokami.
     "password": "" // Password to use with Madokami
