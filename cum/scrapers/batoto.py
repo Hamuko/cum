@@ -66,7 +66,6 @@ class BatotoChapter(BaseChapter):
     def available(self):
         r = requests.get(self.url)
         if re.search(self.available_re, r.text):
-            self.prune_deleted()
             return False
         else:
             return True
