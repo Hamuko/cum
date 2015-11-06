@@ -46,43 +46,55 @@ class BaseConfig(object):
 
 
 class BatotoConfig(object):
+    forum_url = 'https://bato.to/forums/index.php'
+    login_query = {'app': 'core', 'module': 'global',
+                   'section': 'login', 'do': 'process'}
+
     def __init__(self, config, dict):
         self._config = config
-        self.username = dict.get('username', None)
-        self.password = dict.get('username', None)
         self.cookie = dict.get('cookie', None)
+        self.member_id = dict.get('member_id', None)
+        self.pass_hash = dict.get('pass_hash', None)
+        self.password = dict.get('password', None)
+        self.username = dict.get('username', None)
 
     def login(self):
         if not self.username:
             username = click.prompt('Batoto username')
+        else:
+            username = self.username
         if not self.password:
             password = click.prompt('Batoto password', hide_input=True)
-        url = 'https://bato.to/forums/index.php'
-        query = {'app': 'core', 'module': 'global',
-                 'section': 'login', 'do': 'process'}
-        r = requests.get(url, params=query)
+        else:
+            password = self.password
+        r = requests.get(self.forum_url, params=self.login_query)
         auth_key = re.search(r"'auth_key' value='(.+)'", r.text).group(1)
         data = {'auth_key': auth_key,
                 'referer': 'http://bato.to/',
                 'ips_username': username,
                 'ips_password': password,
                 'rememberMe': 1}
-        r = requests.post(url, params=query, data=data)
+        r = requests.post(self.forum_url, params=self.login_query, data=data)
         self.cookie = r.cookies['session_id']
+        self.member_id = r.cookies['member_id']
+        self.pass_hash = r.cookies['pass_hash']
         self._config.write()
 
     @property
     def login_cookies(self):
-        if not self.cookie:
+        if not (self.cookie and self.member_id and self.pass_hash):
             self.login()
         return {'session_id': self.cookie}
+        return {'session_id': self.cookie,
+                'member_id': self.member_id,
+                'pass_hash': self.pass_hash}
 
 
 class MadokamiConfig(object):
     def __init__(self, config, dict):
         self._config = config
-        self.username = dict.get('username', None)
         self.password = dict.get('password', None)
+        self.username = dict.get('username', None)
 
     @property
     def login(self):

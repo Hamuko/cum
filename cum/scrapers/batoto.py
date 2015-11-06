@@ -8,17 +8,13 @@ import os
 import re
 import requests
 
-img_path_re = re.compile(
-    r'(http://img.bato.to/comics/.*?/img)([0-9]*)(\.[A-Za-z]+)'
-)
-name_re = re.compile(r'Ch\.([A-Za-z0-9\.\-]*)(?:\: (.*))?')
-
 
 class BatotoSeries(BaseSeries):
     url_re = re.compile(r'https?://bato\.to/comic/_/comics/')
+    name_re = re.compile(r'Ch\.([A-Za-z0-9\.\-]*)(?:\: (.*))?')
 
     def __init__(self, url):
-        r = requests.get(url)
+        r = requests.get(url, cookies=config.batoto.login_cookies)
         self.url = url
         self.soup = BeautifulSoup(r.text, config.html_parser)
         self.chapters = self.get_chapters()
@@ -34,7 +30,7 @@ class BatotoSeries(BaseSeries):
             columns = row.find_all('td')
 
             name = columns[0].img.next_sibling.strip()
-            name_parts = re.search(name_re, name)
+            name_parts = re.search(self.name_re, name)
             chapter = name_parts.group(1)
             title = name_parts.group(2)
 
@@ -50,8 +46,12 @@ class BatotoSeries(BaseSeries):
 
 
 class BatotoChapter(BaseChapter):
-    available_re = re.compile(r'404-Error.jpg')
-    url_re = re.compile(r'https?://bato\.to/read/_/')
+    error_re = re.compile(r'ERROR \[10010\]')
+    img_path_re = re.compile(
+        r'(http://img.bato.to/comics/.*?/img)([0-9]*)(\.[A-Za-z]+)'
+    )
+    next_img_path_re = re.compile(r'img.src = "(.+)";')
+    url_re = re.compile(r'https?://bato.to/reader#(.*)')
     uses_pages = True
 
     def __init__(self, name=None, alias=None, chapter=None,
@@ -64,14 +64,26 @@ class BatotoChapter(BaseChapter):
         self.groups = groups
 
     def available(self):
-        r = requests.get(self.url)
-        if re.search(self.available_re, r.text):
+        hash_match = re.search(self.url_re, self.url)
+        if hash_match:
+            self.hash = hash_match.group(1)
+        else:
             return False
+        self.r = self.reader_get(1)
+        if not len(self.r.text):
+            return False
+        elif self.r.status_code == 404:
+            return False
+        elif "The thing you're looking for is unavailable." in self.r.text:
+            if "Try logging in" not in self.r.text:
+                return False
+            else:
+                return True
         else:
             return True
 
     def from_url(url):
-        r = requests.get(url)
+        r = requests.get(url, cookies=config.batoto.login_cookies)
         soup = BeautifulSoup(r.text, config.html_parser)
         series_url = soup.find('a', href=BatotoSeries.url_re)['href']
         series = BatotoSeries(series_url)
@@ -80,10 +92,15 @@ class BatotoChapter(BaseChapter):
                 return chapter
 
     def download(self):
-        r = requests.get(self.url)
+        if getattr(self, 'r', None):
+            r = self.r
+        else:
+            r = self.reader_get(1)
         soup = BeautifulSoup(r.text, config.html_parser)
-        if soup.find('a', href='?supress_webtoon=t'):
-            pages = [''.join(i) for i in re.findall(img_path_re, r.text)]
+        if soup.find('a', href=self.url + '_1_t'):
+            # The chapter uses webtoon layout, meaning all of the images are on
+            # the same page.
+            pages = [''.join(i) for i in re.findall(self.img_path_re, r.text)]
         else:
             pages = [x.get('value') for x in
                      soup.find('select', id='page_select').find_all('option')]
@@ -95,15 +112,21 @@ class BatotoChapter(BaseChapter):
             # Replace the first URL with the first image URL to avoid scraping
             # the first page twice.
             pages[0] = soup.find('img', id='comic_page').get('src')
+            next_match = re.search(self.next_img_path_re, r.text)
+            if next_match:
+                pages[1] = next_match.group(1)
         files = []
         with self.progress_bar(pages) as bar:
             for page in bar:
                 if guess_type(page)[0]:
                     image = page
                 else:
-                    r = requests.get(page)
+                    r = self.reader_get(pages.index(page) + 1)
                     soup = BeautifulSoup(r.text, config.html_parser)
                     image = soup.find('img', id='comic_page').get('src')
+                    image2_match = re.search(self.next_img_path_re, r.text)
+                    if image2_match:
+                        pages[pages.index(page) + 1] = image2_match.group(1)
                 r = requests.get(image, stream=True)
                 ext = guess_extension(r.headers.get('content-type'))
                 f = NamedTemporaryFile(suffix=ext)
@@ -114,3 +137,9 @@ class BatotoChapter(BaseChapter):
                 files.append(f)
 
         self.create_zip(files)
+
+    def reader_get(self, page_index):
+        return requests.get('http://bato.to/areader',
+                            params={'id': self.hash, 'p': page_index},
+                            headers={'Referer': 'http://bato.to/reader'},
+                            cookies=config.batoto.login_cookies)

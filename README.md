@@ -20,13 +20,20 @@ Config is stored at `~/.cum/config.json` and is automatically created with defau
 
 ```javascript
 {
+  "batoto": {
+    "cookie": "",  // Used to login to Batoto.
+    "member_id": "",  // Used to login to Batoto.
+    "pass_hash": "",  // Used to login to Batoto.
+    "password": "",  // Password to use with Batoto logins.
+    "username": ""  // Username to use with Batoto logins.
+  }
   "cbz": false,  // If true, the archive extension will be .cbz instead of .zip.
   "compact_new": true,  // Uses compact listing mode for `cum new`.
   "download_directory": "/path/to/manga",  // Directory where manga is downloaded.
   "html_parser": "html.parser",  // HTML parser used by cum.
   "madokami": {
-    "username": "", // Username to use with Madokami.
     "password": "" // Password to use with Madokami
+    "username": "", // Username to use with Madokami.
   }
 }
 ```
