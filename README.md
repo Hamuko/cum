@@ -86,7 +86,7 @@ $ cum download school-live
 
 * Batoto
   * Slow downloads
-  * Account not required
+  * Account required
   * Reliable due to relatively standard naming format
 * Dynasty Reader
   * Moderate speed downloads
@@ -104,6 +104,10 @@ $ cum download school-live
 * [natsort](https://pypi.python.org/pypi/natsort/4.0.3)
 * [requests](https://pypi.python.org/pypi/requests/2.7.0)
 * [SQLAlchemy](https://pypi.python.org/pypi/SQLAlchemy/1.0.6)
+
+## Community
+
+There is an (inactive) IRC channel for cum: `#cu` on `irc.rizon.net`.
 
 ## Design choices
 
