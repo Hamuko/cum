@@ -1,6 +1,29 @@
 #!/usr/bin/env python3
+from cum import output
 from cum.config import config
 import click
+
+
+def list_new():
+    items = {}
+    for chapter in db.Chapter.find_new():
+        try:
+            items[chapter.alias].append(chapter.chapter)
+        except KeyError:
+            items[chapter.alias] = [chapter.chapter]
+
+    for series in sorted(items):
+        if config.compact_new:
+            name = click.style(series, bold=True)
+            chapters = '  '.join([x for x in items[series]])
+            line = click.wrap_text(' '.join([name, chapters]),
+                                   subsequent_indent=' ' * (len(series) + 1),
+                                   width=click.get_terminal_size()[0])
+            click.echo(line)
+        else:
+            click.secho(series, bold=True)
+            click.echo(click.wrap_text('  '.join([x for x in items[series]]),
+                                       width=click.get_terminal_size()[0]))
 
 
 @click.group()
@@ -51,14 +74,18 @@ def chapters(alias):
 
 
 @cli.command()
-@click.argument('alias', required=False)
-def download(alias):
+@click.argument('aliases', required=False, nargs=-1)
+def download(aliases):
     """Download all available chapters.
 
     If an optional alias is specified, the command will only download new
     chapters for that alias.
     """
-    chapters = db.Chapter.find_new(alias=alias)
+    chapters = []
+    if not aliases:
+        chapters = db.Chapter.find_new()
+    for alias in aliases:
+        chapters += db.Chapter.find_new(alias=alias)
     output.chapter('Downloading {} chapters'.format(len(chapters)))
     for chapter in chapters:
         chapter.get()
@@ -173,25 +200,7 @@ def open(alias):
 @cli.command()
 def new():
     """List all new chapters."""
-    items = {}
-    for chapter in db.Chapter.find_new():
-        try:
-            items[chapter.alias].append(chapter.chapter)
-        except KeyError:
-            items[chapter.alias] = [chapter.chapter]
-
-    for series in sorted(items):
-        if config.compact_new:
-            name = click.style(series, bold=True)
-            chapters = '  '.join([x for x in items[series]])
-            line = click.wrap_text(' '.join([name, chapters]),
-                                   subsequent_indent=' ' * (len(series) + 1),
-                                   width=click.get_terminal_size()[0])
-            click.echo(line)
-        else:
-            click.secho(series, bold=True)
-            click.echo(click.wrap_text('  '.join([x for x in items[series]]),
-                                       width=click.get_terminal_size()[0]))
+    list_new()
 
 
 @cli.command()
@@ -252,7 +261,7 @@ def update():
     for follow in query:
         series = series_by_url(follow.url)
         series.update()
-    db.Chapter.print_new()
+    list_new()
 
 
 if __name__ == '__main__':
