@@ -97,7 +97,7 @@ class BatotoChapter(BaseChapter):
         else:
             r = self.reader_get(1)
         soup = BeautifulSoup(r.text, config.html_parser)
-        if soup.find('a', href=self.url + '_1_t'):
+        if soup.find('a', href='#{}_1_t'.format(self.hash)):
             # The chapter uses webtoon layout, meaning all of the images are on
             # the same page.
             pages = [''.join(i) for i in re.findall(self.img_path_re, r.text)]
