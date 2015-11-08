@@ -63,11 +63,17 @@ class BatotoChapter(BaseChapter):
         self.url = url
         self.groups = groups
 
-    def available(self):
+    @property
+    def batoto_hash(self):
         hash_match = re.search(self.url_re, self.url)
         if hash_match:
-            self.hash = hash_match.group(1)
+            return hash_match.group(1)
         else:
+            return None
+
+    def available(self):
+        hash_match = re.search(self.url_re, self.url)
+        if not self.batoto_hash:
             return False
         self.r = self.reader_get(1)
         if not len(self.r.text):
@@ -83,7 +89,8 @@ class BatotoChapter(BaseChapter):
             return True
 
     def from_url(url):
-        r = requests.get(url, cookies=config.batoto.login_cookies)
+        chapter_hash = re.search(BatotoChapter.url_re, url).group(1)
+        r = BatotoChapter._reader_get(chapter_hash, 1)
         soup = BeautifulSoup(r.text, config.html_parser)
         series_url = soup.find('a', href=BatotoSeries.url_re)['href']
         series = BatotoSeries(series_url)
@@ -97,7 +104,7 @@ class BatotoChapter(BaseChapter):
         else:
             r = self.reader_get(1)
         soup = BeautifulSoup(r.text, config.html_parser)
-        if soup.find('a', href='#{}_1_t'.format(self.hash)):
+        if soup.find('a', href='#{}_1_t'.format(self.batoto_hash)):
             # The chapter uses webtoon layout, meaning all of the images are on
             # the same page.
             pages = [''.join(i) for i in re.findall(self.img_path_re, r.text)]
@@ -139,7 +146,11 @@ class BatotoChapter(BaseChapter):
         self.create_zip(files)
 
     def reader_get(self, page_index):
+        return self._reader_get(self.batoto_hash, page_index)
+
+    @staticmethod
+    def _reader_get(chapter_hash, page_index):
         return requests.get('http://bato.to/areader',
-                            params={'id': self.hash, 'p': page_index},
+                            params={'id': chapter_hash, 'p': page_index},
                             headers={'Referer': 'http://bato.to/reader'},
                             cookies=config.batoto.login_cookies)
