@@ -6,7 +6,7 @@ cum (comic updater, mangafied) is a tool designed for automated manga downloads 
 
 ## Installation
 
-You can install cum on your system by executing `python setup.py install`. You can also execute the `cum.py` file directly, but it's not nearly as nice to use as the installed version.
+You can install cum on your system by executing `python setup.py install`. You can also execute the `cum.py` file directly, but it's not nearly as nice to use as the installed version. Please note that cum only supports Python 3.x at the moment.
 
 Users of Arch Linux can install stable versions [from the AUR](https://aur.archlinux.org/packages/cum/).
 
