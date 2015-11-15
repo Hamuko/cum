@@ -2,6 +2,7 @@
 from cum import output
 from cum.config import config
 import click
+import requests
 
 
 def list_new():
@@ -272,8 +273,13 @@ def update():
     query = db.session.query(db.Series).filter_by(following=True).all()
     output.series('Updating {} series'.format(len(query)))
     for follow in query:
-        series = series_by_url(follow.url)
-        series.update()
+        try:
+            series = series_by_url(follow.url)
+        except requests.exceptions.ConnectionError as e:
+            output.warning('Unable to update {} (connection error)'
+                           .format(follow.alias))
+        else:
+            series.update()
     list_new()
 
 
