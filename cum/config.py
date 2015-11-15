@@ -12,8 +12,6 @@ config_path = os.path.join(cum_dir, 'config.json')
 
 
 class BaseConfig(object):
-    """docstring for Config"""
-
     def __init__(self):
         self.load()
         self.write()
@@ -84,7 +82,6 @@ class BatotoConfig(object):
     def login_cookies(self):
         if not (self.cookie and self.member_id and self.pass_hash):
             self.login()
-        return {'session_id': self.cookie}
         return {'session_id': self.cookie,
                 'member_id': self.member_id,
                 'pass_hash': self.pass_hash}
