@@ -102,6 +102,9 @@ def follow(urls, download, ignore):
     chapters = []
     for url in urls:
         series = series_by_url(url)
+        if not series:
+            output.warning('Invalid URL "{}"'.format(url))
+            continue
         if ignore:
             series.follow(ignore=True)
             output.chapter('Ignoring {} chapters'.format(len(series.chapters)))
@@ -141,19 +144,29 @@ def get(input):
     in case of alias:chapter, so it can be used to download one-shots that
     don't require follows or for redownloading already downloaded chapters.
     """
+    chapter_list = []
     for i in input:
+        series = series_by_url(i)
+        if series:
+            chapter_list += series.chapters
         chapter = chapter_by_url(i)
-        if not chapter:
-            a, c = i.split(':')
-            chapters = (db.session.query(db.Chapter)
-                        .join(db.Series)
-                        .filter(db.Series.alias == a,
-                                db.Chapter.chapter == c)
-                        .all())
-            for chapter in chapters:
-                chapter.to_object().get(use_db=False)
-        else:
-            chapter.get(use_db=False)
+        if chapter:
+            chapter_list.append(chapter)
+        if not series or chapter:
+            try:
+                a, c = i.split(':')
+            except ValueError:
+                output.warning('Invalid selection "{}"'.format(i))
+            else:
+                chapters = (db.session.query(db.Chapter)
+                            .join(db.Series)
+                            .filter(db.Series.alias == a,
+                                    db.Chapter.chapter == c)
+                            .all())
+                for chapter in chapters:
+                    chapter_list.append(chapter.to_object())
+    for chapter in chapter_list:
+        chapter.get(use_db=False)
 
 
 @cli.command()
