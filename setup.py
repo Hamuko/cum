@@ -16,7 +16,7 @@ if sys.version_info[0] < 3:
 
 setup(
     name='cum',
-    version='0.2.1',
+    version='0.3',
     packages=find_packages(),
     py_modules=['cum'],
     install_requires=[
