@@ -125,7 +125,7 @@ class BaseChapter(metaclass=ABCMeta):
 
     @property
     def filename(self):
-        keepcharacters = [' ', '.', '-', '[', ']', '/', "'"]
+        keepcharacters = [' ', '.', '-', '_', '[', ']', '/', "'"]
 
         name = self.name.replace('/', '')
 
