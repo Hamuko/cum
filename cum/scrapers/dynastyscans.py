@@ -1,9 +1,10 @@
 from bs4 import BeautifulSoup
 from cum.config import config
-from cum.scrapers.base import BaseChapter, BaseSeries
-from mimetypes import guess_extension
+from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
+from functools import partial
 from tempfile import NamedTemporaryFile
 from urllib.parse import urljoin
+import concurrent.futures
 import re
 import requests
 
@@ -59,19 +60,17 @@ class DynastyScansChapter(BaseChapter):
     def download(self):
         r = requests.get(self.url)
         pages = re.findall(r'"image":"(.*?)"', r.text)
-        files = []
+        files = [None] * len(pages)
+        futures = []
         with self.progress_bar(pages) as bar:
-            for page in bar:
+            for i, page in enumerate(pages):
                 r = requests.get(urljoin(self.url, page), stream=True)
-                ext = guess_extension(r.headers.get('content-type'))
-                f = NamedTemporaryFile(suffix=ext)
-                for chunk in r.iter_content(chunk_size=4096):
-                    if chunk:
-                        f.write(chunk)
-                f.flush()
-                files.append(f)
-
-        self.create_zip(files)
+                fut = download_pool.submit(self.page_download_task, i, r)
+                fut.add_done_callback(partial(self.page_download_finish,
+                                              bar, files))
+                futures.append(fut)
+            concurrent.futures.wait(futures)
+            self.create_zip(files)
 
     def from_url(url):
         r = requests.get(url)
