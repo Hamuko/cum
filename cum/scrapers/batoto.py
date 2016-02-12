@@ -1,9 +1,10 @@
 from bs4 import BeautifulSoup
 from cum import output
 from cum.config import config
-from cum.scrapers.base import BaseChapter, BaseSeries
-from mimetypes import guess_extension, guess_type
-from tempfile import NamedTemporaryFile
+from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
+from functools import partial
+from mimetypes import guess_type
+import concurrent.futures
 import os
 import re
 import requests
@@ -49,6 +50,9 @@ class BatotoChapter(BaseChapter):
     error_re = re.compile(r'ERROR \[10010\]')
     img_path_re = re.compile(
         r'(http://img.bato.to/comics/.*?/img)([0-9]*)(\.[A-Za-z]+)'
+    )
+    ch_img_path_re = re.compile(
+        r'(http://img.bato.to/comics/.*?/ch[0-9]*p)([0-9]*)(\.[A-Za-z]+)'
     )
     next_img_path_re = re.compile(r'img.src = "(.+)";')
     url_re = re.compile(r'https?://bato.to/reader#(.*)')
@@ -122,28 +126,44 @@ class BatotoChapter(BaseChapter):
             next_match = re.search(self.next_img_path_re, r.text)
             if next_match:
                 pages[1] = next_match.group(1)
-        files = []
+        files = [None] * len(pages)
+        futures = []
+        last_image = None
         with self.progress_bar(pages) as bar:
-            for page in bar:
-                if guess_type(page)[0]:
-                    image = page
-                else:
-                    r = self.reader_get(pages.index(page) + 1)
+            for i, page in enumerate(pages):
+                try:
+                    if guess_type(page)[0]:
+                        image = page
+                    else:   # Predict the next URL based on the last URL
+                        for reg in [self.img_path_re, self.ch_img_path_re]:
+                            m = re.match(reg, last_image)
+                            if m:
+                                break
+                        else:
+                            raise ValueError
+                        mg = list(m.groups())
+                        num_digits = len(mg[1])
+                        mg[1] = "{0:0>{digits}}".format(int(mg[1]) + 1,
+                                                        digits=num_digits)
+                        image = "".join(mg)
+                    r = requests.get(image, stream=True)
+                    if r.status_code == 404:
+                        raise ValueError
+                except ValueError:  # If we fail to do prediction, scrape
+                    r = self.reader_get(i + 1)
                     soup = BeautifulSoup(r.text, config.html_parser)
                     image = soup.find('img', id='comic_page').get('src')
                     image2_match = re.search(self.next_img_path_re, r.text)
                     if image2_match:
-                        pages[pages.index(page) + 1] = image2_match.group(1)
-                r = requests.get(image, stream=True)
-                ext = guess_extension(r.headers.get('content-type'))
-                f = NamedTemporaryFile(suffix=ext)
-                for chunk in r.iter_content(chunk_size=4096):
-                    if chunk:
-                        f.write(chunk)
-                f.flush()
-                files.append(f)
-
-        self.create_zip(files)
+                        pages[i + 1] = image2_match.group(1)
+                    r = requests.get(image, stream=True)
+                fut = download_pool.submit(self.page_download_task, i, r)
+                fut.add_done_callback(partial(self.page_download_finish,
+                                              bar, files))
+                futures.append(fut)
+                last_image = image
+            concurrent.futures.wait(futures)
+            self.create_zip(files)
 
     def reader_get(self, page_index):
         return self._reader_get(self.batoto_hash, page_index)

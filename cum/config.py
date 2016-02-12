@@ -29,6 +29,7 @@ class BaseConfig(object):
         self.cbz = j.get('cbz', False)
         self.compact_new = j.get('compact_new', False)
         self.download_directory = j.get('download_directory', home_dir)
+        self.download_threads = j.get('download_threads', 4)
         self.html_parser = j.get('html_parser', 'html.parser')
         self.madokami = MadokamiConfig(self, j.get('madokami', {}))
 

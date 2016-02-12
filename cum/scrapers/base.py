@@ -1,13 +1,20 @@
 from abc import ABCMeta, abstractmethod
+from concurrent.futures import ThreadPoolExecutor
 from cum import db, output
 from cum.config import config
+from functools import partial
+from mimetypes import guess_extension
 from re import match, sub
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
+from tempfile import NamedTemporaryFile
 import click
 import os
 import requests
 import zipfile
+
+
+download_pool = ThreadPoolExecutor(config.download_threads)
 
 
 class BaseSeries(metaclass=ABCMeta):
@@ -218,6 +225,30 @@ class BaseChapter(metaclass=ABCMeta):
         c = db.session.query(db.Chapter).filter_by(url=self.url).one()
         c.downloaded = 0
         db.session.commit()
+
+    @staticmethod
+    def page_download_task(page_num, r):
+        """Saves the response body of a single request, returning the file
+        handle and the passed through number of the page to allow for non-
+        sequential downloads in parallel.
+        """
+        ext = guess_extension(r.headers.get('content-type'))
+        f = NamedTemporaryFile(suffix=ext)
+        for chunk in r.iter_content(chunk_size=4096):
+            if chunk:
+                f.write(chunk)
+        f.flush()
+        return((page_num, f))
+
+    @staticmethod
+    def page_download_finish(bar, files, fs):
+        """Callback functions for page_download_task futures, assigning the
+        resulting filehandles to the right index in the array and updating
+        the progress bar.
+        """
+        index, f = fs.result()
+        files[index] = f
+        bar.update(1)
 
     def progress_bar(self, arg):
         """Returns a pre-configured Click progress bar to use with downloads.
