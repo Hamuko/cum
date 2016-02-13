@@ -1,4 +1,4 @@
-from cum import output
+from cum import output, sanity
 from cum.config import cum_dir
 from natsort import humansorted
 from sqlalchemy import (
@@ -158,6 +158,19 @@ class Group(Base):
     def __str__(self):
         return self.name
 
+
+def test_database():
+    """Runs a database sanity test."""
+    sanity_tester = sanity.DatabaseSanity(Base, engine)
+    sanity_tester.test()
+    if sanity_tester.errors:
+        for error in sanity_tester.errors:
+            err_target, err_msg = str(error).split(' ', 1)
+            message = ' '.join([click.style(err_target, bold=True), err_msg])
+            output.warning(message)
+        output.error('Database has failed sanity check; '
+                     'run `cum repair-db` to repair database')
+        exit(1)
 
 db_path = os.path.join(cum_dir, 'cum.db')
 db_url = sqlalchemy.engine.url.URL('sqlite', database=db_path)
