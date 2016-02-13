@@ -99,6 +99,7 @@ $ cum download school-live
 
 ## Dependencies
 
+* [alembic](https://pypi.python.org/pypi/alembic)
 * [beautifulsoup4](https://pypi.python.org/pypi/beautifulsoup4)
 * [click](https://pypi.python.org/pypi/click/4.0)
 * [natsort](https://pypi.python.org/pypi/natsort/4.0.3)

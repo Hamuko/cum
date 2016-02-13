@@ -20,6 +20,7 @@ setup(
     packages=find_packages(),
     py_modules=['cum'],
     install_requires=[
+        'alembic',
         'beautifulsoup4',
         'Click',
         'natsort',
