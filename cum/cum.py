@@ -1,8 +1,21 @@
 #!/usr/bin/env python3
 from cum import output
 from cum.config import config
+from functools import wraps
 import click
 import requests
+
+
+class CumGroup(click.Group):
+    def command(self, check_db=True, *args, **kwargs):
+        def decorator(f):
+            @wraps(f)
+            def wrapper(*args, **kwargs):
+                if check_db:
+                    db.test_database()
+                return f(*args, **kwargs)
+            return super(CumGroup, self).command(*args, **kwargs)(wrapper)
+        return decorator
 
 
 def list_new():
@@ -27,7 +40,7 @@ def list_new():
                                        width=click.get_terminal_size()[0]))
 
 
-@click.group()
+@click.command(cls=CumGroup)
 def cli():
     global db, chapter_by_url, output, sanity, series_by_url
     from cum import db, output, sanity
@@ -39,7 +52,6 @@ def cli():
 @click.argument('new_alias')
 def alias(alias, new_alias):
     """Assign a new alias to series."""
-    db.test_database()
     s = db.Series.alias_lookup(alias)
     s.alias = new_alias
     try:
@@ -59,7 +71,6 @@ def chapters(alias):
     'i' for ignored and blank for downloaded), the chapter identifier ("chapter
     number") and the possible chapter title and group.
     """
-    db.test_database()
     s = db.Series.alias_lookup(alias)
     if s.chapters:
         click.secho('f  chapter  title [group]', bold=True)
@@ -84,7 +95,6 @@ def download(aliases):
     If an optional alias is specified, the command will only download new
     chapters for that alias.
     """
-    db.test_database()
     chapters = []
     if not aliases:
         chapters = db.Chapter.find_new()
@@ -103,7 +113,6 @@ def download(aliases):
               help='Ignores the chapters for the added follows.')
 def follow(urls, download, ignore):
     """Follow a series."""
-    db.test_database()
     chapters = []
     for url in urls:
         series = series_by_url(url)
@@ -130,7 +139,6 @@ def follows():
     Will list all of the active follows in the database as a list of aliases.
     To find out more information on an alias, use the info command.
     """
-    db.test_database()
     query = (db.session.query(db.Series)
              .filter_by(following=True)
              .order_by(db.Series.alias)
@@ -164,7 +172,6 @@ def get(input):
             except ValueError:
                 output.warning('Invalid selection "{}"'.format(i))
             else:
-                db.test_database()
                 chapters = (db.session.query(db.Chapter)
                             .join(db.Series)
                             .filter(db.Series.alias == a,
@@ -187,7 +194,6 @@ def ignore(alias, chapters):
     ignore all of the chapters for a particular series, use the word "all" in
     place of the chapters.
     """
-    db.test_database()
     s = db.Series.alias_lookup(alias)
     query = db.session.query(db.Chapter).filter(db.Chapter.series == s,
                                                 db.Chapter.downloaded == 0)
@@ -214,7 +220,6 @@ def ignore(alias, chapters):
 @click.argument('alias')
 def open(alias):
     """Open the series URL in a browser."""
-    db.test_database()
     s = db.Series.alias_lookup(alias)
     click.launch(s.url)
 
@@ -222,11 +227,10 @@ def open(alias):
 @cli.command()
 def new():
     """List all new chapters."""
-    db.test_database()
     list_new()
 
 
-@cli.command('repair-db')
+@cli.command(check_db=False, name='repair-db')
 def repair_db():
     """Runs an automated database repair."""
     sanity_tester = sanity.DatabaseSanity(db.Base, db.engine)
@@ -244,7 +248,6 @@ def unfollow(alias):
     downloaded chapters, the series is merely marked as unfollowed in the
     database rather than removed.
     """
-    db.test_database()
     s = db.Series.alias_lookup(alias)
     s.following = False
     db.session.commit()
@@ -262,7 +265,6 @@ def unignore(alias, chapters):
     unignore all of the chapters for a particular series, use the word "all" in
     place of the chapters.
     """
-    db.test_database()
     s = db.Series.alias_lookup(alias)
     query = db.session.query(db.Chapter).filter(db.Chapter.series == s,
                                                 db.Chapter.downloaded == -1)
@@ -290,7 +292,6 @@ def unignore(alias, chapters):
 @cli.command()
 def update():
     """Gather new chapters from followed series."""
-    db.test_database()
     query = db.session.query(db.Series).filter_by(following=True).all()
     output.series('Updating {} series'.format(len(query)))
     for follow in query:
