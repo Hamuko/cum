@@ -1,6 +1,7 @@
 from cum import output, sanity
 from cum.config import cum_dir
 from natsort import humansorted
+from shutil import copyfile
 from sqlalchemy import (
     Boolean,
     Column,
@@ -157,6 +158,13 @@ class Group(Base):
 
     def __str__(self):
         return self.name
+
+
+def backup_database():
+    """Backs up the database file to a file called cum.db.bak."""
+    db_path = os.path.join(cum_dir, 'cum.db')
+    backup_path = os.path.join(cum_dir, 'cum.db.bak')
+    copyfile(db_path, backup_path)
 
 
 def test_database():

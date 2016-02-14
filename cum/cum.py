@@ -235,8 +235,12 @@ def repair_db():
     """Runs an automated database repair."""
     sanity_tester = sanity.DatabaseSanity(db.Base, db.engine)
     sanity_tester.test()
-    for error in sanity_tester.errors:
-        error.fix()
+    if sanity_tester.errors:
+        output.series('Backing up database to cum.db.bak')
+        db.backup_database()
+        output.series('Running database repair')
+        for error in sanity_tester.errors:
+            error.fix()
 
 
 @cli.command()
