@@ -15,9 +15,10 @@ fallback_re = re.compile(r'(.*?)(?:$|\: )(.*)')
 class DynastyScansSeries(BaseSeries):
     url_re = re.compile(r'http://dynasty-scans\.com/series/')
 
-    def __init__(self, url):
+    def __init__(self, url, directory=None):
         r = requests.get(url)
         self.url = url
+        self.directory = directory
         self.soup = BeautifulSoup(r.text, config.html_parser)
         self.chapters = self.get_chapters()
 
@@ -47,13 +48,14 @@ class DynastyScansChapter(BaseChapter):
     uses_pages = True
 
     def __init__(self, name=None, alias=None, chapter=None,
-                 url=None, groups=[], title=None):
+                 url=None, groups=[], title=None, directory=None):
         self.name = name
         self.alias = alias
         self.chapter = chapter
         self.title = title
         self.url = url
         self.groups = groups
+        self.directory = directory
         if not groups:
             self.groups = self.get_groups()
 

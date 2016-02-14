@@ -164,8 +164,12 @@ class BaseChapter(metaclass=ABCMeta):
         else:
             ext = 'zip'
 
-        # Expand ~ to user directory if it's the config.
+        if self.directory:
+            directory = os.path.expanduser(self.directory)
+        else:
+            directory = name
         download_dir = os.path.expanduser(config.download_directory)
+        download_dir = os.path.join(download_dir, directory)
 
         # Format the filename somewhat based on Daiz's manga naming scheme.
         # Remove any '/' characters to prevent the name of the manga splitting
@@ -175,7 +179,7 @@ class BaseChapter(metaclass=ABCMeta):
 
         # Join the path parts and sanitize any unwanted characters that might
         # cause issues with filesystems. Remove repeating whitespaces.
-        target = os.path.join(download_dir, name, filename)
+        target = os.path.join(download_dir, filename)
         target = ''.join([c for c in target if c.isalpha()
                           or c.isdigit() or c in keepcharacters]).rstrip()
         target = sub(' +', ' ', target)

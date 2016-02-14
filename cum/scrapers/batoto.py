@@ -14,9 +14,10 @@ class BatotoSeries(BaseSeries):
     url_re = re.compile(r'https?://bato\.to/comic/_/comics/')
     name_re = re.compile(r'Ch\.([A-Za-z0-9\.\-]*)(?:\: (.*))?')
 
-    def __init__(self, url):
+    def __init__(self, url, directory=None):
         r = requests.get(url, cookies=config.batoto.login_cookies)
         self.url = url
+        self.directory = directory
         self.soup = BeautifulSoup(r.text, config.html_parser)
         self.chapters = self.get_chapters()
 
@@ -59,13 +60,14 @@ class BatotoChapter(BaseChapter):
     uses_pages = True
 
     def __init__(self, name=None, alias=None, chapter=None,
-                 url=None, groups=[], title=None):
+                 url=None, groups=[], title=None, directory=None):
         self.name = name
         self.alias = alias
         self.chapter = chapter
         self.title = title
         self.url = url
         self.groups = groups
+        self.directory = directory
 
     @property
     def batoto_hash(self):

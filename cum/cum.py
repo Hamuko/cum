@@ -107,11 +107,13 @@ def download(aliases):
 
 @cli.command()
 @click.argument('urls', required=True, nargs=-1)
+@click.option('--directory',
+              help='Directory which download the series chapters into.')
 @click.option('--download', is_flag=True,
               help='Downloads the chapters for the added follows.')
 @click.option('--ignore', is_flag=True,
               help='Ignores the chapters for the added follows.')
-def follow(urls, download, ignore):
+def follow(urls, directory, download, ignore):
     """Follow a series."""
     chapters = []
     for url in urls:
@@ -119,6 +121,7 @@ def follow(urls, download, ignore):
         if not series:
             output.warning('Invalid URL "{}"'.format(url))
             continue
+        series.directory = directory
         if ignore:
             series.follow(ignore=True)
             output.chapter('Ignoring {} chapters'.format(len(series.chapters)))
@@ -148,7 +151,9 @@ def follows():
 
 @cli.command()
 @click.argument('input', required=True, nargs=-1)
-def get(input):
+@click.option('--directory',
+              help='Directory which download chapters into.')
+def get(input, directory):
     """Download chapters by URL or by alias:chapter.
 
     The command accepts input as either the chapter of the URL or the
@@ -180,6 +185,7 @@ def get(input):
                 for chapter in chapters:
                     chapter_list.append(chapter.to_object())
     for chapter in chapter_list:
+        chapter.directory = directory
         chapter.get(use_db=False)
 
 

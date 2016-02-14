@@ -13,9 +13,10 @@ name_re = re.compile(r'-? c([0-9-]+).*?(?: \[(.*)\])?\.')
 class MadokamiSeries(BaseSeries):
     url_re = re.compile(r'https://manga\.madokami\.com/Manga/[^.]+$')
 
-    def __init__(self, url):
+    def __init__(self, url, directory=None):
         r = requests.get(url)
         self.url = url
+        self.directory = directory
         self.soup = BeautifulSoup(r.text, config.html_parser)
         self.chapters = self.get_chapters()
 
@@ -63,13 +64,14 @@ class MadokamiChapter(BaseChapter):
     uses_pages = False
 
     def __init__(self, name=None, alias=None, chapter=None,
-                 url=None, groups=[], title=None):
+                 url=None, groups=[], title=None, directory=None):
         self.name = name
         self.alias = alias
         self.chapter = chapter
         self.title = title
         self.url = url
         self.groups = groups
+        self.directory = directory
 
     def from_url(url):
         series_url = re.search(r'(.*manga\.madokami\.com/.*/)', url).group(1)

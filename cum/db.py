@@ -37,6 +37,7 @@ class Series(Base):
     alias = Column(String, unique=True)
     url = Column(String, unique=True)
     following = Column(Boolean, default=True)
+    directory = Column(String)
 
     chapters = relationship("Chapter", backref="series")
 
@@ -44,6 +45,7 @@ class Series(Base):
         self.name = series.name
         self.alias = series.alias
         self.url = series.url
+        self.directory = series.directory
 
     @property
     def ordered_chapters(self):
@@ -133,7 +135,8 @@ class Chapter(Base):
                   'alias': self.series.alias,
                   'chapter': self.chapter,
                   'url': self.url,
-                  'groups': self.groups}
+                  'groups': self.groups,
+                  'directory': self.series.directory}
         if parse.netloc == 'bato.to':
             from cum.scrapers.batoto import BatotoChapter
             return BatotoChapter(**kwargs)
