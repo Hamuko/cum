@@ -52,6 +52,7 @@ class BaseSeries(metaclass=ABCMeta):
             if s.following:
                 output.warning('You are already following this series')
             else:
+                s.directory = self.directory
                 s.following = True
                 db.session.commit()
 
