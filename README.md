@@ -30,6 +30,7 @@ Config is stored at `~/.cum/config.json` and is automatically created with defau
   "cbz": false,  // If true, the archive extension will be .cbz instead of .zip.
   "compact_new": true,  // Uses compact listing mode for `cum new`.
   "download_directory": "/path/to/manga",  // Directory where manga is downloaded.
+  "download_threads": 4,  // Maximum number of concurrent downloads.
   "html_parser": "html.parser",  // HTML parser used by cum.
   "madokami": {
     "password": "" // Password to use with Madokami
