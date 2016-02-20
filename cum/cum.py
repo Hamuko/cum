@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-from cum import output
-from cum.config import config
+from cum import config, output
 from functools import wraps
 import click
 import requests
@@ -27,7 +26,7 @@ def list_new():
             items[chapter.alias] = [chapter.chapter]
 
     for series in sorted(items):
-        if config.compact_new:
+        if config.config.compact_new:
             name = click.style(series, bold=True)
             chapters = '  '.join([x for x in items[series]])
             line = click.wrap_text(' '.join([name, chapters]),
@@ -41,8 +40,11 @@ def list_new():
 
 
 @click.command(cls=CumGroup)
-def cli():
+@click.option('--cum-directory',
+              help='Directory used by cum to store application files.')
+def cli(cum_directory=None):
     global db, chapter_by_url, output, sanity, series_by_url
+    config.initialize(directory=cum_directory)
     from cum import db, output, sanity
     from cum.scrapers import chapter_by_url, series_by_url
 

@@ -4,12 +4,6 @@ import os
 import re
 import requests
 
-home_dir = os.environ['HOME']
-cum_dir = os.path.join(home_dir, '.cum')
-if not os.path.exists(cum_dir):
-    os.mkdir(cum_dir)
-config_path = os.path.join(cum_dir, 'config.json')
-
 
 class BaseConfig(object):
     def __init__(self):
@@ -28,7 +22,8 @@ class BaseConfig(object):
         self.batoto = BatotoConfig(self, j.get('batoto', {}))
         self.cbz = j.get('cbz', False)
         self.compact_new = j.get('compact_new', False)
-        self.download_directory = j.get('download_directory', home_dir)
+        self.download_directory = j.get('download_directory',
+                                        os.environ['HOME'])
         self.download_threads = j.get('download_threads', 4)
         self.html_parser = j.get('html_parser', 'html.parser')
         self.madokami = MadokamiConfig(self, j.get('madokami', {}))
@@ -105,4 +100,17 @@ class MadokamiConfig(object):
             self.password = click.prompt('Madokami password', hide_input=True)
         return (self.username, self.password)
 
-config = BaseConfig()
+
+def initialize(directory=None):
+    """Initializes the cum directory and config file either with specified
+    directory or ~/.cum.
+    """
+    global config, config_path, cum_dir
+    if directory:
+        cum_dir = directory
+    else:
+        cum_dir = os.path.join(os.environ['HOME'], '.cum')
+    if not os.path.exists(cum_dir):
+        os.mkdir(cum_dir)
+    config_path = os.path.join(cum_dir, 'config.json')
+    config = BaseConfig()
