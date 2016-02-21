@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
-from cum import output
-from cum.config import config
+from cum import config, output
 from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
 from functools import partial
 from mimetypes import guess_type
@@ -15,10 +14,10 @@ class BatotoSeries(BaseSeries):
     name_re = re.compile(r'Ch\.([A-Za-z0-9\.\-]*)(?:\: (.*))?')
 
     def __init__(self, url, directory=None):
-        r = requests.get(url, cookies=config.batoto.login_cookies)
+        r = requests.get(url, cookies=config.get().batoto.login_cookies)
         self.url = url
         self.directory = directory
-        self.soup = BeautifulSoup(r.text, config.html_parser)
+        self.soup = BeautifulSoup(r.text, config.get().html_parser)
         self.chapters = self.get_chapters()
 
     @property
@@ -97,7 +96,7 @@ class BatotoChapter(BaseChapter):
     def from_url(url):
         chapter_hash = re.search(BatotoChapter.url_re, url).group(1)
         r = BatotoChapter._reader_get(chapter_hash, 1)
-        soup = BeautifulSoup(r.text, config.html_parser)
+        soup = BeautifulSoup(r.text, config.get().html_parser)
         series_url = soup.find('a', href=BatotoSeries.url_re)['href']
         series = BatotoSeries(series_url)
         for chapter in series.chapters:
@@ -109,7 +108,7 @@ class BatotoChapter(BaseChapter):
             r = self.r
         else:
             r = self.reader_get(1)
-        soup = BeautifulSoup(r.text, config.html_parser)
+        soup = BeautifulSoup(r.text, config.get().html_parser)
         if soup.find('a', href='#{}_1_t'.format(self.batoto_hash)):
             # The chapter uses webtoon layout, meaning all of the images are on
             # the same page.
@@ -153,7 +152,7 @@ class BatotoChapter(BaseChapter):
                         raise ValueError
                 except ValueError:  # If we fail to do prediction, scrape
                     r = self.reader_get(i + 1)
-                    soup = BeautifulSoup(r.text, config.html_parser)
+                    soup = BeautifulSoup(r.text, config.get().html_parser)
                     image = soup.find('img', id='comic_page').get('src')
                     image2_match = re.search(self.next_img_path_re, r.text)
                     if image2_match:
@@ -175,4 +174,4 @@ class BatotoChapter(BaseChapter):
         return requests.get('http://bato.to/areader',
                             params={'id': chapter_hash, 'p': page_index},
                             headers={'Referer': 'http://bato.to/reader'},
-                            cookies=config.batoto.login_cookies)
+                            cookies=config.get().batoto.login_cookies)

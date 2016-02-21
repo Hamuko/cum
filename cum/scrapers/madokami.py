@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
-from cum import output
-from cum.config import config
+from cum import config, output
 from cum.scrapers.base import BaseChapter, BaseSeries
 from urllib.parse import urljoin
 import re
@@ -17,7 +16,7 @@ class MadokamiSeries(BaseSeries):
         r = requests.get(url)
         self.url = url
         self.directory = directory
-        self.soup = BeautifulSoup(r.text, config.html_parser)
+        self.soup = BeautifulSoup(r.text, config.get().html_parser)
         self.chapters = self.get_chapters()
 
     @property
@@ -82,7 +81,7 @@ class MadokamiChapter(BaseChapter):
         return None
 
     def download(self):
-        auth = requests.auth.HTTPBasicAuth(*config.madokami.login)
+        auth = requests.auth.HTTPBasicAuth(*config.get().madokami.login)
         r = requests.get(self.url, auth=auth, stream=True)
         total_length = r.headers.get('content-length')
         if not r.headers.get('content-disposition'):

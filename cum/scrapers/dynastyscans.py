@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from cum.config import config
+from cum import config
 from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
 from functools import partial
 from tempfile import NamedTemporaryFile
@@ -19,7 +19,7 @@ class DynastyScansSeries(BaseSeries):
         r = requests.get(url)
         self.url = url
         self.directory = directory
-        self.soup = BeautifulSoup(r.text, config.html_parser)
+        self.soup = BeautifulSoup(r.text, config.get().html_parser)
         self.chapters = self.get_chapters()
 
     @property
@@ -76,7 +76,7 @@ class DynastyScansChapter(BaseChapter):
 
     def from_url(url):
         r = requests.get(url)
-        soup = BeautifulSoup(r.text, config.html_parser)
+        soup = BeautifulSoup(r.text, config.get().html_parser)
         series_url = urljoin(url,
                              soup.find('h3', id='chapter-title').a['href'])
         try:
@@ -92,7 +92,7 @@ class DynastyScansChapter(BaseChapter):
 
     def get_groups(self):
         r = requests.get(self.url)
-        soup = BeautifulSoup(r.text, config.html_parser)
+        soup = BeautifulSoup(r.text, config.get().html_parser)
         scanlators = soup.find('span', class_='scanlators')
         if scanlators:
             links = scanlators.find_all('a')
@@ -101,7 +101,7 @@ class DynastyScansChapter(BaseChapter):
         groups = []
         for link in links:
             r = requests.get(urljoin(self.url, link.get('href')))
-            s = BeautifulSoup(r.text, config.html_parser)
+            s = BeautifulSoup(r.text, config.get().html_parser)
             g = s.find('h2', class_='tag-title').b.string
             groups.append(g)
         return groups

@@ -101,11 +101,16 @@ class MadokamiConfig(object):
         return (self.username, self.password)
 
 
+def get():
+    """Returns the active config object."""
+    return _config
+
+
 def initialize(directory=None):
     """Initializes the cum directory and config file either with specified
     directory or ~/.cum.
     """
-    global config, config_path, cum_dir
+    global _config, config_path, cum_dir
     if directory:
         cum_dir = directory
     else:
@@ -113,4 +118,4 @@ def initialize(directory=None):
     if not os.path.exists(cum_dir):
         os.mkdir(cum_dir)
     config_path = os.path.join(cum_dir, 'config.json')
-    config = BaseConfig()
+    _config = BaseConfig()

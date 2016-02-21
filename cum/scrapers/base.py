@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
-from cum import db, output
-from cum.config import config
+from cum import config, db, output
 from functools import partial
 from mimetypes import guess_extension
 from re import match, sub
@@ -14,7 +13,7 @@ import requests
 import zipfile
 
 
-download_pool = ThreadPoolExecutor(config.download_threads)
+download_pool = ThreadPoolExecutor(config.get().download_threads)
 
 
 class BaseSeries(metaclass=ABCMeta):
@@ -160,7 +159,7 @@ class BaseChapter(metaclass=ABCMeta):
         else:
             group = '[Unknown]'
 
-        if config.cbz:
+        if config.get().cbz:
             ext = 'cbz'
         else:
             ext = 'zip'
@@ -169,7 +168,7 @@ class BaseChapter(metaclass=ABCMeta):
             directory = os.path.expanduser(self.directory)
         else:
             directory = name
-        download_dir = os.path.expanduser(config.download_directory)
+        download_dir = os.path.expanduser(config.get().download_directory)
         download_dir = os.path.join(download_dir, directory)
 
         # Format the filename somewhat based on Daiz's manga naming scheme.

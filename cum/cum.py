@@ -26,7 +26,7 @@ def list_new():
             items[chapter.alias] = [chapter.chapter]
 
     for series in sorted(items):
-        if config.config.compact_new:
+        if config.get().compact_new:
             name = click.style(series, bold=True)
             chapters = '  '.join([x for x in items[series]])
             line = click.wrap_text(' '.join([name, chapters]),
