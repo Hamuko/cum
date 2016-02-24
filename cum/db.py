@@ -1,5 +1,4 @@
-from cum import output, sanity
-from cum.config import cum_dir
+from cum import config, output, sanity
 from natsort import humansorted
 from shutil import copyfile
 from sqlalchemy import (
@@ -170,6 +169,17 @@ def backup_database():
     copyfile(db_path, backup_path)
 
 
+def initialize():
+    global db_path, engine, session
+    db_path = os.path.join(config.cum_dir, 'cum.db')
+    db_url = sqlalchemy.engine.url.URL('sqlite', database=db_path)
+    engine = create_engine(db_url)
+    if not os.path.exists(db_path):
+        Base.metadata.create_all(bind=engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+
 def test_database():
     """Runs a database sanity test."""
     sanity_tester = sanity.DatabaseSanity(Base, engine)
@@ -182,11 +192,3 @@ def test_database():
         output.error('Database has failed sanity check; '
                      'run `cum repair-db` to repair database')
         exit(1)
-
-db_path = os.path.join(cum_dir, 'cum.db')
-db_url = sqlalchemy.engine.url.URL('sqlite', database=db_path)
-engine = create_engine(db_url)
-if not os.path.exists(db_path):
-    Base.metadata.create_all(bind=engine)
-Session = sessionmaker(bind=engine)
-session = Session()

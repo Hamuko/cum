@@ -47,6 +47,7 @@ def cli(cum_directory=None):
     config.initialize(directory=cum_directory)
     from cum import db, output, sanity
     from cum.scrapers import chapter_by_url, series_by_url
+    db.initialize()
 
 
 @cli.command()
