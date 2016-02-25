@@ -164,8 +164,8 @@ class Group(Base):
 
 def backup_database():
     """Backs up the database file to a file called cum.db.bak."""
-    db_path = os.path.join(cum_dir, 'cum.db')
-    backup_path = os.path.join(cum_dir, 'cum.db.bak')
+    db_path = os.path.join(config.cum_dir, 'cum.db')
+    backup_path = os.path.join(config.cum_dir, 'cum.db.bak')
     copyfile(db_path, backup_path)
 
 
