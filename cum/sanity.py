@@ -104,8 +104,6 @@ class DatabaseSanity(object):
         table is missing, a MissingTable object is added to the error list.
         """
         for name, class_ in self.model_tables:
-            if isinstance(class_, _ModuleMarker):
-                continue
             table = class_.__tablename__
             if table not in self.database_tables:
                 self.errors.append(MissingTable(table, parent=self))
