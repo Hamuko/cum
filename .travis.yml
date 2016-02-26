@@ -1,15 +1,20 @@
 language: python
 python:
-- '3.3'
-- '3.4'
-- '3.5'
-install: python setup.py install
-script: python tests/test.py
+  - '3.3'
+  - '3.4'
+  - '3.5'
+install:
+  - python setup.py install
+  - pip install -r test_requirements.txt
+script: coverage run --source=cum tests/test.py
 notifications:
   irc:
     channels:
       - "irc.rizon.net#cu"
     skip_join: true
+    nick: buildslut
+after_success:
+  - coveralls
 env:
   global:
   - secure: 9mAn+2A30iuIIAsh+T1K34tUzKwIk0sz7CV1ookzMuOzTApsvGqPxKL9DO64MzIvVYjHajF/XQgqo9UcUq39p7bUItER882knAh6Ppsq6HUtpj3sv5/ItP1xmqMVlnI5yLBcQBZAEl8L5MWoFyfYfVwv82KzPn3imWcBrGm/6jT6OBq/cyLVG0n0s47ZcL2yLGsUXP9nPajmo2Pfye9tsqmr2+B7nLqY3LPE2c77LhsC1FH2yY0urv+HTmj6fC7xb+3xGliAYOXiEUcb7RXJojEwsACB0yzP3WDMEKlTFH9XarlmqmPuDpek5g3VCDURpsD1wv6pwna7+0i/zhzKqWy93l98vTgGmZMuNkW+qhnbEZ94UaPuoiMad6ICX8X4BDDj8ficNGcAoQFBH1eneKwk5uBsYo4LkA3vB2Mx3daP9rFXtaX1gDE25zIBOZXjAPimWeUyPtMPxtR3XvGD9jY6CIBC+IPlgxn7h+ufznmKqDM/0RmTtraDyuHBqz1BEGct8CvzZNnOepZHArk896AVTlKcfQK/TBo+IrvFUzA3f0ac1yfbBp+bgIBijF4TEWqUH3UFRQSLaxSzDTMB3OVEFt7qEJE3IIYVLlz7OYqKH12hPA7LIMgnPQQri4dCe3fzKosyKFWvg4dZxhYNKTNaqsFHe+sSiz378SBxuBo=
