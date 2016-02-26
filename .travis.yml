@@ -5,7 +5,7 @@ python:
 - '3.4'
 - '3.5'
 - nightly
-install: python install setup.py
+install: python setup.py install
 script: python tests/test.py
 env:
   global:
