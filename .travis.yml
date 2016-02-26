@@ -6,7 +6,9 @@ python:
 install:
   - python setup.py install
   - pip install -r test_requirements.txt
-script: coverage run --source=cum tests/test.py
+script:
+  - cd tests
+  - coverage run --source=cum test.py
 notifications:
   irc:
     channels:
