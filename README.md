@@ -1,7 +1,7 @@
 # cum
 
 [![Build Status](https://travis-ci.org/Hamuko/cum.svg?branch=master)](https://travis-ci.org/Hamuko/cum)
-[![Coverage Status](https://coveralls.io/repos/github/Hamuko/cum/badge.svg?branch=master)](https://coveralls.io/github/Hamuko/cum?branch=master)
+[![codecov.io](https://codecov.io/github/Hamuko/cum/coverage.svg?branch=master)](https://codecov.io/github/Hamuko/cum?branch=master)
 
 comic updater, mangafied
 
