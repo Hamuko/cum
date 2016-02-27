@@ -81,6 +81,13 @@ class TestCLI(unittest.TestCase):
         for message in MESSAGES:
             assert message in result.output
 
+    def test_chapters_invalid_alias(self):
+        MESSAGE = 'Could not find alias "invalidalias"'
+
+        result = self.invoke('chapters', 'invalidalias')
+        assert result.exit_code == 1
+        assert MESSAGE in result.output
+
     def test_download(self):
         URLS = ['http://bato.to/comic/_/comics/goodbye-body-r13725',
                 'http://bato.to/comic/_/comics/green-beans-r15344']
@@ -119,11 +126,30 @@ class TestCLI(unittest.TestCase):
         assert os.path.isfile(os.path.join(self.directory.name,
                                            FILENAME)) is True
 
+    def test_download_removed(self):
+        URL = 'http://bato.to/comic/_/comics/tomo-chan-wa-onna-no-ko-r15722'
+        CHAPTER_URL = 'http://bato.to/reader#ba173e587bdc9325'
+        MESSAGE = 'Removing Tomo-chan wa Onna no ko! 210: missing from remote'
+
+        series = scrapers.BatotoSeries(URL)
+        series.follow(ignore=True)
+        chapter = db.session.query(db.Chapter).first()
+        chapter.chapter = '210'
+        chapter.downloaded = 0
+        chapter.url = CHAPTER_URL
+        db.session.commit()
+
+        result = self.invoke('download')
+        chapters = (db.session.query(db.Chapter)
+                      .filter_by(url=CHAPTER_URL)
+                      .all())
+        assert len(chapters) == 0
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
+
     def test_follow_batoto(self):
         URL = 'http://bato.to/comic/_/comics/akuma-no-riddle-r9759'
         MESSAGE = 'Adding follow for Akuma no Riddle (akuma-no-riddle)'
-
-        series = scrapers.series_by_url('http://www.google.com')
 
         result = self.invoke('follow', URL)
         assert result.exit_code == 0
@@ -173,6 +199,28 @@ class TestCLI(unittest.TestCase):
             assert message in result.output
         for chapter in chapters:
             assert chapter.downloaded == -1
+
+    def test_follow_batoto_refollow_with_directory(self):
+        URL = 'http://bato.to/comic/_/comics/dog-days-r6928'
+        DIRECTORY1 = 'olddirectory'
+        DIRECTORY2 = 'newdirectory'
+
+        result = self.invoke('follow', '--directory', DIRECTORY1, URL)
+        series = db.session.query(db.Series).one()
+        assert result.exit_code == 0
+        assert series.following is True
+        assert series.directory == DIRECTORY1
+
+        result = self.invoke('unfollow', 'dog-days')
+        series = db.session.query(db.Series).one()
+        assert result.exit_code == 0
+        assert series.following is False
+
+        result = self.invoke('follow', '--directory', DIRECTORY2, URL)
+        series = db.session.query(db.Series).one()
+        assert result.exit_code == 0
+        assert series.following is True
+        assert series.directory == DIRECTORY2
 
     def test_follow_dynastyscans(self):
         URL = 'http://dynasty-scans.com/series/akuma_no_riddle'
@@ -244,6 +292,49 @@ class TestCLI(unittest.TestCase):
         assert result.exit_code == 0
         assert MESSAGE in result.output
         assert os.path.isfile(path) is True
+
+    def test_get_chapter_batoto_directory(self):
+        URL = 'http://bato.to/reader#f0fbe77dbcc60780'
+        DIRECTORY = 'oneshots'
+
+        path = os.path.join(self.directory.name, DIRECTORY,
+                            'Hot Cherry - c000 [Translated Treasures].zip')
+        result = self.invoke('get', '--directory', DIRECTORY, URL)
+        assert result.exit_code == 0
+        assert os.path.isfile(path) is True
+
+    def test_get_chapter_batoto_invalid_login(self):
+        URL = 'http://bato.to/reader#f0fbe77dbcc60780'
+        MESSAGES = ['Batoto username:',
+                    'Batoto password:',
+                    'Batoto: invalid login']
+
+        config.get().batoto.username = None
+        config.get().batoto.password = None
+        config.get().write()
+
+        result = self.invoke('get', URL, input='a\na')
+        assert result.exit_code == 1
+        for message in MESSAGES:
+            assert message in result.output
+
+    def test_get_chapter_madokami_invalid_login(self):
+        URL = ('https://manga.madokami.com/Manga/Oneshots/12-ji%20no%20Kane%20'
+               'ga%20Naru/12%20O%27Clock%20Bell%20Rings%20%5BKISHIMOTO%20'
+               'Seishi%5D%20-%20000%20%5BOneshot%5D%20%5BTurtle%20Paradise%5D'
+               '.zip')
+        MESSAGES = ['Madokami username:',
+                    'Madokami password:',
+                    'Madokami: invalid login']
+
+        config.get().madokami.username = None
+        config.get().madokami.password = None
+        config.get().write()
+
+        result = self.invoke('get', URL, input='a\na')
+        assert result.exit_code == 1
+        for message in MESSAGES:
+            assert message in result.output
 
     def test_get_series_batoto(self):
         URL = 'http://bato.to/comic/_/comics/gekkou-spice-r2863'

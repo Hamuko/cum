@@ -1,6 +1,6 @@
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
-from cum import config
+from cum import config, exceptions
 import os
 import requests
 import tempfile
@@ -55,8 +55,32 @@ class TestBatoto(unittest.TestCase):
     def test_chapter_download_latest(self):
         latest_releases = self.get_five_latest_releases()
         for release in latest_releases:
-            chapter = batoto.BatotoChapter.from_url(release)
-            chapter.get(use_db=False)
+            try:
+                chapter = batoto.BatotoChapter.from_url(release)
+            except exceptions.ScrapingError:
+                continue
+            else:
+                chapter.get(use_db=False)
+
+    def test_chapter_filename_decimal(self):
+        URL = 'http://bato.to/reader#ecd20142e8159ad0'
+        chapter = batoto.BatotoChapter.from_url(URL)
+        path = os.path.join(
+            self.directory.name, 'Grape Pine',
+            'Grape Pine - c005 x2 [Angelic Miracle Scanlations].zip'
+        )
+        assert chapter.chapter == '5.2'
+        assert chapter.filename == path
+
+    def test_chapter_filename_version2(self):
+        URL = 'http://bato.to/reader#619ea101f703ecb2'
+        chapter = batoto.BatotoChapter.from_url(URL)
+        path = os.path.join(
+            self.directory.name, 'Hitorimi Haduki-san to.',
+            'Hitorimi Haduki-san to. - c005 [Ciel Scans].zip'
+        )
+        assert chapter.chapter == '5v2'
+        assert chapter.filename == path
 
     def test_chapter_information_bakuon(self):
         URL = 'http://bato.to/reader#eb862784d9eff2be'
@@ -77,6 +101,26 @@ class TestBatoto(unittest.TestCase):
         with zipfile.ZipFile(path) as chapter_zip:
             files = chapter_zip.infolist()
             assert len(files) == 37
+
+    def test_chapter_information_rotte_no_omocha(self):
+        URL = 'http://bato.to/reader#d647e1267a7c2c54'
+        chapter = batoto.BatotoChapter.from_url(URL)
+        assert chapter.alias == 'rotte-no-omocha'
+        assert chapter.batoto_hash == 'd647e1267a7c2c54'
+        assert chapter.chapter == '1'
+        assert chapter.groups == ['Facepalm Scans']
+        assert chapter.name == 'Rotte no Omocha!'
+        assert chapter.title == '"A Candidate for the Princess\'s Harem!?"'
+        path = os.path.join(
+            self.directory.name, 'Rotte no Omocha',
+            'Rotte no Omocha - c001 [Facepalm Scans].zip'
+        )
+        assert chapter.filename == path
+        chapter.download()
+        assert os.path.isfile(path) is True
+        with zipfile.ZipFile(path) as chapter_zip:
+            files = chapter_zip.infolist()
+            assert len(files) == 38
 
     def test_chapter_information_tomochan(self):
         URL = 'http://bato.to/reader#cf03b01bd9e90ba8'

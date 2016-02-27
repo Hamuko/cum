@@ -1,0 +1,19 @@
+[run]
+source =
+    cum
+
+omit =
+    */cum/exceptions.py
+
+[report]
+exclude_lines =
+    # Ignore database rollbacks.
+    db.session.rollback()
+
+    # Ignore ScrapingErrors as they are hard to produce in testing.
+    except exceptions.ScrapingError
+    raise exceptions.ScrapingError
+
+    # Ignore code that is unreachable in testing.
+    cum_dir = os.path.join(os.environ['HOME'], '.cum') 
+    if __name__ == '__main__':

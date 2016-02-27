@@ -36,6 +36,18 @@ class TestMadokami(unittest.TestCase):
             assert chapter.directory is None
         assert len(data['chapters']) == 0
 
+    def test_chapter_filename_no_group(self):
+        URL = ('https://manga.madokami.com/Manga/_/__/__DA/7-Daime%20no%20'
+               'Tomari%21/7-Daime%20no%20Tomari%21%20v01%20c01.zip')
+        chapter = madokami.MadokamiChapter.from_url(URL)
+        assert chapter.chapter == '01'
+        assert len(chapter.groups) == 0
+        path = os.path.join(
+            self.directory.name, '7-Daime no Tomari',
+            '7-Daime no Tomari - c001 [Unknown].zip'
+        )
+        assert chapter.filename == path
+
     def test_chapter_100_dollar_too_cheap(self):
         URL = ('https://manga.madokami.com/Manga/Oneshots/100%20Dollar%20wa%20'
                'Yasu%20Sugiru/100%24%20is%20Too%20Cheap%20%5BYAMAMOTO%20Kazune'
