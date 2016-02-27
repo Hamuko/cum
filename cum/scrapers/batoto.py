@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from cum import config, output
+from cum import config, exceptions, output
 from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
 from functools import partial
 from mimetypes import guess_type
@@ -97,7 +97,10 @@ class BatotoChapter(BaseChapter):
         chapter_hash = re.search(BatotoChapter.url_re, url).group(1)
         r = BatotoChapter._reader_get(chapter_hash, 1)
         soup = BeautifulSoup(r.text, config.get().html_parser)
-        series_url = soup.find('a', href=BatotoSeries.url_re)['href']
+        try:
+            series_url = soup.find('a', href=BatotoSeries.url_re)['href']
+        except TypeError:
+            raise exceptions.ScrapingError('Chapter has no parent series link')
         series = BatotoSeries(series_url)
         for chapter in series.chapters:
             if chapter.url == url:

@@ -46,7 +46,7 @@ def cli(cum_directory=None):
     global db, chapter_by_url, output, sanity, series_by_url
     config.initialize(directory=cum_directory)
     from cum import db, output, sanity
-    from cum.scrapers import chapter_by_url, series_by_url
+    from cum.utility import chapter_by_url, series_by_url
     db.initialize()
 
 
