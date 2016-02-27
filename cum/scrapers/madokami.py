@@ -85,7 +85,7 @@ class MadokamiChapter(BaseChapter):
         r = requests.get(self.url, auth=auth, stream=True)
         total_length = r.headers.get('content-length')
         if not r.headers.get('content-disposition'):
-            output.error('Invalid login')
+            output.error('Madokami: invalid login')
             exit(1)
 
         with open(self.filename, 'wb') as f:

@@ -1,3 +1,4 @@
+from cum import output
 import click
 import json
 import os
@@ -69,9 +70,13 @@ class BatotoConfig(object):
                 'ips_password': password,
                 'rememberMe': 1}
         r = requests.post(self.forum_url, params=self.login_query, data=data)
-        self.cookie = r.cookies['session_id']
-        self.member_id = r.cookies['member_id']
-        self.pass_hash = r.cookies['pass_hash']
+        try:
+            self.cookie = r.cookies['session_id']
+            self.member_id = r.cookies['member_id']
+            self.pass_hash = r.cookies['pass_hash']
+        except KeyError:
+            output.error('Batoto: invalid login')
+            exit(1)
         self._config.write()
 
     @property
