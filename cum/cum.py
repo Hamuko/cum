@@ -328,7 +328,8 @@ def update():
         fut = pool.submit(series_by_url, follow.url)
         futures.append(fut)
         aliases[fut] = follow.alias
-    with click.progressbar(length=len(futures), show_pos=True) as bar:
+    with click.progressbar(length=len(futures), show_pos=True,
+                           fill_char='>', empty_char=' ') as bar:
         for future in concurrent.futures.as_completed(futures):
             try:
                 series = future.result()
