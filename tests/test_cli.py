@@ -493,13 +493,19 @@ class TestCLI(unittest.TestCase):
             assert chapter.downloaded == 0
 
     def test_update(self):
-        URL = 'http://bato.to/comic/_/comics/femme-fatale-r468'
-        MESSAGES = ['Updating 1 series',
-                    'femme-fatale',
-                    '1  2  3  4  4.5  5  6  7  8  8.5  9  10  11  12']
+        URLS = ['http://bato.to/comic/_/comics/femme-fatale-r468',
+                'http://bato.to/comic/_/comics/houkago-r9187']
+        MESSAGES = [
+            'Updating 2 series',
+            'femme-fatale 1  2  3  4  4.5  5  6  7  8  8.5  9  10  11  12',
+            'houkago 1  2'
+        ]
 
-        series = scrapers.BatotoSeries(URL)
-        series.follow()
+        config.get().compact_new = True
+        config.get().write()
+        for url in URLS:
+            series = scrapers.BatotoSeries(url)
+            series.follow()
         chapters = db.session.query(db.Chapter).all()
         for chapter in chapters:
             db.session.delete(chapter)
@@ -512,7 +518,7 @@ class TestCLI(unittest.TestCase):
         assert result.exit_code == 0
         for message in MESSAGES:
             assert message in result.output
-        assert len(chapters) == 14
+        assert len(chapters) == 16
 
 if __name__ == '__main__':
     unittest.main()
