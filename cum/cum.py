@@ -2,6 +2,8 @@
 from cum import config, exceptions, output
 from functools import wraps
 import click
+import concurrent.futures
+import requests
 
 
 class CumGroup(click.Group):
@@ -316,19 +318,31 @@ def unignore(alias, chapters):
 @cli.command()
 def update():
     """Gather new chapters from followed series."""
+    pool = concurrent.futures.ThreadPoolExecutor(config.get().download_threads)
+    futures = []
+    warnings = []
+    aliases = {}
     query = db.session.query(db.Series).filter_by(following=True).all()
     output.series('Updating {} series'.format(len(query)))
     for follow in query:
-        try:
-            series = series_by_url(follow.url)
-        except exceptions.ConnectionError:
-            output.warning('Unable to update {} (connection error)'
-                           .format(follow.alias))
-        except exceptions.ScrapingError:
-            output.warning('Unable to update {} (scraping error)'
-                           .format(follow.alias))
-        else:
-            series.update()
+        fut = pool.submit(series_by_url, follow.url)
+        futures.append(fut)
+        aliases[fut] = follow.alias
+    with click.progressbar(length=len(futures), show_pos=True) as bar:
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                series = future.result()
+            except requests.exceptions.ConnectionError as e:
+                warnings.append('Unable to update {} (connection error)'
+                                .format(aliases[future]))
+            except exceptions.ScrapingError:
+                warnings.append('Unable to update {} (scraping error)'
+                                .format(follow.alias))
+            else:
+                series.update()
+            bar.update(1)
+    for w in warnings:
+        output.warning(w)
     list_new()
 
 
