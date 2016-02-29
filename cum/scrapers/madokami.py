@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from cum import config, output
+from cum import config, exceptions, output
 from cum.scrapers.base import BaseChapter, BaseSeries
 from urllib.parse import urljoin
 import re
@@ -24,9 +24,12 @@ class MadokamiSeries(BaseSeries):
         return self.soup.find('span', class_='title').string
 
     def get_chapters(self):
-        rows = (self.soup
-                .find('table', class_='mobile-files-table')
-                .find_all('tr'))
+        try:
+            rows = (self.soup
+                    .find('table', class_='mobile-files-table')
+                    .find_all('tr'))
+        except AttributeError:
+            raise exceptions.ScrapingError()
         chapters = []
         for row in rows[1:]:
             # If the Read link cannot be found in the current row, the row is

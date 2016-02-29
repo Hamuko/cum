@@ -9,11 +9,7 @@ def chapter_by_url(url):
     """
     for Chapter in chapter_scrapers:
         if re.match(Chapter.url_re, url):
-            try:
-                return Chapter.from_url(url)
-            except exceptions.ScrapingError as error:
-                output.warning('Scraping error ({})'.format(error.message))
-                return None
+            return Chapter.from_url(url)
 
 
 def series_by_url(url):

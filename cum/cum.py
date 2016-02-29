@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-from cum import config, output
+from cum import config, exceptions, output
 from functools import wraps
 import click
-import requests
 
 
 class CumGroup(click.Group):
@@ -120,7 +119,11 @@ def follow(urls, directory, download, ignore):
     """Follow a series."""
     chapters = []
     for url in urls:
-        series = series_by_url(url)
+        try:
+            series = series_by_url(url)
+        except exceptions.ScrapingError:
+            output.warning('Scraping error ({})'.format(url))
+            continue
         if not series:
             output.warning('Invalid URL "{}"'.format(url))
             continue
@@ -168,10 +171,18 @@ def get(input, directory):
     """
     chapter_list = []
     for i in input:
-        series = series_by_url(i)
+        try:
+            series = series_by_url(i)
+        except exceptions.ScrapingError:
+            output.warning('Scraping error ({})'.format(i))
+            continue
         if series:
             chapter_list += series.chapters
-        chapter = chapter_by_url(i)
+        try:
+            chapter = chapter_by_url(i)
+        except exceptions.ScrapingError:
+            output.warning('Scraping error ({})'.format(i))
+            continue
         if chapter:
             chapter_list.append(chapter)
         if not series or chapter:
@@ -310,8 +321,11 @@ def update():
     for follow in query:
         try:
             series = series_by_url(follow.url)
-        except requests.exceptions.ConnectionError as e:
+        except exceptions.ConnectionError:
             output.warning('Unable to update {} (connection error)'
+                           .format(follow.alias))
+        except exceptions.ScrapingError:
+            output.warning('Unable to update {} (scraping error)'
                            .format(follow.alias))
         else:
             series.update()
