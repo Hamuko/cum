@@ -21,7 +21,7 @@ class BaseSeries(metaclass=ABCMeta):
 
     @abstractmethod
     def __init__(self, url):
-        pass
+        raise NotImplementedError
 
     @property
     def alias(self):
@@ -63,13 +63,13 @@ class BaseSeries(metaclass=ABCMeta):
         """Returns a list of objects that represent all of the series' chapters
         and are based on the Chapter class.
         """
-        pass
+        raise NotImplementedError
 
     @property
     @abstractmethod
     def name(self):
         """Returns a string containing the title of the series."""
-        pass
+        raise NotImplementedError
 
     def update(self):
         """Iterates through the currently available chapters and saves them in
@@ -87,7 +87,7 @@ class BaseChapter(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, name=None, alias=None, chapter=None,
                  url=None, groups=[], title=None):
-        pass
+        raise NotImplementedError
 
     def available(self):
         """Checks if chapter URL returns HTTP 404 or not, and returns a boolean
@@ -128,7 +128,7 @@ class BaseChapter(metaclass=ABCMeta):
         """Method that downloads the chapter and saves it in the appropriate
         directory as one archive file.
         """
-        pass
+        raise NotImplementedError
 
     @property
     def filename(self):
@@ -195,7 +195,7 @@ class BaseChapter(metaclass=ABCMeta):
     @abstractmethod
     def from_url(url):
         """Method to initialize a Chapter object from the chapter URL."""
-        pass
+        raise NotImplementedError
 
     def get(self, use_db=True):
         """Downloads the chapter if it is available.

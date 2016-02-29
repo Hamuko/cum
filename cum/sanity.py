@@ -115,12 +115,12 @@ class SanityError(metaclass=ABCMeta):
     @abstractmethod
     def __str__():
         """Returns an error message that can be displayed to the user."""
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def fix(self):
         """Does appropriate changes to the database to rectify the issue."""
-        pass
+        raise NotImplementedError
 
 
 class DatatypeMismatch(SanityError):

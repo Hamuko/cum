@@ -10,10 +10,15 @@ exclude_lines =
     # Ignore database rollbacks.
     db.session.rollback()
 
-    # Ignore ScrapingErrors as they are hard to produce in testing.
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    # Ignore ConnectionErrors and ScrapingErrors as they are hard to produce in testing.
+    except exceptions.ConnectionError
     except exceptions.ScrapingError
     raise exceptions.ScrapingError
 
     # Ignore code that is unreachable in testing.
-    cum_dir = os.path.join(os.environ['HOME'], '.cum') 
+    cum_dir = os\.path\.join\(os\.environ\['HOME'\], '\.cum'\)
     if __name__ == '__main__':
