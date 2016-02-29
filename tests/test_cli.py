@@ -307,14 +307,13 @@ class TestCLI(unittest.TestCase):
         URL = 'http://bato.to/reader#f0fbe77dbcc60780'
         MESSAGES = ['Batoto username:',
                     'Batoto password:',
-                    'Batoto: invalid login']
+                    'Invalid Bato.to login']
 
         config.get().batoto.username = None
         config.get().batoto.password = None
         config.get().write()
 
         result = self.invoke('get', URL, input='a\na')
-        assert result.exit_code == 1
         for message in MESSAGES:
             assert message in result.output
 
@@ -325,14 +324,13 @@ class TestCLI(unittest.TestCase):
                '.zip')
         MESSAGES = ['Madokami username:',
                     'Madokami password:',
-                    'Madokami: invalid login']
+                    'Invalid Madokami login']
 
         config.get().madokami.username = None
         config.get().madokami.password = None
         config.get().write()
 
         result = self.invoke('get', URL, input='a\na')
-        assert result.exit_code == 1
         for message in MESSAGES:
             assert message in result.output
 

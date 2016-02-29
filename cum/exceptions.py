@@ -13,3 +13,7 @@ class CumException(Exception):
 
 class ScrapingError(CumException):
     pass
+
+
+class LoginError(CumException):
+    pass

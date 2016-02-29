@@ -153,6 +153,23 @@ class TestBatoto(unittest.TestCase):
         chapter = batoto.BatotoChapter(url=URL)
         assert chapter.available() is False
 
+    def test_series_invalid_login(self):
+        URL = 'https://bato.to/comic/_/comics/stretch-r11259'
+        config.get().batoto.password = '12345'
+        config.get().batoto.username = 'KoalaBeer'
+        with self.assertRaises(exceptions.LoginError):
+            series = batoto.BatotoSeries(url=URL)
+
+    def test_series_invalid_login_2(self):
+        URL = 'https://bato.to/comic/_/comics/stretch-r11259'
+        config.get().batoto.password = '12345'
+        config.get().batoto.username = 'KoalaBeer'
+        config.get().batoto.member_id = 'Invalid'
+        config.get().batoto.pass_hash = 'Invalid'
+        config.get().batoto.cookie = 'Invalid'
+        with self.assertRaises(exceptions.LoginError):
+            series = batoto.BatotoSeries(url=URL)
+
     def test_series_molester_man(self):
         data = {'alias': 'molester-man',
                 'chapters': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
