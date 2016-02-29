@@ -1,4 +1,4 @@
-from cum import output
+from cum import exceptions, output
 import click
 import json
 import os
@@ -75,8 +75,7 @@ class BatotoConfig(object):
             self.member_id = r.cookies['member_id']
             self.pass_hash = r.cookies['pass_hash']
         except KeyError:
-            output.error('Batoto: invalid login')
-            exit(1)
+            raise exceptions.LoginError('Invalid Bato.to login')
         self._config.write()
 
     @property

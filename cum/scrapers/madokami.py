@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
-from cum import config, exceptions, output
+from contextlib import closing
+from cum import config, exceptions
 from cum.scrapers.base import BaseChapter, BaseSeries
 from urllib.parse import urljoin
 import re
@@ -85,20 +86,18 @@ class MadokamiChapter(BaseChapter):
 
     def download(self):
         auth = requests.auth.HTTPBasicAuth(*config.get().madokami.login)
-        r = requests.get(self.url, auth=auth, stream=True)
-        total_length = r.headers.get('content-length')
-        if not r.headers.get('content-disposition'):
-            output.error('Madokami: invalid login')
-            exit(1)
-
-        with open(self.filename, 'wb') as f:
-            if total_length is None:
-                f.write(r.content)
-            else:
-                total_length = int(total_length)
-                with self.progress_bar(total_length) as bar:
-                    for chunk in r.iter_content(chunk_size=4096):
-                        if chunk:
-                            bar.update(len(chunk))
-                            f.write(chunk)
-                f.flush()
+        with closing(requests.get(self.url, auth=auth, stream=True)) as r:
+            if r.status_code == 401:
+                raise exceptions.LoginError('Invalid Madokami login')
+            total_length = r.headers.get('content-length')
+            with open(self.filename, 'wb') as f:
+                if total_length is None:
+                    f.write(r.content)
+                else:
+                    total_length = int(total_length)
+                    with self.progress_bar(total_length) as bar:
+                        for chunk in r.iter_content(chunk_size=4096):
+                            if chunk:
+                                bar.update(len(chunk))
+                                f.write(chunk)
+                    f.flush()

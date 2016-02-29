@@ -1,4 +1,4 @@
-from cum import config
+from cum import config, exceptions
 import os
 import tempfile
 import unittest
@@ -47,6 +47,12 @@ class TestMadokami(unittest.TestCase):
             '7-Daime no Tomari - c001 [Unknown].zip'
         )
         assert chapter.filename == path
+
+    def test_chapter_invalid_login(self):
+        config.get().madokami.password = '12345'
+        config.get().madokami.username = 'Koala'
+        with self.assertRaises(exceptions.LoginError):
+            self.test_chapter_100_dollar_too_cheap()
 
     def test_chapter_100_dollar_too_cheap(self):
         URL = ('https://manga.madokami.com/Manga/Oneshots/100%20Dollar%20wa%20'

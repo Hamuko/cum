@@ -25,6 +25,8 @@ class BatotoSeries(BaseSeries):
         return self.soup.find('h1').string.strip()
 
     def get_chapters(self):
+        if self.soup.find('div', id='register_notice'):
+            raise exceptions.LoginError('Invalid Bato.to login')
         rows = self.soup.find_all('tr', class_="row lang_English chapter_row")
         chapters = []
         for row in rows:
