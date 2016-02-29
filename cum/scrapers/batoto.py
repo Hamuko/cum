@@ -152,6 +152,7 @@ class BatotoChapter(BaseChapter):
                         image = "".join(mg)
                     r = requests.get(image, stream=True)
                     if r.status_code == 404:
+                        r.close()
                         raise ValueError
                 except ValueError:  # If we fail to do prediction, scrape
                     r = self.reader_get(i + 1)

@@ -242,6 +242,7 @@ class BaseChapter(metaclass=ABCMeta):
             if chunk:
                 f.write(chunk)
         f.flush()
+        r.close()
         return((page_num, f))
 
     @staticmethod
