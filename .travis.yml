@@ -7,6 +7,7 @@ install:
   - python setup.py install
   - pip install -r test_requirements.txt
 script:
+  - pep8 cum
   - cd tests
   - coverage run test.py
 notifications:

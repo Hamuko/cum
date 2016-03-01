@@ -180,8 +180,8 @@ class BaseChapter(metaclass=ABCMeta):
         # Join the path parts and sanitize any unwanted characters that might
         # cause issues with filesystems. Remove repeating whitespaces.
         target = os.path.join(download_dir, filename)
-        target = ''.join([c for c in target if c.isalpha()
-                          or c.isdigit() or c in keepcharacters]).rstrip()
+        target = ''.join([c for c in target if c.isalpha() or
+                          c.isdigit() or c in keepcharacters]).rstrip()
         target = sub(' +', ' ', target)
 
         # Make sure that the path exists before the filename is returned.

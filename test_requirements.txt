@@ -1,2 +1,3 @@
-coverage
 codecov
+coverage
+pep8
