@@ -109,8 +109,8 @@ def download(aliases):
         try:
             chapter.get()
         except exceptions.LoginError as e:
-            output.warning('Could not download {}: {}'
-                            .format(chapter.name, e.message))
+            output.warning('Could not download {c.alias} {c.chapter}: {e}'
+                           .format(c=chapter, e=e.message))
             continue
 
 
@@ -132,7 +132,7 @@ def follow(urls, directory, download, ignore):
             output.warning('Scraping error ({})'.format(url))
             continue
         except exceptions.LoginError as e:
-            output.warning('Login error ({}): {}'.format(url, e.message))
+            output.warning('{} ({})'.format(e.message, url))
             continue
         if not series:
             output.warning('Invalid URL "{}"'.format(url))
@@ -151,8 +151,8 @@ def follow(urls, directory, download, ignore):
             try:
                 chapter.get()
             except exceptions.LoginError as e:
-                output.warning('Could not download {}: {}'
-                               .format(chapter.alias, e.message))
+                output.warning('Could not download {c.alias} {c.chapter}: {e}'
+                               .format(c=chapter, e=e.message))
                 continue
 
 
@@ -192,7 +192,7 @@ def get(input, directory):
             output.warning('Scraping error ({})'.format(i))
             continue
         except exceptions.LoginError as e:
-            output.warning('Login error ({}): {}'.format(i, e.message))
+            output.warning('{} ({})'.format(e.message, i))
             continue
         if series:
             chapter_list += series.chapters
@@ -202,7 +202,7 @@ def get(input, directory):
             output.warning('Scraping error ({})'.format(i))
             continue
         except exceptions.LoginError as e:
-            output.warning('Login error ({}): {}'.format(i, e.message))
+            output.warning('{} ({})'.format(e.message, i))
             continue
         if chapter:
             chapter_list.append(chapter)
@@ -224,8 +224,8 @@ def get(input, directory):
         try:
             chapter.get(use_db=False)
         except exceptions.LoginError as e:
-            output.warning('Could not download {}: {}'
-                            .format(chapter.name, e.message))
+            output.warning('Could not download {c.alias} {c.chapter}: {e}'
+                           .format(c=chapter, e=e.message))
             continue
 
 
@@ -365,7 +365,7 @@ def update():
                                 .format(aliases[future]))
             except exceptions.LoginError as e:
                 warnings.append('Unable to update {} ({})'
-                                .format(aliases[future], e.message.lower()))
+                                .format(aliases[future], e.message))
             else:
                 series.update()
             bar.update(1)
