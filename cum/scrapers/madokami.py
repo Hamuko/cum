@@ -88,7 +88,7 @@ class MadokamiChapter(BaseChapter):
         auth = requests.auth.HTTPBasicAuth(*config.get().madokami.login)
         with closing(requests.get(self.url, auth=auth, stream=True)) as r:
             if r.status_code == 401:
-                raise exceptions.LoginError('Invalid Madokami login')
+                raise exceptions.LoginError('Madokami login error')
             total_length = r.headers.get('content-length')
             with open(self.filename, 'wb') as f:
                 if total_length is None:

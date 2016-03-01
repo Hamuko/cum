@@ -126,6 +126,22 @@ class TestCLI(unittest.TestCase):
         assert os.path.isfile(os.path.join(self.directory.name,
                                            FILENAME)) is True
 
+    def test_download_invalid_login(self):
+        URL = ('https://manga.madokami.com/Manga/Oneshots/100%20Dollar%20wa%20'
+               'Yasu%20Sugiru')
+        MESSAGE = ('Could not download 100-dollar-wa-yasu-sugiru 000 '
+                   '[Oneshot]: Madokami login error')
+
+        series = scrapers.MadokamiSeries(URL)
+        series.follow()
+        config.get().madokami.password = '12345'
+        config.get().madokami.username = 'KoalaBeer'
+        config.get().write()
+
+        result = self.invoke('download')
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
+
     def test_download_removed(self):
         URL = 'http://bato.to/comic/_/comics/tomo-chan-wa-onna-no-ko-r15722'
         CHAPTER_URL = 'http://bato.to/reader#ba173e587bdc9325'
@@ -200,6 +216,18 @@ class TestCLI(unittest.TestCase):
         for chapter in chapters:
             assert chapter.downloaded == -1
 
+    def test_follow_batoto_invalid_login(self):
+        URL = 'http://bato.to/comic/_/comics/hot-road-r2243'
+        MESSAGE = 'Batoto login error ({})'.format(URL)
+
+        config.get().batoto.password = 'Notvalid'
+        config.get().batoto.username = 'Notvalid'
+        config.get().write()
+
+        result = self.invoke('follow', URL)
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
+
     def test_follow_batoto_refollow_with_directory(self):
         URL = 'http://bato.to/comic/_/comics/dog-days-r6928'
         DIRECTORY1 = 'olddirectory'
@@ -243,6 +271,19 @@ class TestCLI(unittest.TestCase):
         MESSAGE = 'Adding follow for Akuma no Riddle (akuma-no-riddle)'
 
         result = self.invoke('follow', URL)
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
+
+    def test_follow_madokami_download_invalid_login(self):
+        URL = 'https://manga.madokami.com/Manga/A/AK/AKUM/Akuma%20no%20Riddle'
+        MESSAGE = ('Could not download akuma-no-riddle 00-08: '
+                   'Madokami login error')
+
+        config.get().madokami.password = 'notworking'
+        config.get().madokami.username = 'notworking'
+        config.get().write()
+
+        result = self.invoke('follow', URL, '--download')
         assert result.exit_code == 0
         assert MESSAGE in result.output
 
@@ -307,7 +348,7 @@ class TestCLI(unittest.TestCase):
         URL = 'http://bato.to/reader#f0fbe77dbcc60780'
         MESSAGES = ['Batoto username:',
                     'Batoto password:',
-                    'Invalid Batoto login']
+                    'Batoto login error ({})'.format(URL)]
 
         config.get().batoto.username = None
         config.get().batoto.password = None
@@ -324,7 +365,7 @@ class TestCLI(unittest.TestCase):
                '.zip')
         MESSAGES = ['Madokami username:',
                     'Madokami password:',
-                    'Invalid Madokami login']
+                    'Madokami login error']
 
         config.get().madokami.username = None
         config.get().madokami.password = None
@@ -351,6 +392,18 @@ class TestCLI(unittest.TestCase):
             assert message in result.output
         for file in files:
             assert os.path.isfile(file) is True
+
+    def test_get_series_batoto_invalid_login(self):
+        URL = 'http://bato.to/comic/_/comics/gekkou-spice-r2863'
+        MESSAGE = 'Batoto login error ({})'.format(URL)
+
+        config.get().batoto.password = 'Password1'
+        config.get().batoto.username = 'Username1'
+        config.get().write()
+
+        result = self.invoke('get', URL)
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
 
     def test_ignore(self):
         URL = 'http://bato.to/comic/_/eien-no-mae-r8817'
@@ -517,6 +570,23 @@ class TestCLI(unittest.TestCase):
         for message in MESSAGES:
             assert message in result.output
         assert len(chapters) == 16
+
+    def test_update_invalid_login(self):
+        URL = 'http://bato.to/comic/_/comics/femme-fatale-r468'
+        MESSAGE = 'Unable to update femme-fatale (Batoto login error)'
+
+        series = scrapers.BatotoSeries(URL)
+        series.follow()
+        config.get().batoto.cookie = None
+        config.get().batoto.member_id = None
+        config.get().batoto.pass_hash = None
+        config.get().batoto.password = 'Notvalid'
+        config.get().batoto.username = 'Notvalid'
+        config.get().write()
+
+        result = self.invoke('update')
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
 
 if __name__ == '__main__':
     unittest.main()
