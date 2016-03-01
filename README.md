@@ -92,18 +92,7 @@ $ cum download school-live
 
 ## Supported sites
 
-* Batoto
-  * Slow downloads
-  * Account required
-  * Reliable due to relatively standard naming format
-* Dynasty Reader
-  * Moderate speed downloads
-  * Account not required
-  * Reliable downloads
-* Madokami
-  * Fast downloads
-  * Account required
-  * Non-fixed format names for files combined with imperfect regex causes naming issues/exceptions
+See the [Supported sites](../../wiki/Supported-sites) wiki page for details.
 
 ## Dependencies
 
