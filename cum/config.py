@@ -75,7 +75,7 @@ class BatotoConfig(object):
             self.member_id = r.cookies['member_id']
             self.pass_hash = r.cookies['pass_hash']
         except KeyError:
-            raise exceptions.LoginError('Invalid Bato.to login')
+            raise exceptions.LoginError('Invalid Batoto login')
         self._config.write()
 
     @property
