@@ -357,7 +357,7 @@ def update():
         for future in concurrent.futures.as_completed(futures):
             try:
                 series = future.result()
-            except requests.exceptions.ConnectionError as e:
+            except exceptions.ConnectionError:
                 warnings.append('Unable to update {} (connection error)'
                                 .format(aliases[future]))
             except exceptions.ScrapingError:
@@ -365,7 +365,7 @@ def update():
                                 .format(aliases[future]))
             except exceptions.LoginError as e:
                 warnings.append('Unable to update {} ({})'
-                                .format(aliases[future], e.message))
+                                .format(aliases[future], e.message.lower()))
             else:
                 series.update()
             bar.update(1)
