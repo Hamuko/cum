@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 from cum import config
 from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
 from functools import partial
-from tempfile import NamedTemporaryFile
 from urllib.parse import urljoin
 import concurrent.futures
 import re

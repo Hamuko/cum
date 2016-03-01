@@ -4,7 +4,6 @@ from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
 from functools import partial
 from mimetypes import guess_type
 import concurrent.futures
-import os
 import re
 import requests
 
@@ -79,7 +78,6 @@ class BatotoChapter(BaseChapter):
             return None
 
     def available(self):
-        hash_match = re.search(self.url_re, self.url)
         if not self.batoto_hash:
             return False
         self.r = self.reader_get(1)

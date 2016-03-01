@@ -1,4 +1,4 @@
-from cum import exceptions, output
+from cum import exceptions
 import click
 import json
 import os

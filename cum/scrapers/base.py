@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from cum import config, db, output
-from functools import partial
 from mimetypes import guess_extension
 from re import match, sub
 from sqlalchemy.exc import IntegrityError

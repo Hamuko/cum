@@ -3,7 +3,6 @@ from cum import config, exceptions, output
 from functools import wraps
 import click
 import concurrent.futures
-import requests
 
 
 class CumGroup(click.Group):
