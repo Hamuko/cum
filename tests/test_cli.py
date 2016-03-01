@@ -307,7 +307,7 @@ class TestCLI(unittest.TestCase):
         URL = 'http://bato.to/reader#f0fbe77dbcc60780'
         MESSAGES = ['Batoto username:',
                     'Batoto password:',
-                    'Invalid Bato.to login']
+                    'Invalid Batoto login']
 
         config.get().batoto.username = None
         config.get().batoto.password = None

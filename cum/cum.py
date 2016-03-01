@@ -152,7 +152,7 @@ def follow(urls, directory, download, ignore):
                 chapter.get()
             except exceptions.LoginError as e:
                 output.warning('Could not download {}: {}'
-                               .format(chapter.name, e.message))
+                               .format(chapter.alias, e.message))
                 continue
 
 
