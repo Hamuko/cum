@@ -20,7 +20,7 @@ To print out a list of available commands, use `cum --help`. For help with a par
 
 ### Config
 
-Config is stored at `~/.cum/config.json` and is automatically created with default values when the program is ran for the first time.
+Config is stored at `~/.cum/config.json` and overwrites the following default values. Cum will not write login information supplied by the user at run-time back to the config file, but will store session cookies if any exist.
 
 ```javascript
 {
@@ -33,7 +33,7 @@ Config is stored at `~/.cum/config.json` and is automatically created with defau
   }
   "cbz": false,  // If true, the archive extension will be .cbz instead of .zip.
   "compact_new": true,  // Uses compact listing mode for `cum new`.
-  "download_directory": "/path/to/manga",  // Directory where manga is downloaded.
+  "download_directory": "~",  // Directory where manga is downloaded.
   "download_threads": 4,  // Maximum number of concurrent downloads.
   "html_parser": "html.parser",  // HTML parser used by cum.
   "madokami": {

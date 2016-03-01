@@ -9,7 +9,6 @@ import requests
 class BaseConfig(object):
     def __init__(self):
         self.load()
-        self.write()
 
     def load(self):
         try:
@@ -29,15 +28,26 @@ class BaseConfig(object):
         self.html_parser = j.get('html_parser', 'html.parser')
         self.madokami = MadokamiConfig(self, j.get('madokami', {}))
 
-    def write(self):
-        config = dict(self.__dict__)
-        config['batoto'] = dict(self.batoto.__dict__)
-        config['madokami'] = dict(self.madokami.__dict__)
-        del config['batoto']['_config']
-        del config['madokami']['_config']
+        self.persistent_config = j
 
-        with open(config_path, 'w') as file:
-            json.dump(config, file, sort_keys=True, indent=2)
+    def __setattr__(self, name, value):
+        """Ensures that changes made after loading with default values
+        are written back to disk.
+        """
+        if hasattr(self, 'persistent_config'):
+            self.persistent_config[name] = value
+        object.__setattr__(self, name, value)
+
+    def write(self):
+        if hasattr(self, 'persistent_config'):
+            config = dict(self.persistent_config)
+            config['batoto'] = dict(self.batoto.__dict__)
+            config['madokami'] = dict(self.madokami.__dict__)
+            del config['batoto']['_config']
+            del config['madokami']['_config']
+
+            with open(config_path, 'w') as file:
+                json.dump(config, file, sort_keys=True, indent=2)
 
 
 class BatotoConfig(object):
