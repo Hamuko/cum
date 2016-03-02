@@ -8,6 +8,27 @@ def chapter(msg):
     )
 
 
+def configuration(dictionary):
+    settings = configuration_flatten(dictionary)
+    for setting, value in sorted(settings.items()):
+        if value is not None:
+            click.echo('{} = {}'.format(setting, value))
+
+
+def configuration_flatten(dictionary, parent_key=None):
+    items = []
+    for key, value in dictionary.items():
+        if parent_key:
+            new_key = '{}.{}'.format(parent_key, key)
+        else:
+            new_key = key
+        if isinstance(value, dict):
+            items.extend(configuration_flatten(value, new_key).items())
+        else:
+            items.append((new_key, value))
+    return dict(items)
+
+
 def error(msg):
     click.echo(
         click.style('==> ', fg='red') + msg

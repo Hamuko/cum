@@ -88,6 +88,103 @@ class TestCLI(unittest.TestCase):
         assert result.exit_code == 1
         assert MESSAGE in result.output
 
+    def test_config_get(self):
+        MESSAGES = ['batoto.password = ' + config.get().batoto.password,
+                    'batoto.username = ' + config.get().batoto.username,
+                    'download_directory = ' + config.get().download_directory,
+                    'madokami.password = ' + config.get().madokami.password,
+                    'madokami.username = ' + config.get().madokami.username]
+
+        result = self.invoke('config', 'get')
+        assert result.exit_code == 0
+        for message in MESSAGES:
+            assert message in result.output
+
+    def test_config_get_batoto_username(self):
+        MESSAGE = 'batoto.username = ' + config.get().batoto.username
+
+        result = self.invoke('config', 'get', 'batoto.username')
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
+
+    def test_config_get_batoto_invalid_value(self):
+        MESSAGE = 'Setting not found'
+
+        result = self.invoke('config', 'get', 'batoto.wrongkey')
+        assert result.exit_code == 1
+        assert MESSAGE in result.output
+
+    def test_config_get_download_directory(self):
+        MESSAGE = 'download_directory = ' + config.get().download_directory
+
+        result = self.invoke('config', 'get', 'download_directory')
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
+
+    def test_config_get_invalid_value(self):
+        MESSAGE = 'Setting not found'
+
+        result = self.invoke('config', 'get', 'wrongkey')
+        assert result.exit_code == 1
+        assert MESSAGE in result.output
+
+    def test_config_invalid_mode(self):
+        MESSAGE = 'Mode must be either get or set'
+
+        result = self.invoke('config', 'poke')
+        assert result.exit_code == 1
+        assert MESSAGE in result.output
+
+    def test_config_set_batoto_password(self):
+        PASSWORD = 'password4testing'
+
+        config.get().batoto.password = None
+        config.get().write()
+
+        result = self.invoke('config', 'set', 'batoto.password', PASSWORD)
+        assert result.exit_code == 0
+        assert config.get().batoto.password == PASSWORD
+
+    def test_config_set_cbz(self):
+        result = self.invoke('config', 'set', 'cbz', 'True')
+        assert result.exit_code == 0
+        assert config.get().cbz is True
+
+    def test_config_set_invalid_setting(self):
+        MESSAGE = 'Setting not found'
+
+        result = self.invoke('config', 'set', 'cuterobots.sex', 'female')
+        assert result.exit_code == 1
+        assert MESSAGE in result.output
+
+    def test_config_set_invalid_subsetting(self):
+        MESSAGE = 'Setting not found'
+
+        result = self.invoke('config', 'set', 'batoto.trashing', 'True')
+        assert result.exit_code == 1
+        assert MESSAGE in result.output
+
+    def test_config_set_no_setting(self):
+        MESSAGE = 'You must specify a setting'
+
+        result = self.invoke('config', 'set')
+        assert result.exit_code == 1
+        assert MESSAGE in result.output
+
+    def test_config_set_no_value(self):
+        MESSAGE = 'You must specify a value'
+
+        result = self.invoke('config', 'set', 'batoto.username')
+        assert result.exit_code == 1
+        assert MESSAGE in result.output
+
+    def test_config_set_type_mismatch(self):
+        MESSAGE = 'Type mismatch: value should be int'
+
+        result = self.invoke('config', 'set', 'download_threads', 'seven')
+        assert result.exit_code == 1
+        assert MESSAGE in result.output
+
     def test_download(self):
         URLS = ['http://bato.to/comic/_/comics/goodbye-body-r13725',
                 'http://bato.to/comic/_/comics/green-beans-r15344']

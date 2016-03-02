@@ -18,36 +18,18 @@ Users of Arch Linux can install stable versions [from the AUR](https://aur.archl
 
 To print out a list of available commands, use `cum --help`. For help with a particular command, use `cum COMMAND --help`.
 
-### Config
+### Configuration
 
-Config is stored at `~/.cum/config.json` and overwrites the following default values. Cum will not write login information supplied by the user at run-time back to the config file, but will store session cookies if any exist.
+Configuration is stored at `~/.cum/config.json` and overwrites the following default values. cum will not write login information supplied by the user at run-time back to the config file, but will store session cookies if any exist. Configuration can get read with the command `cum config get [SETTING]` and set using `cum config set [SETTING] [VALUE]`.
 
-```javascript
-{
-  "batoto": {
-    "cookie": "",  // Used to login to Batoto.
-    "member_id": "",  // Used to login to Batoto.
-    "pass_hash": "",  // Used to login to Batoto.
-    "password": "",  // Password to use with Batoto logins.
-    "username": ""  // Username to use with Batoto logins.
-  }
-  "cbz": false,  // If true, the archive extension will be .cbz instead of .zip.
-  "compact_new": true,  // Uses compact listing mode for `cum new`.
-  "download_directory": "~",  // Directory where manga is downloaded.
-  "download_threads": 4,  // Maximum number of concurrent downloads.
-  "html_parser": "html.parser",  // HTML parser used by cum.
-  "madokami": {
-    "password": "" // Password to use with Madokami
-    "username": "", // Username to use with Madokami.
-  }
-}
-```
+See the [Configuration](../../wiki/Configuration) wiki page for more details and available settings.
 
 ### Commands
 
 ```
 alias      Assign a new alias to series.
 chapters   List all chapters for a manga series.
+config     Get or set configuration options.
 download   Download all available chapters.
 follow     Follow a series.
   --directory TEXT  Directory which download the series chapters into.

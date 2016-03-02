@@ -90,6 +90,67 @@ def chapters(alias):
             click.secho(row, **style)
 
 
+@cli.command(name='config')
+@click.argument('mode')
+@click.argument('setting', required=False)
+@click.argument('value', required=False)
+def config_command(mode, setting, value):
+    """Get or set configuration options.
+
+    Mode can be either "get" or "set", depending on whether you want to read or
+    write configuration values. If mode is "get", you can specify a setting to
+    read that particular setting or omit it to list out all the settings. If
+    mode is "set", you must specify the setting to change and assign it a new
+    value.
+    """
+    if mode == 'get':
+        if setting:
+            parameters = setting.split('.')
+            value = config.get()
+            for parameter in parameters:
+                try:
+                    value = getattr(value, parameter)
+                except AttributeError:
+                    output.error('Setting not found')
+                    exit(1)
+            output.configuration({setting: value})
+        else:
+            configuration = config.get().serialize()
+            output.configuration(configuration)
+    elif mode == 'set':
+        if setting is None:
+            output.error('You must specify a setting')
+            exit(1)
+        if value is None:
+            output.error('You must specify a value')
+            exit(1)
+        parameters = setting.split('.')
+        preference = config.get()
+        for parameter in parameters[0:-1]:
+            try:
+                preference = getattr(preference, parameter)
+            except AttributeError:
+                output.error('Setting not found')
+                exit(1)
+        try:
+            current_value = getattr(preference, parameters[-1])
+        except AttributeError:
+            output.error('Setting not found')
+            exit(1)
+        if current_value is not None:
+            try:
+                value = type(current_value)(value)
+            except ValueError:
+                output.error('Type mismatch: value should be {}'
+                             .format(type(current_value).__name__))
+                exit(1)
+        setattr(preference, parameters[-1], value)
+        config.get().write()
+    else:
+        output.error('Mode must be either get or set')
+        exit(1)
+
+
 @cli.command()
 @click.argument('aliases', required=False, nargs=-1)
 def download(aliases):
