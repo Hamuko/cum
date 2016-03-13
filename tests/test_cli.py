@@ -646,7 +646,7 @@ class TestCLI(unittest.TestCase):
         MESSAGES = [
             'Updating 2 series',
             'femme-fatale 1  2  3  4  4.5  5  6  7  8  8.5  9  10  11  12',
-            'houkago 1  2'
+            'houkago      1  2'
         ]
 
         config.get().compact_new = True

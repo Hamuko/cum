@@ -25,13 +25,19 @@ def list_new():
         except KeyError:
             items[chapter.alias] = [chapter.chapter]
 
+    if config.get().compact_new:
+        longest_name = len(max(items, key=len))
+
     for series in sorted(items):
         if config.get().compact_new:
-            name = click.style(series, bold=True)
+            padding = longest_name - len(series)
+            name = click.style(series + ' ' * padding, bold=True)
             chapters = '  '.join([x for x in items[series]])
-            line = click.wrap_text(' '.join([name, chapters]),
-                                   subsequent_indent=' ' * (len(series) + 1),
-                                   width=click.get_terminal_size()[0])
+            line = click.wrap_text(
+                ' '.join([name, chapters]),
+                subsequent_indent=' ' * (len(series) + padding + 1),
+                width=click.get_terminal_size()[0]
+            )
             click.echo(line)
         else:
             click.secho(series, bold=True)
