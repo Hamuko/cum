@@ -541,6 +541,11 @@ class TestCLI(unittest.TestCase):
         for message in MESSAGES:
             assert message in result.output
 
+    def test_new_empty(self):
+        result = self.invoke('new')
+        assert result.exit_code == 0
+        assert not result.output
+
     def test_new_compact(self):
         URL = 'http://bato.to/comic/_/comics/blood-r5840'
         MESSAGE = 'blood 1-4  5-8  9-12  13-16  17-20'
@@ -552,6 +557,14 @@ class TestCLI(unittest.TestCase):
         result = self.invoke('new')
         assert result.exit_code == 0
         assert MESSAGE in result.output
+
+    def test_new_compact_empty(self):
+        config.get().compact_new = True
+        config.get().write()
+
+        result = self.invoke('new')
+        assert result.exit_code == 0
+        assert not result.output
 
     def test_new_broken_database(self):
         MESSAGES = ['groups table is missing from database',

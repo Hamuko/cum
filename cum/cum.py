@@ -24,6 +24,8 @@ def list_new():
             items[chapter.alias].append(chapter.chapter)
         except KeyError:
             items[chapter.alias] = [chapter.chapter]
+    if not items:
+        return
 
     if config.get().compact_new:
         longest_name = len(max(items, key=len))
