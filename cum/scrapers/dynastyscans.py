@@ -14,10 +14,9 @@ fallback_re = re.compile(r'(.*?)(?:$|\: )(.*)')
 class DynastyScansSeries(BaseSeries):
     url_re = re.compile(r'http://dynasty-scans\.com/series/')
 
-    def __init__(self, url, directory=None):
+    def __init__(self, url, **kwargs):
+        super().__init__(url, **kwargs)
         r = requests.get(url)
-        self.url = url
-        self.directory = directory
         self.soup = BeautifulSoup(r.text, config.get().html_parser)
         self.chapters = self.get_chapters()
 
@@ -46,16 +45,9 @@ class DynastyScansChapter(BaseChapter):
     url_re = re.compile(r'http://dynasty-scans\.com/chapters/')
     uses_pages = True
 
-    def __init__(self, name=None, alias=None, chapter=None,
-                 url=None, groups=[], title=None, directory=None):
-        self.name = name
-        self.alias = alias
-        self.chapter = chapter
-        self.title = title
-        self.url = url
-        self.groups = groups
-        self.directory = directory
-        if not groups:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.groups:
             self.groups = self.get_groups()
 
     def download(self):

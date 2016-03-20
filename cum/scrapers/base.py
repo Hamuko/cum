@@ -18,9 +18,9 @@ download_pool = ThreadPoolExecutor(config.get().download_threads)
 class BaseSeries(metaclass=ABCMeta):
     """Class that is used to represent an individual series on a site."""
 
-    @abstractmethod
-    def __init__(self, url):
-        raise NotImplementedError
+    def __init__(self, url, **kwargs):
+        self.url = url
+        self.directory = kwargs.get('directory', None)
 
     @property
     def alias(self):
@@ -83,10 +83,14 @@ class BaseSeries(metaclass=ABCMeta):
 class BaseChapter(metaclass=ABCMeta):
     """Class that is used to represent an individual download on a site."""
 
-    @abstractmethod
-    def __init__(self, name=None, alias=None, chapter=None,
-                 url=None, groups=[], title=None):
-        raise NotImplementedError
+    def __init__(self, *args, **kwargs):
+        self.name = kwargs.get('name')
+        self.alias = kwargs.get('alias')
+        self.chapter = kwargs.get('chapter')
+        self.title = kwargs.get('title', None)
+        self.url = kwargs.get('url')
+        self.groups = kwargs.get('groups', None)
+        self.directory = kwargs.get('directory', None)
 
     def available(self):
         """Checks if chapter URL returns HTTP 404 or not, and returns a boolean
