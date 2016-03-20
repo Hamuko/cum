@@ -17,6 +17,44 @@ class CumGroup(click.Group):
         return decorator
 
 
+def set_ignored(mark_ignored, alias, chapters):
+    """Helper method for `cum ignore` and `cum unignore`, which will either
+    ignore chapters if mark_ignored is True or unignore chapters if
+    mark_ignored is False.
+    """
+    if mark_ignored:
+        downloaded = 0
+        message_start = 'I'
+        method = 'ignore'
+    else:
+        downloaded = -1
+        message_start = 'Uni'
+        method = 'mark_new'
+
+    s = db.Series.alias_lookup(alias)
+    query = (db.session.query(db.Chapter)
+                       .filter(db.Chapter.series == s,
+                               db.Chapter.downloaded == downloaded))
+    if len(chapters) == 1 and chapters[0].lower() == 'all':
+        click.echo('{}gnoring {} chapters for {}'
+                   .format(message_start, len(s.chapters), s.name))
+        click.confirm('Do you want to continue',
+                      prompt_suffix='? ', abort=True)
+    else:
+        query = query.filter(db.Chapter.chapter.in_(chapters))
+
+    chapters = [x.to_object() for x in query.all()]
+    for chapter in chapters:
+        function = getattr(chapter, method)
+        function()
+    if len(chapters) == 1:
+        output.chapter('{}gnored chapter {} for {}'
+                       .format(message_start, chapters[0].chapter, s.name))
+    else:
+        output.series('{}gnored {} chapters for {}'
+                      .format(message_start, len(chapters), s.name))
+
+
 def list_new():
     items = {}
     for chapter in db.Chapter.find_new():
@@ -308,26 +346,7 @@ def ignore(alias, chapters):
     ignore all of the chapters for a particular series, use the word "all" in
     place of the chapters.
     """
-    s = db.Series.alias_lookup(alias)
-    query = db.session.query(db.Chapter).filter(db.Chapter.series == s,
-                                                db.Chapter.downloaded == 0)
-    if len(chapters) == 1 and chapters[0].lower() == 'all':
-        click.echo('Ignoring {} chapters for {}'.format(len(s.chapters),
-                                                        s.name))
-        click.confirm('Do you want to continue',
-                      prompt_suffix='? ', abort=True)
-    else:
-        query = query.filter(db.Chapter.chapter.in_(chapters))
-
-    chapters = [x.to_object() for x in query.all()]
-    for chapter in chapters:
-        chapter.ignore()
-    if len(chapters) == 1:
-        output.chapter('Ignored chapter {} for {}'.format(chapters[0].chapter,
-                                                          s.name))
-    else:
-        output.series('Ignored {} chapters for {}'.format(len(chapters),
-                                                          s.name))
+    set_ignored(True, alias, chapters)
 
 
 @cli.command()
@@ -383,28 +402,7 @@ def unignore(alias, chapters):
     unignore all of the chapters for a particular series, use the word "all" in
     place of the chapters.
     """
-    s = db.Series.alias_lookup(alias)
-    query = db.session.query(db.Chapter).filter(db.Chapter.series == s,
-                                                db.Chapter.downloaded == -1)
-    if len(chapters) == 1 and chapters[0].lower() == 'all':
-        click.echo('Unignoring {} chapters for {}'.format(len(s.chapters),
-                                                          s.name))
-        click.confirm('Do you want to continue',
-                      prompt_suffix='? ', abort=True)
-    else:
-        query = query.filter(db.Chapter.chapter.in_(chapters))
-
-    chapters = [x.to_object() for x in query.all()]
-    for chapter in chapters:
-        chapter.mark_new()
-    if len(chapters) == 1:
-        output.chapter('Unignored chapter {} for {}'.format(
-            chapters[0].chapter, s.name
-        ))
-    else:
-        output.series('Unignored {} chapters for {}'.format(
-            len(chapters), s.name
-        ))
+    set_ignored(False, alias, chapters)
 
 
 @cli.command()
