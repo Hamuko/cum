@@ -17,82 +17,13 @@ class CumGroup(click.Group):
         return decorator
 
 
-def set_ignored(mark_ignored, alias, chapters):
-    """Helper method for `cum ignore` and `cum unignore`, which will either
-    ignore chapters if mark_ignored is True or unignore chapters if
-    mark_ignored is False.
-    """
-    if mark_ignored:
-        downloaded = 0
-        message_start = 'I'
-        method = 'ignore'
-    else:
-        downloaded = -1
-        message_start = 'Uni'
-        method = 'mark_new'
-
-    s = db.Series.alias_lookup(alias)
-    query = (db.session.query(db.Chapter)
-                       .filter(db.Chapter.series == s,
-                               db.Chapter.downloaded == downloaded))
-    if len(chapters) == 1 and chapters[0].lower() == 'all':
-        click.echo('{}gnoring {} chapters for {}'
-                   .format(message_start, len(s.chapters), s.name))
-        click.confirm('Do you want to continue',
-                      prompt_suffix='? ', abort=True)
-    else:
-        query = query.filter(db.Chapter.chapter.in_(chapters))
-
-    chapters = [x.to_object() for x in query.all()]
-    for chapter in chapters:
-        function = getattr(chapter, method)
-        function()
-    if len(chapters) == 1:
-        output.chapter('{}gnored chapter {} for {}'
-                       .format(message_start, chapters[0].chapter, s.name))
-    else:
-        output.series('{}gnored {} chapters for {}'
-                      .format(message_start, len(chapters), s.name))
-
-
-def list_new():
-    items = {}
-    for chapter in db.Chapter.find_new():
-        try:
-            items[chapter.alias].append(chapter.chapter)
-        except KeyError:
-            items[chapter.alias] = [chapter.chapter]
-    if not items:
-        return
-
-    if config.get().compact_new:
-        longest_name = len(max(items, key=len))
-
-    for series in sorted(items):
-        if config.get().compact_new:
-            padding = longest_name - len(series)
-            name = click.style(series + ' ' * padding, bold=True)
-            chapters = '  '.join([x for x in items[series]])
-            line = click.wrap_text(
-                ' '.join([name, chapters]),
-                subsequent_indent=' ' * (len(series) + padding + 1),
-                width=click.get_terminal_size()[0]
-            )
-            click.echo(line)
-        else:
-            click.secho(series, bold=True)
-            click.echo(click.wrap_text('  '.join([x for x in items[series]]),
-                                       width=click.get_terminal_size()[0]))
-
-
 @click.command(cls=CumGroup)
 @click.option('--cum-directory',
               help='Directory used by cum to store application files.')
 def cli(cum_directory=None):
-    global db, chapter_by_url, output, sanity, series_by_url
+    global db, output, sanity, utility
     config.initialize(directory=cum_directory)
-    from cum import db, output, sanity
-    from cum.utility import chapter_by_url, series_by_url
+    from cum import db, output, sanity, utility
     db.initialize()
 
 
@@ -233,7 +164,7 @@ def follow(urls, directory, download, ignore):
     chapters = []
     for url in urls:
         try:
-            series = series_by_url(url)
+            series = utility.series_by_url(url)
         except exceptions.ScrapingError:
             output.warning('Scraping error ({})'.format(url))
             continue
@@ -293,7 +224,7 @@ def get(input, directory):
     chapter_list = []
     for i in input:
         try:
-            series = series_by_url(i)
+            series = utility.series_by_url(i)
         except exceptions.ScrapingError:
             output.warning('Scraping error ({})'.format(i))
             continue
@@ -303,7 +234,7 @@ def get(input, directory):
         if series:
             chapter_list += series.chapters
         try:
-            chapter = chapter_by_url(i)
+            chapter = utility.chapter_by_url(i)
         except exceptions.ScrapingError:
             output.warning('Scraping error ({})'.format(i))
             continue
@@ -346,7 +277,7 @@ def ignore(alias, chapters):
     ignore all of the chapters for a particular series, use the word "all" in
     place of the chapters.
     """
-    set_ignored(True, alias, chapters)
+    utility.set_ignored(True, alias, chapters)
 
 
 @cli.command()
@@ -360,7 +291,7 @@ def open(alias):
 @cli.command()
 def new():
     """List all new chapters."""
-    list_new()
+    utility.list_new()
 
 
 @cli.command(check_db=False, name='repair-db')
@@ -402,7 +333,7 @@ def unignore(alias, chapters):
     unignore all of the chapters for a particular series, use the word "all" in
     place of the chapters.
     """
-    set_ignored(False, alias, chapters)
+    utility.set_ignored(False, alias, chapters)
 
 
 @cli.command()
@@ -415,7 +346,7 @@ def update():
     query = db.session.query(db.Series).filter_by(following=True).all()
     output.series('Updating {} series'.format(len(query)))
     for follow in query:
-        fut = pool.submit(series_by_url, follow.url)
+        fut = pool.submit(utility.series_by_url, follow.url)
         futures.append(fut)
         aliases[fut] = follow.alias
     with click.progressbar(length=len(futures), show_pos=True,
@@ -437,7 +368,7 @@ def update():
             bar.update(1)
     for w in warnings:
         output.warning(w)
-    list_new()
+    utility.list_new()
 
 
 if __name__ == '__main__':
