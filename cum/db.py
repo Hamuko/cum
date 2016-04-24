@@ -46,10 +46,6 @@ class Series(Base):
         self.url = series.url
         self.directory = series.directory
 
-    @property
-    def ordered_chapters(self):
-        return humansorted(self.chapters, key=lambda x: x.chapter)
-
     @staticmethod
     def alias_lookup(alias):
         """Returns a DB object for a series by alias name. Prints an error if
@@ -64,6 +60,10 @@ class Series(Base):
             exit(1)
         else:
             return s
+
+    @property
+    def ordered_chapters(self):
+        return humansorted(self.chapters, key=lambda x: x.chapter)
 
 
 class Chapter(Base):
@@ -97,6 +97,19 @@ class Chapter(Base):
                 session.commit()
             self.groups.append(g)
 
+    @staticmethod
+    def find_new(alias=None):
+        """Return a list of new chapters as Chapter objects and applies human
+        sorting to it. Accepts an optional 'alias' argument, which will filter
+        the query.
+        """
+        query = session.query(Chapter).join(Series).filter(Series.following)
+        if alias:
+            query = query.filter(Series.alias == alias)
+        query = query.filter(Chapter.downloaded == 0).all()
+        return humansorted([x.to_object() for x in query],
+                           key=lambda x: x.chapter)
+
     @property
     def group_tag(self):
         """Return a joined string of chapter's groups enclosed in brackets."""
@@ -111,19 +124,6 @@ class Chapter(Base):
             return 'i'
         else:
             return ' '
-
-    @staticmethod
-    def find_new(alias=None):
-        """Return a list of new chapters as Chapter objects and applies human
-        sorting to it. Accepts an optional 'alias' argument, which will filter
-        the query.
-        """
-        query = session.query(Chapter).join(Series).filter(Series.following)
-        if alias:
-            query = query.filter(Series.alias == alias)
-        query = query.filter(Chapter.downloaded == 0).all()
-        return humansorted([x.to_object() for x in query],
-                           key=lambda x: x.chapter)
 
     def to_object(self):
         """Turns a database entry into a chapter object for the respective

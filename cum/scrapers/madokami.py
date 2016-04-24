@@ -19,10 +19,6 @@ class MadokamiSeries(BaseSeries):
         self.soup = BeautifulSoup(r.text, config.get().html_parser)
         self.chapters = self.get_chapters()
 
-    @property
-    def name(self):
-        return self.soup.find('span', class_='title').string
-
     def get_chapters(self):
         try:
             rows = (self.soup
@@ -60,18 +56,14 @@ class MadokamiSeries(BaseSeries):
             chapters.append(c)
         return chapters
 
+    @property
+    def name(self):
+        return self.soup.find('span', class_='title').string
+
 
 class MadokamiChapter(BaseChapter):
     url_re = re.compile(r'https://manga\.madokami\.com/Manga/.*/.*/.*\..*')
     uses_pages = False
-
-    def from_url(url):
-        series_url = re.search(r'(.*manga\.madokami\.com/.*/)', url).group(1)
-        series = MadokamiSeries(series_url)
-        for chapter in series.chapters:
-            if chapter.url == url:
-                return chapter
-        return None
 
     def download(self):
         auth = requests.auth.HTTPBasicAuth(*config.get().madokami.login)
@@ -90,3 +82,11 @@ class MadokamiChapter(BaseChapter):
                                 bar.update(len(chunk))
                                 f.write(chunk)
                     f.flush()
+
+    def from_url(url):
+        series_url = re.search(r'(.*manga\.madokami\.com/.*/)', url).group(1)
+        series = MadokamiSeries(series_url)
+        for chapter in series.chapters:
+            if chapter.url == url:
+                return chapter
+        return None

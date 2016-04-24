@@ -281,17 +281,17 @@ def ignore(alias, chapters):
 
 
 @cli.command()
+def new():
+    """List all new chapters."""
+    utility.list_new()
+
+
+@cli.command()
 @click.argument('alias')
 def open(alias):
     """Open the series URL in a browser."""
     s = db.Series.alias_lookup(alias)
     click.launch(s.url)
-
-
-@cli.command()
-def new():
-    """List all new chapters."""
-    utility.list_new()
 
 
 @cli.command(check_db=False, name='repair-db')

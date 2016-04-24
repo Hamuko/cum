@@ -18,10 +18,6 @@ class BatotoSeries(BaseSeries):
         self.soup = BeautifulSoup(r.text, config.get().html_parser)
         self.chapters = self.get_chapters()
 
-    @property
-    def name(self):
-        return self.soup.find('h1').string.strip()
-
     def get_chapters(self):
         if self.soup.find('div', id='register_notice'):
             raise exceptions.LoginError('Batoto login error')
@@ -45,6 +41,10 @@ class BatotoSeries(BaseSeries):
             chapters.append(c)
         return chapters
 
+    @property
+    def name(self):
+        return self.soup.find('h1').string.strip()
+
 
 class BatotoChapter(BaseChapter):
     error_re = re.compile(r'ERROR \[10010\]')
@@ -58,13 +58,12 @@ class BatotoChapter(BaseChapter):
     url_re = re.compile(r'https?://bato.to/reader#(.*)')
     uses_pages = True
 
-    @property
-    def batoto_hash(self):
-        hash_match = re.search(self.url_re, self.url)
-        if hash_match:
-            return hash_match.group(1)
-        else:
-            return None
+    @staticmethod
+    def _reader_get(chapter_hash, page_index):
+        return requests.get('http://bato.to/areader',
+                            params={'id': chapter_hash, 'p': page_index},
+                            headers={'Referer': 'http://bato.to/reader'},
+                            cookies=config.get().batoto.login_cookies)
 
     def available(self):
         if not self.batoto_hash:
@@ -82,18 +81,13 @@ class BatotoChapter(BaseChapter):
         else:
             return True
 
-    def from_url(url):
-        chapter_hash = re.search(BatotoChapter.url_re, url).group(1)
-        r = BatotoChapter._reader_get(chapter_hash, 1)
-        soup = BeautifulSoup(r.text, config.get().html_parser)
-        try:
-            series_url = soup.find('a', href=BatotoSeries.url_re)['href']
-        except TypeError:
-            raise exceptions.ScrapingError('Chapter has no parent series link')
-        series = BatotoSeries(series_url)
-        for chapter in series.chapters:
-            if chapter.url == url:
-                return chapter
+    @property
+    def batoto_hash(self):
+        hash_match = re.search(self.url_re, self.url)
+        if hash_match:
+            return hash_match.group(1)
+        else:
+            return None
 
     def download(self):
         if getattr(self, 'r', None):
@@ -159,12 +153,18 @@ class BatotoChapter(BaseChapter):
             concurrent.futures.wait(futures)
             self.create_zip(files)
 
+    def from_url(url):
+        chapter_hash = re.search(BatotoChapter.url_re, url).group(1)
+        r = BatotoChapter._reader_get(chapter_hash, 1)
+        soup = BeautifulSoup(r.text, config.get().html_parser)
+        try:
+            series_url = soup.find('a', href=BatotoSeries.url_re)['href']
+        except TypeError:
+            raise exceptions.ScrapingError('Chapter has no parent series link')
+        series = BatotoSeries(series_url)
+        for chapter in series.chapters:
+            if chapter.url == url:
+                return chapter
+
     def reader_get(self, page_index):
         return self._reader_get(self.batoto_hash, page_index)
-
-    @staticmethod
-    def _reader_get(chapter_hash, page_index):
-        return requests.get('http://bato.to/areader',
-                            params={'id': chapter_hash, 'p': page_index},
-                            headers={'Referer': 'http://bato.to/reader'},
-                            cookies=config.get().batoto.login_cookies)

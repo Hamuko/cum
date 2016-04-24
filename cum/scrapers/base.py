@@ -234,6 +234,16 @@ class BaseChapter(metaclass=ABCMeta):
         db.session.commit()
 
     @staticmethod
+    def page_download_finish(bar, files, fs):
+        """Callback functions for page_download_task futures, assigning the
+        resulting filehandles to the right index in the array and updating
+        the progress bar.
+        """
+        index, f = fs.result()
+        files[index] = f
+        bar.update(1)
+
+    @staticmethod
     def page_download_task(page_num, r):
         """Saves the response body of a single request, returning the file
         handle and the passed through number of the page to allow for non-
@@ -247,16 +257,6 @@ class BaseChapter(metaclass=ABCMeta):
         f.flush()
         r.close()
         return((page_num, f))
-
-    @staticmethod
-    def page_download_finish(bar, files, fs):
-        """Callback functions for page_download_task futures, assigning the
-        resulting filehandles to the right index in the array and updating
-        the progress bar.
-        """
-        index, f = fs.result()
-        files[index] = f
-        bar.update(1)
 
     def progress_bar(self, arg):
         """Returns a pre-configured Click progress bar to use with downloads.

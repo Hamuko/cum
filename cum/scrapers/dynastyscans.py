@@ -20,10 +20,6 @@ class DynastyScansSeries(BaseSeries):
         self.soup = BeautifulSoup(r.text, config.get().html_parser)
         self.chapters = self.get_chapters()
 
-    @property
-    def name(self):
-        return self.soup.find('h2', class_='tag-title').contents[0].string
-
     def get_chapters(self):
         chapter_list = self.soup.find('dl', class_='chapter-list')
         links = chapter_list.find_all('a', class_='name')
@@ -39,6 +35,10 @@ class DynastyScansSeries(BaseSeries):
                                     chapter=chapter, url=url, title=title)
             chapters.append(c)
         return chapters
+
+    @property
+    def name(self):
+        return self.soup.find('h2', class_='tag-title').contents[0].string
 
 
 class DynastyScansChapter(BaseChapter):
