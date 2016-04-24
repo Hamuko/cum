@@ -97,8 +97,8 @@ class TestDynastyScans(unittest.TestCase):
                     '26', '27', '27.1', '28', '29', '30', '31', '32', '32.5',
                     '33', '34', '35', '36', '37', '38', '39', '40', '41', '42',
                     '43', '44', '45', 'Volume 1 Extra', 'Volume 2 Extra',
-                    'Volume 3 Extra']
-        GROUPS = ['Boon Scanlations']
+                    'Volume 3 Extra', 'Volume 4 Extra']
+        GROUPS = ['Boon Scanlations', 'SAZ']
         NAME = 'Stretch'
         URL = 'http://dynasty-scans.com/series/stretch'
         series = dynastyscans.DynastyScansSeries(URL)
