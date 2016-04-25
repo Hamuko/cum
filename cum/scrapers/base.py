@@ -92,6 +92,21 @@ class BaseChapter(metaclass=ABCMeta):
         self.groups = kwargs.get('groups', None)
         self.directory = kwargs.get('directory', None)
 
+    def _strip_unwanted_characters(self, path):
+        """Strips unwanted characters from paths or filenames."""
+        KEEP_CHARACTERS = [' ', '.', '-', '_', '[', ']', '/', "'"]
+        path = ''.join([char for char in path if char.isalpha() or
+                        char.isdigit() or char in KEEP_CHARACTERS]).rstrip()
+        path = sub(' +', ' ', path)
+        return path
+
+    def _windows_name_directory(self, directory):
+        """Perform additional sanitization to ensure that the directory name
+        complies with Windows naming conventions.
+        """
+        directory = sub(r'\.*$', '', directory)
+        return directory
+
     def available(self):
         """Checks if chapter URL returns HTTP 404 or not, and returns a boolean
         value based on it. Broken links are pruned from the database.
@@ -104,6 +119,25 @@ class BaseChapter(metaclass=ABCMeta):
             return False
         else:
             return True
+
+    def create_directory(self, directory):
+        """Attempts to create a directory based on the supplied argument. If
+        the directory cannot be created, attempts to create an acceptable
+        directory. Returns the path of the directory that has eventually been
+        created.
+        """
+        if not os.path.exists(directory):
+            try:
+                os.makedirs(directory)
+            except OSError as error:
+                if error.errno == 22:
+                    # Path is invalid, most likely due to Windows naming rules.
+                    directory = self._windows_name_directory(directory)
+                    if not os.path.exists(directory):
+                        os.makedirs(directory)
+                else:
+                    raise error
+        return directory
 
     def create_zip(self, files):
         """Takes a list of named temporary files, makes a ZIP out of them and
@@ -135,8 +169,6 @@ class BaseChapter(metaclass=ABCMeta):
 
     @property
     def filename(self):
-        keepcharacters = [' ', '.', '-', '_', '[', ']', '/', "'"]
-
         name = self.name.replace('/', '')
 
         # Individually numbered chapter or a chapter range (e.g. '35',
@@ -173,24 +205,19 @@ class BaseChapter(metaclass=ABCMeta):
             directory = name
         download_dir = os.path.expanduser(config.get().download_directory)
         download_dir = os.path.join(download_dir, directory)
+        download_dir = self._strip_unwanted_characters(download_dir)
+        download_dir = self.create_directory(download_dir)
 
         # Format the filename somewhat based on Daiz's manga naming scheme.
         # Remove any '/' characters to prevent the name of the manga splitting
         # the files into an unwanted sub-directory.
         filename = '{} - {} {}.{}'.format(name, chapter, group,
                                           ext).replace('/', '')
+        filename = self._strip_unwanted_characters(filename)
 
         # Join the path parts and sanitize any unwanted characters that might
         # cause issues with filesystems. Remove repeating whitespaces.
         target = os.path.join(download_dir, filename)
-        target = ''.join([c for c in target if c.isalpha() or
-                          c.isdigit() or c in keepcharacters]).rstrip()
-        target = sub(' +', ' ', target)
-
-        # Make sure that the path exists before the filename is returned.
-        directory = os.path.dirname(target)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
 
         return target
 
