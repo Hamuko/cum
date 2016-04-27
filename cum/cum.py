@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from cum import config, exceptions, output
+from cum import config, exceptions, output, version
 from functools import wraps
 import click
 import concurrent.futures
@@ -20,6 +20,8 @@ class CumGroup(click.Group):
 @click.command(cls=CumGroup)
 @click.option('--cum-directory',
               help='Directory used by cum to store application files.')
+@click.version_option(version=version.__version__,
+                      message=version.version_string())
 def cli(cum_directory=None):
     global db, output, sanity, utility
     config.initialize(directory=cum_directory)
