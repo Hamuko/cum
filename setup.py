@@ -17,8 +17,10 @@ if sys.version_info[0] < 3:
 setup(
     name='cum',
     version='0.4',
+    description='comic updater, mangafied',
+    url='https://github.com/Hamuko/cum',
+    license='Apache2',
     packages=find_packages(),
-    py_modules=['cum'],
     install_requires=[
         'alembic',
         'beautifulsoup4',
@@ -27,8 +29,7 @@ setup(
         'requests',
         'SQLAlchemy'
     ],
-    entry_points='''
-        [console_scripts]
-        cum=cum.cum:cli
-    ''',
+    entry_points={
+        'console_scripts': ['cum=cum.cum:cli'],
+    }
 )
