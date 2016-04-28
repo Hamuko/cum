@@ -1,19 +1,28 @@
 # cum
 
 [![Build Status](https://travis-ci.org/Hamuko/cum.svg?branch=master)](https://travis-ci.org/Hamuko/cum)
-[![codecov.io](https://codecov.io/github/Hamuko/cum/coverage.svg?branch=master)](https://codecov.io/github/Hamuko/cum?branch=master)
+[![codecov.io](https://img.shields.io/codecov/c/github/Hamuko/cum/master.svg?maxAge=2592000)](https://codecov.io/github/Hamuko/cum?branch=master)
+[![PyPI](https://img.shields.io/pypi/dm/cum.svg?maxAge=2592000)](https://pypi.python.org/pypi/cum)
 
 comic updater, mangafied
 
 ## Description
 
-cum (comic updater, mangafied) is a tool designed for automated manga downloads from various online manga aggregate sites. It is inspired by some of the popular package managers used with Linux distributions and OS X.
+cum (comic updater, mangafied) is a tool designed for automated manga downloads from various online manga aggregate sites. It is inspired by some of the popular package managers used with Linux distributions and OS X. The file naming scheme is partially based Daiz's [Manga Naming Scheme](https://gist.github.com/Daiz/bb8424cfedd0f05b7386).
 
 ## Installation
 
-You can install cum on your system by executing `python setup.py install`. Please note that cum only supports Python 3.3+ at the moment.
+The easiest way to install the latest release of cum is by downloading and installing it from [Python Package Index](https://pypi.python.org/pypi/cum) with the command
 
-Users of Arch Linux can install stable versions [from the AUR](https://aur.archlinux.org/packages/cum/).
+    pip install cum
+
+If you want to get the latest and (possibly) the greatest, you can install the master branch version with
+
+    pip install git+https://github.com/Hamuko/cum
+
+Users of Arch Linux can install release versions from [the AUR](https://aur.archlinux.org/packages/cum/).
+
+Please note that cum currently requires **Python 3.3** or newer.
 
 ## Usage
 
@@ -86,12 +95,10 @@ See the [Supported sites](../../wiki/Supported-sites) wiki page for details.
 * [requests](https://pypi.python.org/pypi/requests/2.7.0)
 * [SQLAlchemy](https://pypi.python.org/pypi/SQLAlchemy/1.0.6)
 
+## Contribution
+
+If you wish to contribute to cum, please consult the [Contribution Guide](CONTRIBUTING.md) first to make everything a bit easier.
+
 ## Community
 
-There is an (inactive) IRC channel for cum: `#cu` on `irc.rizon.net`.
-
-## Design choices
-
-* File output format is partially based on Daiz's [Manga Naming Scheme](https://gist.github.com/Daiz/bb8424cfedd0f05b7386).
-  * The full format would be a nightmare to get working with the sparse information available on scraper sites.
-* Code styling is based on [Pocoo Style Guide](http://www.pocoo.org/internal/styleguide/) with 79 character line limit.
+There is an IRC channel for cum, `#cu` on `irc.rizon.net`, where cum development and issues are occasionally discussed.
