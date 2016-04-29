@@ -1,7 +1,7 @@
 # cum
 
 [![Build Status](https://travis-ci.org/Hamuko/cum.svg?branch=master)](https://travis-ci.org/Hamuko/cum)
-[![codecov.io](https://img.shields.io/codecov/c/github/Hamuko/cum/master.svg?maxAge=2592000)](https://codecov.io/github/Hamuko/cum?branch=master)
+[![codecov.io](https://img.shields.io/codecov/c/github/Hamuko/cum.svg?maxAge=2592000)](https://codecov.io/github/Hamuko/cum?branch=master)
 [![PyPI](https://img.shields.io/pypi/dm/cum.svg?maxAge=2592000)](https://pypi.python.org/pypi/cum)
 
 comic updater, mangafied
