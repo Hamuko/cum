@@ -28,38 +28,36 @@ def list_new():
     if not items:
         return
 
-    for series in sorted(items):
-        if config.get().compact_new:
-            print_new_compact(series, items)
-        else:
-            print_new_normal(series, items)
+    # Create a sorted list of tuples where the first value of the tuple is the
+    # series alias and second is a string containing the new chapters for the
+    # series separated by two spaces.
+    new = [(x, '  '.join([y for y in items[x]])) for x in sorted(items)]
+
+    if config.get().compact_new:
+        print_new_compact(new)
+    else:
+        print_new_normal(new)
 
 
-def print_new_compact(series, items):
+def print_new_compact(items):
     """Prints the new chapter information. E.g.
         joukamachi-no-dandelion 30  31  32  33  34
         minami-ke               153  154  155  156  157
     """
-    longest_name = len(max(items, key=len))
-    padding = longest_name - len(series)
-    name = click.style(series + ' ' * padding, bold=True)
-    chapters = '  '.join([x for x in items[series]])
-    line = click.wrap_text(' '.join([name, chapters]),
-                           subsequent_indent=' ' * (len(series) + padding + 1),
-                           width=click.get_terminal_size()[0])
-    click.echo(line)
+    output.even_columns(items, bold_first_column=True)
 
 
-def print_new_normal(series, items):
+def print_new_normal(items):
     """Prints the new chapter information. E.g.
         joukamachi-no-dandelion
         30  31  32  33  34
         minami-ke
         153  154  155  156  157
     """
-    click.secho(series, bold=True)
-    click.echo(click.wrap_text('  '.join([x for x in items[series]]),
-                               width=click.get_terminal_size()[0]))
+    width = click.get_terminal_size()[0]
+    for series in items:
+        click.secho(series[0], bold=True)
+        click.echo(click.wrap_text(series[1], width=width))
 
 
 def series_by_url(url):

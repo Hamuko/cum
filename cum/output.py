@@ -35,6 +35,24 @@ def error(msg):
     )
 
 
+def even_columns(items, bold_first_column=False, separator_width=1):
+    """Prints two columns with the second column padded so that it always
+    begins on the same line, regardless of how long the first column is on the
+    same line. Takes input as a list of two item tuples.
+    """
+    first_column_length = len(max([x[0] for x in items], key=len))
+    for item in items:
+        padding = first_column_length - len(item[0])
+        separator = ' ' * separator_width
+        first_column = click.style(item[0] + ' ' * padding,
+                                   bold=bold_first_column)
+        indent = len(item[0]) + padding + separator_width
+        line = click.wrap_text(separator.join([first_column, item[1]]),
+                               subsequent_indent=' ' * indent,
+                               width=click.get_terminal_size()[0])
+        click.echo(line)
+
+
 def list(items):
     """Print out a list of items in columns much like `ls` in bash."""
     if items:
