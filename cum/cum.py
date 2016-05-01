@@ -283,6 +283,28 @@ def ignore(alias, chapters):
 
 
 @cli.command()
+@click.argument('alias', required=False)
+@click.option('--relative/--no-relative', default=False,
+              help='Uses relative times instead of absolute times.')
+def latest(alias, relative):
+    """List most recent chapter addition for series."""
+    query = (db.session.query(db.Series)
+                       .filter_by(following=True)
+                       .order_by(db.Series.alias)
+                       .all())
+    updates = []
+    for series in query:
+        if series.last_added is None:
+            time = 'never'
+        elif relative:
+            time = utility.time_to_relative(series.last_added)
+        else:
+            time = series.last_added.strftime('%Y-%m-%d %H:%M')
+        updates.append((series.alias, time))
+    output.even_columns(updates, separator_width=3)
+
+
+@cli.command()
 def new():
     """List all new chapters."""
     utility.list_new()

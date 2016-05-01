@@ -1,8 +1,10 @@
 from click.testing import CliRunner
 from cum import config, cum, sanity
 from shutil import copyfile
+import datetime
 import os
 import tempfile
+import time
 import unittest
 
 
@@ -528,6 +530,98 @@ class TestCLI(unittest.TestCase):
         assert MESSAGE in result.output
         for chapter in chapters:
             assert chapter.downloaded == -1
+
+    def test_latest(self):
+        URL = 'http://bato.to/comic/_/comics/cat-gravity-r11269'
+        MESSAGE = 'cat-gravity   2013-12-11 10:09'
+
+        series = scrapers.BatotoSeries(URL)
+        series.follow()
+
+        chapter = db.session.query(db.Chapter).first()
+        chapter.added_on = datetime.datetime(2013, 12, 11, hour=10, minute=9)
+        db.session.commit()
+        time.sleep(2)
+
+        result = self.invoke('latest')
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
+
+    def test_latest_relative_days(self):
+        URL = 'http://bato.to/comic/_/comics/cat-gravity-r11269'
+        MESSAGE = 'cat-gravity   14 days ago'
+
+        series = scrapers.BatotoSeries(URL)
+        series.follow()
+
+        chapter = db.session.query(db.Chapter).first()
+        time = datetime.datetime.now() - datetime.timedelta(days=14)
+        chapter.added_on = time
+        db.session.commit()
+
+        result = self.invoke('latest', '--relative')
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
+
+    def test_latest_relative_hours(self):
+        URL = 'http://bato.to/comic/_/comics/cat-gravity-r11269'
+        MESSAGE = 'cat-gravity   3 hours ago'
+
+        series = scrapers.BatotoSeries(URL)
+        series.follow()
+
+        chapter = db.session.query(db.Chapter).first()
+        time = datetime.datetime.now() - datetime.timedelta(hours=3)
+        chapter.added_on = time
+        db.session.commit()
+
+        result = self.invoke('latest', '--relative')
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
+
+    def test_latest_relative_minutes(self):
+        URL = 'http://bato.to/comic/_/comics/cat-gravity-r11269'
+        MESSAGE = 'cat-gravity   1 minute ago'
+
+        series = scrapers.BatotoSeries(URL)
+        series.follow()
+
+        chapter = db.session.query(db.Chapter).first()
+        time = datetime.datetime.now() - datetime.timedelta(minutes=1)
+        chapter.added_on = time
+        db.session.commit()
+
+        result = self.invoke('latest', '--relative')
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
+
+    def test_latest_relative_months(self):
+        URL = 'http://bato.to/comic/_/comics/cat-gravity-r11269'
+        MESSAGE = 'cat-gravity   2 months ago'
+
+        series = scrapers.BatotoSeries(URL)
+        series.follow()
+
+        chapter = db.session.query(db.Chapter).first()
+        time = datetime.datetime.now() - datetime.timedelta(days=69)
+        chapter.added_on = time
+        db.session.commit()
+
+        result = self.invoke('latest', '--relative')
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
+
+    def test_latest_relative_seconds(self):
+        URL = 'http://bato.to/comic/_/comics/cat-gravity-r11269'
+        MESSAGES = ['cat-gravity   ', 'seconds ago']
+
+        series = scrapers.BatotoSeries(URL)
+        series.follow()
+
+        result = self.invoke('latest', '--relative')
+        assert result.exit_code == 0
+        for message in MESSAGES:
+            assert message in result.output
 
     def test_new(self):
         URL = 'http://bato.to/comic/_/comics/blood-r5840'

@@ -92,6 +92,8 @@ class DatabaseSanity(object):
             expected_type = sqltypes.INTEGER
         elif isinstance(column.type, sqltypes.Boolean):
             expected_type = sqltypes.BOOLEAN
+        elif isinstance(column.type, sqltypes.DateTime):
+            expected_type = sqltypes.DATETIME
 
         if not isinstance(database_column['type'], expected_type):
             self.errors.append(

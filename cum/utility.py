@@ -1,6 +1,7 @@
 from cum import db, config, output
 from cum.scrapers import chapter_scrapers, series_scrapers
 import click
+import datetime
 import re
 
 
@@ -106,3 +107,28 @@ def set_ignored(mark_ignored, alias, chapters):
     else:
         output.series('{}gnored {} chapters for {}'
                       .format(message_start, len(chapters), s.name))
+
+
+def time_to_relative(time):
+    """Converts a DateTime object into a string containing the relative time of
+    the DateTime, e.g. "3 minutes ago".
+    """
+    delta = datetime.datetime.now() - time
+    if delta.days >= 30:
+        value = delta.days // 30
+        unit = 'months'
+    elif delta.days > 0:
+        value = delta.days
+        unit = 'days'
+    elif delta.seconds >= 60 * 60:
+        value = delta.seconds // (60 * 60)
+        unit = 'hours'
+    elif delta.seconds >= 60:
+        value = delta.seconds // 60
+        unit = 'minutes'
+    else:
+        value = delta.seconds
+        unit = 'seconds'
+    if value == 1:
+        unit = unit.rstrip('s')
+    return '{} {} ago'.format(value, unit)
