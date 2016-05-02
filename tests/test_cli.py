@@ -547,6 +547,21 @@ class TestCLI(unittest.TestCase):
         assert result.exit_code == 0
         assert MESSAGE in result.output
 
+    def test_latest_never(self):
+        URL = 'http://bato.to/comic/_/comics/cat-gravity-r11269'
+        MESSAGE = 'cat-gravity   never'
+
+        series = scrapers.BatotoSeries(URL)
+        series.follow()
+
+        chapter = db.session.query(db.Chapter).first()
+        db.session.delete(chapter)
+        db.session.commit()
+
+        result = self.invoke('latest')
+        assert result.exit_code == 0
+        assert MESSAGE in result.output
+
     def test_latest_relative_days(self):
         URL = 'http://bato.to/comic/_/comics/cat-gravity-r11269'
         MESSAGE = 'cat-gravity   14 days ago'
