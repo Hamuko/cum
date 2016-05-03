@@ -117,12 +117,18 @@ def config_command(mode, setting, value):
             output.error('Setting not found')
             exit(1)
         if current_value is not None:
-            try:
-                value = type(current_value)(value)
-            except ValueError:
-                output.error('Type mismatch: value should be {}'
-                             .format(type(current_value).__name__))
-                exit(1)
+            if isinstance(current_value, bool):
+                if value.lower() == 'false' or value == 0:
+                    value = False
+                else:
+                    value = True
+            else:
+                try:
+                    value = type(current_value)(value)
+                except ValueError:
+                    output.error('Type mismatch: value should be {}'
+                                 .format(type(current_value).__name__))
+                    exit(1)
         setattr(preference, parameters[-1], value)
         config.get().write()
     else:

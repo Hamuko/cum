@@ -150,6 +150,14 @@ class TestCLI(unittest.TestCase):
         assert result.exit_code == 0
         assert config.get().cbz is True
 
+    def test_config_set_cbz_false(self):
+        config.get().cbz = True
+        config.get().write()
+
+        result = self.invoke('config', 'set', 'cbz', 'False')
+        assert result.exit_code == 0
+        assert config.get().cbz is False
+
     def test_config_set_invalid_setting(self):
         MESSAGE = 'Setting not found'
 
