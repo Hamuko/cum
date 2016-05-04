@@ -49,6 +49,8 @@ follows    List all follows.
 get        Download chapters by URL or by alias:chapter.
   --directory TEXT  Directory which download chapters into.
 ignore     Ignore chapters for a series.
+latest     List most recent chapter addition for series.
+  --relative        Uses relative times instead of absolute times.
 new        List all new chapters.
 open       Open the series URL in a browser.
 repair-db  Runs an automated database repair.

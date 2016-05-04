@@ -17,6 +17,14 @@ class CumGroup(click.Group):
         return decorator
 
 
+def edit_defaults():
+    """Edits the Click command default values after initializing the config."""
+    latest_command = cli.get_command(cli, 'latest')
+    for param in latest_command.params:
+        if param.human_readable_name == 'relative':
+            param.default = config.get().relative_latest
+
+
 @click.command(cls=CumGroup)
 @click.option('--cum-directory',
               help='Directory used by cum to store application files.')
@@ -27,6 +35,7 @@ def cli(cum_directory=None):
     config.initialize(directory=cum_directory)
     from cum import db, output, sanity, utility
     db.initialize()
+    edit_defaults()
 
 
 @cli.command()
