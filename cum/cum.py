@@ -17,6 +17,14 @@ class CumGroup(click.Group):
         return decorator
 
 
+def edit_defaults():
+    """Edits the Click command default values after initializing the config."""
+    latest_command = cli.get_command(cli, 'latest')
+    for param in latest_command.params:
+        if param.human_readable_name == 'relative':
+            param.default = config.get().relative_latest
+
+
 @click.command(cls=CumGroup)
 @click.option('--cum-directory',
               help='Directory used by cum to store application files.')
@@ -27,6 +35,7 @@ def cli(cum_directory=None):
     config.initialize(directory=cum_directory)
     from cum import db, output, sanity, utility
     db.initialize()
+    edit_defaults()
 
 
 @cli.command()
@@ -286,6 +295,28 @@ def ignore(alias, chapters):
     place of the chapters.
     """
     utility.set_ignored(True, alias, chapters)
+
+
+@cli.command()
+@click.argument('alias', required=False)
+@click.option('--relative/--no-relative', default=False,
+              help='Uses relative times instead of absolute times.')
+def latest(alias, relative):
+    """List most recent chapter addition for series."""
+    query = (db.session.query(db.Series)
+                       .filter_by(following=True)
+                       .order_by(db.Series.alias)
+                       .all())
+    updates = []
+    for series in query:
+        if series.last_added is None:
+            time = 'never'
+        elif relative:
+            time = utility.time_to_relative(series.last_added)
+        else:
+            time = series.last_added.strftime('%Y-%m-%d %H:%M')
+        updates.append((series.alias, time))
+    output.even_columns(updates, separator_width=3)
 
 
 @cli.command()

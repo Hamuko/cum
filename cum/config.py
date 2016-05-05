@@ -35,6 +35,7 @@ class BaseConfig(object):
         self.download_threads = j.get('download_threads', 4)
         self.html_parser = j.get('html_parser', 'html.parser')
         self.madokami = MadokamiConfig(self, j.get('madokami', {}))
+        self.relative_latest = j.get('relative_latest', False)
 
         self.persistent_config = j
 

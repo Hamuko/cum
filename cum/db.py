@@ -5,6 +5,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     create_engine,
+    DateTime,
     ForeignKey,
     Integer,
     String,
@@ -13,10 +14,11 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
-import sqlalchemy.engine.url
 from urllib.parse import urlparse
 import click
+import datetime
 import os
+import sqlalchemy.engine.url
 
 Base = declarative_base()
 
@@ -62,6 +64,16 @@ class Series(Base):
             return s
 
     @property
+    def last_added(self):
+        """Returns the last time a chapter has been added to the series."""
+        updates = sorted([x for x in self.chapters if x.added_on is not None],
+                         reverse=True, key=lambda x: x.added_on)
+        if updates:
+            return updates[0].added_on
+        else:
+            return None
+
+    @property
     def ordered_chapters(self):
         return humansorted(self.chapters, key=lambda x: x.chapter)
 
@@ -78,6 +90,7 @@ class Chapter(Base):
     chapter = Column(String)
     url = Column(String, unique=True)
     title = Column(String)
+    added_on = Column(DateTime)
 
     groups = relationship('Group', secondary=group_table, backref='chapters')
 
@@ -86,6 +99,7 @@ class Chapter(Base):
         self.chapter = chapter.chapter
         self.title = chapter.title
         self.url = chapter.url
+        self.added_on = datetime.datetime.now()
 
         self.groups = []
         for group in chapter.groups:
