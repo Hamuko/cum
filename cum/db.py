@@ -66,7 +66,8 @@ class Series(Base):
     @property
     def last_added(self):
         """Returns the last time a chapter has been added to the series."""
-        updates = sorted(self.chapters, reverse=True, key=lambda x: x.added_on)
+        updates = sorted([x for x in self.chapters if x.added_on is not None],
+                         reverse=True, key=lambda x: x.added_on)
         if updates:
             return updates[0].added_on
         else:
