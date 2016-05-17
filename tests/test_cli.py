@@ -383,8 +383,7 @@ class TestCLI(unittest.TestCase):
 
     def test_follow_madokami_download_invalid_login(self):
         URL = 'https://manga.madokami.com/Manga/A/AK/AKUM/Akuma%20no%20Riddle'
-        MESSAGE = ('Could not download akuma-no-riddle 00-08: '
-                   'Madokami login error')
+        MESSAGE = '==> Madokami login error (' + URL + ')'
 
         config.get().madokami.password = 'notworking'
         config.get().madokami.username = 'notworking'

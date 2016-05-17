@@ -15,7 +15,12 @@ class MadokamiSeries(BaseSeries):
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
-        r = requests.get(url)
+        self.session = requests.Session()
+        self.session.auth = requests.auth.HTTPBasicAuth(*config
+                                                        .get().madokami.login)
+        r = self.session.get(url)
+        if r.status_code == 401:
+            raise exceptions.LoginError('Madokami login error')
         self.soup = BeautifulSoup(r.text, config.get().html_parser)
         self.chapters = self.get_chapters()
 
@@ -52,7 +57,8 @@ class MadokamiSeries(BaseSeries):
                 groups = []
 
             c = MadokamiChapter(name=self.name, alias=self.alias,
-                                chapter=chapter, url=url, groups=groups)
+                                chapter=chapter, url=url, groups=groups,
+                                session=self.session)
             chapters.append(c)
         return chapters
 
@@ -65,9 +71,16 @@ class MadokamiChapter(BaseChapter):
     url_re = re.compile(r'https://manga\.madokami\.com/Manga/.*/.*/.*\..*')
     uses_pages = False
 
+    def __init__(self, *args, **kwargs):
+        self.session = kwargs.get("session", requests.Session())
+        super().__init__(*args, **kwargs)
+
     def download(self):
-        auth = requests.auth.HTTPBasicAuth(*config.get().madokami.login)
-        with closing(requests.get(self.url, auth=auth, stream=True)) as r:
+        if not self.session.auth:
+            self.session.auth = requests.auth.HTTPBasicAuth(*config
+                                                            .get()
+                                                            .madokami.login)
+        with closing(self.session.get(self.url, stream=True)) as r:
             if r.status_code == 401:
                 raise exceptions.LoginError('Madokami login error')
             total_length = r.headers.get('content-length')
