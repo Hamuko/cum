@@ -69,7 +69,7 @@ class Series(Base):
         alias = self.alias
         count = 1
         while session.query(Series).filter_by(alias=alias).all():
-            alias = '{}-{}'.format(alias, count)
+            alias = '{}-{}'.format(self.alias, count)
             count += 1
         self.alias = alias
 
