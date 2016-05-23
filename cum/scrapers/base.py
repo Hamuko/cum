@@ -38,17 +38,19 @@ class BaseSeries(metaclass=ABCMeta):
 
     def follow(self, ignore=False):
         """Adds the series details to database and all current chapters."""
-        output.series('Adding follow for {s.name} ({s.alias})'.format(s=self))
 
         try:
             s = db.session.query(db.Series).filter_by(url=self.url).one()
         except NoResultFound:
             s = db.Series(self)
+            s.check_alias_uniqueness()
+            output.series('Adding follow for {s.name} ({s.alias})'.format(s=s))
             db.session.add(s)
             db.session.commit()
         else:
             if s.following:
-                output.warning('You are already following this series')
+                output.warning('You are already following {s.name} ({s.alias})'
+                               .format(s=s))
             else:
                 s.directory = self.directory
                 s.following = True

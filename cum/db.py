@@ -63,6 +63,16 @@ class Series(Base):
         else:
             return s
 
+    def check_alias_uniqueness(self):
+        """Check if the series alias is unique before initalizing the series object.
+        """
+        alias = self.alias
+        count = 1
+        while session.query(Series).filter_by(alias=alias).all():
+            alias = '{}-{}'.format(alias, count)
+            count += 1
+        self.alias = alias
+
     @property
     def last_added(self):
         """Returns the last time a chapter has been added to the series."""

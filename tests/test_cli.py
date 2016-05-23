@@ -280,8 +280,8 @@ class TestCLI(unittest.TestCase):
 
     def test_follow_batoto_duplicate(self):
         URL = 'http://bato.to/comic/_/comics/akuma-no-riddle-r9759'
-        MESSAGES = ['Adding follow for Akuma no Riddle (akuma-no-riddle)',
-                    'You are already following this series']
+        MESSAGES = ('You are already following Akuma no Riddle '
+                    '(akuma-no-riddle)')
 
         series = scrapers.BatotoSeries(URL)
         series.follow()
@@ -392,6 +392,26 @@ class TestCLI(unittest.TestCase):
         result = self.invoke('follow', URL, '--download')
         assert result.exit_code == 0
         assert MESSAGE in result.output
+
+    def test_follow_non_unique_alias(self):
+        URLS = ['https://bato.to/comic/_/comics/happiness-oshimi-shuzo-r14710',
+                'https://manga.madokami.com/Manga/H/HA/HAPP/Happiness%20'
+                '%28OSHIMI%20Shuzo%29']
+        ALIASES = ['happiness-oshimi-shuzo', 'happiness-oshimi-shuzo-1']
+        MESSAGES = ['Adding follow for Happiness (OSHIMI Shuzo) '
+                    '(happiness-oshimi-shuzo)',
+                    'Adding follow for Happiness (OSHIMI Shuzo) '
+                    '(happiness-oshimi-shuzo-1)']
+
+        for index in range(len(URLS)):
+            result = self.invoke('follow', URLS[index])
+            assert result.exit_code == 0
+            assert MESSAGES[index] in result.output
+
+        follows = db.session.query(db.Series).all()
+        assert len(follows) == len(URLS)
+        for alias in ALIASES:
+            assert alias in [x.alias for x in follows]
 
     def test_follows(self):
         URLS = ['http://bato.to/comic/_/comics/b-gata-h-kei-r500',
