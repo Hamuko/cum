@@ -30,7 +30,7 @@ To print out a list of available commands, use `cum --help`. For help with a par
 
 ### Configuration
 
-Configuration is stored at `~/.cum/config.json` and overwrites the following default values. cum will not write login information supplied by the user at run-time back to the config file, but will store session cookies if any exist. Configuration can get read with the command `cum config get [SETTING]` and set using `cum config set [SETTING] [VALUE]`.
+Configuration is stored at `~/.cum/config.json` (`%APPDATA%\cum\config.json` for Windows) and overwrites the following default values. cum will not write login information supplied by the user at run-time back to the config file, but will store session cookies if any exist. Configuration can get read with the command `cum config get [SETTING]` and set using `cum config set [SETTING] [VALUE]`.
 
 See the [Configuration](../../wiki/Configuration) wiki page for more details and available settings.
 

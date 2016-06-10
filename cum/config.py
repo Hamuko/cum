@@ -4,6 +4,7 @@ import json
 import os
 import re
 import requests
+import sys
 
 
 class BaseConfig(object):
@@ -18,6 +19,16 @@ class BaseConfig(object):
             self.persistent_config[name] = value
         object.__setattr__(self, name, value)
 
+    @property
+    def default_download_directory(self):
+        """Returns a platform-specific download directory to use if no download
+        directory is specified by the user.
+        """
+        if sys.platform in ['cygwin', 'win32']:
+            return os.path.join(os.environ['USERPROFILE'], 'Downloads')
+        else:
+            return os.environ['HOME']
+
     def load(self):
         try:
             f = open(config_path)
@@ -31,7 +42,7 @@ class BaseConfig(object):
         self.cbz = j.get('cbz', False)
         self.compact_new = j.get('compact_new', False)
         self.download_directory = j.get('download_directory',
-                                        os.environ['HOME'])
+                                        self.default_download_directory)
         self.download_threads = j.get('download_threads', 4)
         self.html_parser = j.get('html_parser', 'html.parser')
         self.madokami = MadokamiConfig(self, j.get('madokami', {}))
@@ -133,6 +144,8 @@ def initialize(directory=None):
     global _config, config_path, cum_dir
     if directory:
         cum_dir = directory
+    elif sys.platform in ['cygwin', 'win32']:
+        cum_dir = os.path.join(os.environ['APPDATA'], 'cum')
     else:
         cum_dir = os.path.join(os.environ['HOME'], '.cum')
     if not os.path.exists(cum_dir):
