@@ -9,6 +9,7 @@ from tempfile import NamedTemporaryFile
 import click
 import os
 import requests
+import sys
 import zipfile
 
 
@@ -97,6 +98,8 @@ class BaseChapter(metaclass=ABCMeta):
     def _strip_unwanted_characters(self, path):
         """Strips unwanted characters from paths or filenames."""
         KEEP_CHARACTERS = [' ', '.', '-', '_', '[', ']', '/', "'"]
+        if sys.platform in ['cygwin', 'win32']:
+            KEEP_CHARACTERS += [':', '\\']
         path = ''.join([char for char in path if char.isalpha() or
                         char.isdigit() or char in KEEP_CHARACTERS]).rstrip()
         path = sub(' +', ' ', path)
