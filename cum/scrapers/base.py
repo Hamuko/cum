@@ -152,6 +152,7 @@ class BaseChapter(metaclass=ABCMeta):
                 root, ext = os.path.splitext(f.name)
                 z.write(f.name, 'img{num:0>6}{ext}'.format(num=num, ext=ext))
                 f.close()
+                os.remove(f.name)
 
     def db_remove(self):
         """Removes the chapter from the database."""
@@ -279,11 +280,12 @@ class BaseChapter(metaclass=ABCMeta):
         sequential downloads in parallel.
         """
         ext = guess_extension(r.headers.get('content-type'))
-        f = NamedTemporaryFile(suffix=ext)
+        f = NamedTemporaryFile(suffix=ext, delete=False)
         for chunk in r.iter_content(chunk_size=4096):
             if chunk:
                 f.write(chunk)
         f.flush()
+        f.close()
         r.close()
         return((page_num, f))
 
