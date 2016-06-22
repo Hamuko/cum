@@ -717,6 +717,54 @@ class TestCLI(unittest.TestCase):
         for message in MESSAGES:
             assert message in result.output
 
+    def test_new_broken_madokami_domain(self):
+        MESSAGES = ['series has entries with incorrect domain '
+                    '(manga.madokami.com -> manga.madokami.al)',
+                    'chapters has entries with incorrect domain '
+                    '(manga.madokami.com -> manga.madokami.al)',
+                    'Database has failed sanity check; run `cum repair-db` '
+                    'to repair database']
+        URL_SERIES = ('https://manga.madokami.com/Manga/O/OJ/OJOJ/Ojojojo',
+                      'https://manga.madokami.al/Manga/O/OJ/OJOJ/Ojojojo')
+        URL_CHAPTER = ('https://manga.madokami.com/Manga/O/OJ/OJOJ/Ojojojo/'
+                       'Ojojojo%20c001.rar',
+                       'https://manga.madokami.al/Manga/O/OJ/OJOJ/Ojojojo/'
+                       'Ojojojo%20c001.rar')
+
+        class MockMadokamiSeries():
+            def __init__(self):
+                self.url = URL_SERIES[0]
+                self.name = 'Ojojojo'
+                self.alias = 'ojojojo'
+                self.directory = None
+
+        class MockMadokamiChapter():
+            def __init__(self):
+                self.url = URL_CHAPTER[0]
+                self.chapter = '1'
+                self.title = None
+                self.groups = ['Group']
+
+        series = MockMadokamiSeries()
+        chapter = MockMadokamiChapter()
+        db_series = db.Series(series)
+        db.session.add(db_series)
+        db.session.add(db.Chapter(chapter, db_series))
+        db.session.commit()
+
+        result = self.invoke('new')
+        assert result.exit_code == 1
+        for message in MESSAGES:
+            assert message in result.output
+
+        result = self.invoke('repair-db')
+        assert result.exit_code == 0
+
+        series = db.session.query(db.Series).first()
+        chapter = db.session.query(db.Chapter).first()
+        assert series.url == URL_SERIES[1]
+        assert chapter.url == URL_CHAPTER[1]
+
     def test_open(self):
         URL = 'http://bato.to/comic/_/comics/blood-r5840'
 

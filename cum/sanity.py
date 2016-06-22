@@ -1,7 +1,9 @@
 from abc import ABCMeta, abstractmethod
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
+from cum import db
 from sqlalchemy import inspect
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative.clsregistry import _ModuleMarker
 from sqlalchemy.orm import RelationshipProperty
 from sqlalchemy.sql import sqltypes
@@ -45,6 +47,7 @@ class DatabaseSanity(object):
         self.test_tables()
         for table in self.database_tables:
             self.test_columns(table)
+        self.test_madokami_url()  # TODO: Remove in the future.
 
     def test_columns(self, table):
         """Tests the columns in database table. If a column exists in the
@@ -101,6 +104,24 @@ class DatabaseSanity(object):
                                  parent=self)
             )
 
+    def test_madokami_url(self):
+        """Temporary function to test if Madokami series and chapters have the
+        correct URL after the top-level domain change. Will be removed after an
+        appropriate time has passed for people have made the switch.
+        """
+        old_domain = 'manga.madokami.com'
+        new_domain = 'manga.madokami.al'
+        models = [db.Series, db.Chapter]
+        for model in models:
+            condition = model.url.ilike('%{}%'.format(old_domain))
+            try:
+                results = db.session.query(model).filter(condition).all()
+            except SQLAlchemyError:
+                continue
+            if results:
+                error = IncorrectDomain(model, old_domain, new_domain)
+                self.errors.append(error)
+
     def test_tables(self):
         """Tests if all the defined models are found in the database. If a
         table is missing, a MissingTable object is added to the error list.
@@ -154,6 +175,27 @@ class DatatypeMismatch(SanityError):
                             batch_op.alter_column(column.name,
                                                   type_=column.type)
                         return
+
+
+class IncorrectDomain(SanityError):
+    """Class used for database entries that have an outdated domain."""
+
+    def __init__(self, model, old_domain, new_domain):
+        self.model = model
+        self.old_domain = old_domain
+        self.new_domain = new_domain
+
+    def __str__(self):
+        return ('{s.model.__tablename__} has entries with incorrect domain '
+                '({s.old_domain} -> {s.new_domain})'
+                .format(s=self))
+
+    def fix(self):
+        condition = self.model.url.ilike('%{}%'.format(self.old_domain))
+        results = db.session.query(self.model).filter(condition).all()
+        for result in results:
+            result.url = result.url.replace(self.old_domain, self.new_domain)
+        db.session.commit()
 
 
 class MissingColumn(SanityError):
