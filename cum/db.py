@@ -166,7 +166,7 @@ class Chapter(Base):
         elif parse.netloc == 'dynasty-scans.com':
             from cum.scrapers.dynastyscans import DynastyScansChapter
             return DynastyScansChapter(**kwargs)
-        elif parse.netloc == 'manga.madokami.com':
+        elif parse.netloc == 'manga.madokami.al':
             from cum.scrapers.madokami import MadokamiChapter
             return MadokamiChapter(**kwargs)
         else:

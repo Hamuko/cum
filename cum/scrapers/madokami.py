@@ -11,7 +11,7 @@ name_re = re.compile(r'-? c([0-9-]+).*?(?: \[(.*)\])?\.')
 
 
 class MadokamiSeries(BaseSeries):
-    url_re = re.compile(r'https://manga\.madokami\.com/Manga/[^.]+$')
+    url_re = re.compile(r'https://manga\.madokami\.al/Manga/[^.]+$')
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
@@ -68,7 +68,7 @@ class MadokamiSeries(BaseSeries):
 
 
 class MadokamiChapter(BaseChapter):
-    url_re = re.compile(r'https://manga\.madokami\.com/Manga/.*/.*/.*\..*')
+    url_re = re.compile(r'https://manga\.madokami\.al/Manga/.*/.*/.*\..*')
     uses_pages = False
 
     def __init__(self, *args, **kwargs):
@@ -97,7 +97,7 @@ class MadokamiChapter(BaseChapter):
                     f.flush()
 
     def from_url(url):
-        series_url = re.search(r'(.*manga\.madokami\.com/.*/)', url).group(1)
+        series_url = re.search(r'(.*manga\.madokami\.al/.*/)', url).group(1)
         series = MadokamiSeries(series_url)
         for chapter in series.chapters:
             if chapter.url == url:

@@ -5,8 +5,6 @@ import unittest
 
 
 class TestMadokami(unittest.TestCase):
-    BATOTO_URL = 'http://bato.to/'
-
     def setUp(self):
         global madokami
         self.directory = tempfile.TemporaryDirectory()
@@ -37,7 +35,7 @@ class TestMadokami(unittest.TestCase):
         assert len(data['chapters']) == 0
 
     def test_chapter_filename_no_group(self):
-        URL = ('https://manga.madokami.com/Manga/_/__/__DA/7-Daime%20no%20'
+        URL = ('https://manga.madokami.al/Manga/_/__/__DA/7-Daime%20no%20'
                'Tomari%21/7-Daime%20no%20Tomari%21%20v01%20c01.zip')
         chapter = madokami.MadokamiChapter.from_url(URL)
         assert chapter.chapter == '01'
@@ -55,7 +53,7 @@ class TestMadokami(unittest.TestCase):
             self.test_chapter_100_dollar_too_cheap()
 
     def test_chapter_100_dollar_too_cheap(self):
-        URL = ('https://manga.madokami.com/Manga/Oneshots/100%20Dollar%20wa%20'
+        URL = ('https://manga.madokami.al/Manga/Oneshots/100%20Dollar%20wa%20'
                'Yasu%20Sugiru/100%24%20is%20Too%20Cheap%20%5BYAMAMOTO%20Kazune'
                '%5D%20-%20000%20%5BOneshot%5D%20%5BPeebs%5D.zip')
         NAME = '100 Dollar wa Yasu Sugiru'
@@ -86,7 +84,7 @@ class TestMadokami(unittest.TestCase):
                          '257-268'],
             'groups': [None],
             'name': 'Kami nomi zo Shiru Sekai',
-            'url': 'https://manga.madokami.com/Manga/K/KA/KAMI/Kami%20nomi%20'
+            'url': 'https://manga.madokami.al/Manga/K/KA/KAMI/Kami%20nomi%20'
                    'zo%20Shiru%20Sekai'
         }
         self.series_information_tester(data)
@@ -102,7 +100,7 @@ class TestMadokami(unittest.TestCase):
             'groups': ['CXC', 'CXC+anon', 'CXC+ims',
                        'CXC-ims', 'ims+DBR', 'Sammy+ims+DBR'],
             'name': 'Medaka Box',
-            'url': 'https://manga.madokami.com/Manga/M/ME/MEDA/Medaka%20Box'
+            'url': 'https://manga.madokami.al/Manga/M/ME/MEDA/Medaka%20Box'
         }
         self.series_information_tester(data)
 

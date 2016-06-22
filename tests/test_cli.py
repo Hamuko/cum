@@ -234,7 +234,7 @@ class TestCLI(unittest.TestCase):
                                            FILENAME)) is True
 
     def test_download_invalid_login(self):
-        URL = ('https://manga.madokami.com/Manga/Oneshots/100%20Dollar%20wa%20'
+        URL = ('https://manga.madokami.al/Manga/Oneshots/100%20Dollar%20wa%20'
                'Yasu%20Sugiru')
         MESSAGE = ('Could not download 100-dollar-wa-yasu-sugiru 000 '
                    '[Oneshot]: Madokami login error')
@@ -374,7 +374,7 @@ class TestCLI(unittest.TestCase):
         assert MESSAGE in result.output
 
     def test_follow_madokami(self):
-        URL = 'https://manga.madokami.com/Manga/A/AK/AKUM/Akuma%20no%20Riddle'
+        URL = 'https://manga.madokami.al/Manga/A/AK/AKUM/Akuma%20no%20Riddle'
         MESSAGE = 'Adding follow for Akuma no Riddle (akuma-no-riddle)'
 
         result = self.invoke('follow', URL)
@@ -382,7 +382,7 @@ class TestCLI(unittest.TestCase):
         assert MESSAGE in result.output
 
     def test_follow_madokami_download_invalid_login(self):
-        URL = 'https://manga.madokami.com/Manga/A/AK/AKUM/Akuma%20no%20Riddle'
+        URL = 'https://manga.madokami.al/Manga/A/AK/AKUM/Akuma%20no%20Riddle'
         MESSAGE = '==> Madokami login error (' + URL + ')'
 
         config.get().madokami.password = 'notworking'
@@ -395,7 +395,7 @@ class TestCLI(unittest.TestCase):
 
     def test_follow_non_unique_alias(self):
         URLS = ['https://bato.to/comic/_/comics/happiness-oshimi-shuzo-r14710',
-                'https://manga.madokami.com/Manga/H/HA/HAPP/Happiness%20'
+                'https://manga.madokami.al/Manga/H/HA/HAPP/Happiness%20'
                 '%28OSHIMI%20Shuzo%29']
         ALIASES = ['happiness-oshimi-shuzo', 'happiness-oshimi-shuzo-1']
         MESSAGES = ['Adding follow for Happiness (OSHIMI Shuzo) '
@@ -485,7 +485,7 @@ class TestCLI(unittest.TestCase):
             assert message in result.output
 
     def test_get_chapter_madokami_invalid_login(self):
-        URL = ('https://manga.madokami.com/Manga/Oneshots/12-ji%20no%20Kane%20'
+        URL = ('https://manga.madokami.al/Manga/Oneshots/12-ji%20no%20Kane%20'
                'ga%20Naru/12%20O%27Clock%20Bell%20Rings%20%5BKISHIMOTO%20'
                'Seishi%5D%20-%20000%20%5BOneshot%5D%20%5BTurtle%20Paradise%5D'
                '.zip')
