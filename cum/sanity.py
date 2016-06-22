@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
-from cum import db
 from sqlalchemy import inspect
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative.clsregistry import _ModuleMarker
@@ -109,6 +108,8 @@ class DatabaseSanity(object):
         correct URL after the top-level domain change. Will be removed after an
         appropriate time has passed for people have made the switch.
         """
+        global db
+        from cum import db
         old_domain = 'manga.madokami.com'
         new_domain = 'manga.madokami.al'
         models = [db.Series, db.Chapter]
