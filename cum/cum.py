@@ -303,10 +303,12 @@ def ignore(alias, chapters):
               help='Uses relative times instead of absolute times.')
 def latest(alias, relative):
     """List most recent chapter addition for series."""
-    query = (db.session.query(db.Series)
-                       .filter_by(following=True)
-                       .order_by(db.Series.alias)
-                       .all())
+    query = db.session.query(db.Series)
+    if alias:
+        query = query.filter_by(following=True, alias=alias)
+    else:
+        query = query.filter_by(following=True)
+    query = query.order_by(db.Series.alias).all()
     updates = []
     for series in query:
         if series.last_added is None:
