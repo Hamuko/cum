@@ -170,6 +170,24 @@ class TestBatoto(unittest.TestCase):
         with self.assertRaises(exceptions.LoginError):
             series = batoto.BatotoSeries(url=URL)
 
+    def test_outdated_session(self):
+        URL = 'http://bato.to/comic/_/comics/femme-fatale-r468'
+        config.get().batoto.cookie = '0da7ed'
+        config.get().batoto.member_id = '0da7ed'
+        config.get().batoto.pass_hash = '0da7ed'
+        config.get().write()
+        series = batoto.BatotoSeries(url=URL)
+
+    def test_outdated_session_max_retries(self):
+        URL = 'http://bato.to/comic/_/comics/femme-fatale-r468'
+        config.get().batoto._login_attempts = 1
+        config.get().batoto.cookie = '0da7ed'
+        config.get().batoto.member_id = '0da7ed'
+        config.get().batoto.pass_hash = '0da7ed'
+        config.get().write()
+        with self.assertRaises(exceptions.LoginError):
+            series = batoto.BatotoSeries(url=URL)
+
     def test_series_molester_man(self):
         data = {'alias': 'molester-man',
                 'chapters': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10',

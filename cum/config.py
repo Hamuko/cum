@@ -94,6 +94,7 @@ class BatotoConfig(object):
 
     def __init__(self, config, dict):
         self._config = config
+        self._login_attempts = 0
         self.cookie = dict.get('cookie', None)
         self.member_id = dict.get('member_id', None)
         self.pass_hash = dict.get('pass_hash', None)
@@ -101,6 +102,9 @@ class BatotoConfig(object):
         self.username = dict.get('username', None)
 
     def login(self):
+        self._login_attempts += 1
+        if self._login_attempts > 1:
+            raise exceptions.LoginError('Batoto login error')
         if not self.username:
             username = click.prompt('Batoto username')
         else:
