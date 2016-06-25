@@ -4,10 +4,9 @@ python:
   - '3.4'
   - '3.5'
 install:
-  - python setup.py install
-  - pip install -r test_requirements.txt
+  - pip install .[testing]
 script:
-  - pep8 cum
+  - pycodestyle cum
   - cd tests
   - coverage run test.py
 notifications:

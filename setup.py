@@ -116,6 +116,9 @@ setup(
         'requests',
         'SQLAlchemy'
     ],
+    extras_require={
+        'testing': ['codecov', 'coverage', 'pycodestyle']
+    },
     entry_points={
         'console_scripts': ['cum=cum.cum:cli'],
     }
