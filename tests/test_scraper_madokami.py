@@ -16,33 +16,33 @@ class TestMadokami(cumtest.CumTest):
 
     def series_information_tester(self, data):
         series = madokami.MadokamiSeries(data['url'])
-        assert series.name == data['name']
-        assert series.alias == data['alias']
-        assert series.url == data['url']
-        assert series.directory is None
-        assert len(series.chapters) == len(data['chapters'])
+        self.assertEqual(series.name, data['name'])
+        self.assertEqual(series.alias, data['alias'])
+        self.assertEqual(series.url, data['url'])
+        self.assertIs(series.directory, None)
+        self.assertEqual(len(series.chapters), len(data['chapters']))
         for chapter in series.chapters:
-            assert chapter.name == data['name']
-            assert chapter.alias == data['alias']
-            assert chapter.chapter in data['chapters']
+            self.assertEqual(chapter.name, data['name'])
+            self.assertEqual(chapter.alias, data['alias'])
+            self.assertIn(chapter.chapter, data['chapters'])
             data['chapters'].remove(chapter.chapter)
             for group in chapter.groups:
-                assert group in data['groups']
-            assert chapter.directory is None
-        assert len(data['chapters']) == 0
+                self.assertIn(group, data['groups'])
+            self.assertIs(chapter.directory, None)
+        self.assertEqual(len(data['chapters']), 0)
 
     @cumtest.skipIfNoMadokamiLogin
     def test_chapter_filename_no_group(self):
         URL = ('https://manga.madokami.al/Manga/_/__/__DA/7-Daime%20no%20'
                'Tomari%21/7-Daime%20no%20Tomari%21%20v01%20c01.zip')
         chapter = madokami.MadokamiChapter.from_url(URL)
-        assert chapter.chapter == '01'
-        assert len(chapter.groups) == 0
+        self.assertEqual(chapter.chapter, '01')
+        self.assertEqual(len(chapter.groups), 0)
         path = os.path.join(
             self.directory.name, '7-Daime no Tomari',
             '7-Daime no Tomari - c001 [Unknown].zip'
         )
-        assert chapter.filename == path
+        self.assertEqual(chapter.filename, path)
 
     def test_chapter_invalid_login(self):
         URL = ('https://manga.madokami.al/Manga/Oneshots/100%20Dollar%20wa%20'
@@ -60,20 +60,20 @@ class TestMadokami(cumtest.CumTest):
                '%5D%20-%20000%20%5BOneshot%5D%20%5BPeebs%5D.zip')
         NAME = '100 Dollar wa Yasu Sugiru'
         chapter = madokami.MadokamiChapter.from_url(URL)
-        assert chapter.alias == '100-dollar-wa-yasu-sugiru'
-        assert chapter.available() is True
-        assert chapter.chapter == '000 [Oneshot]'
-        assert chapter.directory is None
-        assert chapter.groups == ['Peebs']
-        assert chapter.name == NAME
-        assert chapter.url == URL
+        self.assertEqual(chapter.alias, '100-dollar-wa-yasu-sugiru')
+        self.assertTrue(chapter.available())
+        self.assertEqual(chapter.chapter, '000 [Oneshot]')
+        self.assertIs(chapter.directory, None)
+        self.assertEqual(chapter.groups, ['Peebs'])
+        self.assertEqual(chapter.name, NAME)
+        self.assertEqual(chapter.url, URL)
         path = os.path.join(
             self.directory.name, NAME,
             '100 Dollar wa Yasu Sugiru - c000 [000 [Oneshot]] [Peebs].zip'
         )
-        assert chapter.filename == path
+        self.assertEqual(chapter.filename, path)
         chapter.download()
-        assert os.path.isfile(path) is True
+        self.assertTrue(os.path.isfile(path))
 
     @cumtest.skipIfNoMadokamiLogin
     def test_series_kami_nomi(self):

@@ -29,7 +29,7 @@ class TestCLINew(cumtest.CumCLITest):
         result = self.invoke('new')
         self.assertEqual(result.exit_code, 0)
         for message in MESSAGES:
-            assert message in result.output
+            self.assertIn(message, result.output)
 
     def test_new_empty(self):
         result = self.invoke('new')
