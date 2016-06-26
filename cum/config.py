@@ -51,12 +51,32 @@ class BaseConfig(object):
         self.persistent_config = j
 
     def serialize(self):
-        """Returns the current persistent configuration as a dictionary."""
+        """Returns the current persistent configuration as a dictionary. All
+        private configuration values starting with an underscore are removed
+        from the configuration.
+        """
         configuration = dict(self.persistent_config)
         configuration['batoto'] = dict(self.batoto.__dict__)
         configuration['madokami'] = dict(self.madokami.__dict__)
-        del configuration['batoto']['_config']
-        del configuration['madokami']['_config']
+        configuration_keys = list(configuration.keys())
+        while True:
+            if not configuration_keys:
+                break
+
+            key = configuration_keys.pop(0)
+            key_levels = key.split('.')
+            dictionary = None
+            value = configuration[key_levels[0]]
+            for level in key_levels[1:]:
+                dictionary = value
+                value = value[level]
+
+            if key_levels[-1].startswith('_'):
+                del dictionary[key_levels[-1]]
+                continue
+            if isinstance(value, dict):
+                dict_keys = ['.'.join([key, x]) for x in value]
+                configuration_keys += dict_keys
         return configuration
 
     def write(self):
@@ -74,6 +94,7 @@ class BatotoConfig(object):
 
     def __init__(self, config, dict):
         self._config = config
+        self._login_attempts = 0
         self.cookie = dict.get('cookie', None)
         self.member_id = dict.get('member_id', None)
         self.pass_hash = dict.get('pass_hash', None)
@@ -81,6 +102,9 @@ class BatotoConfig(object):
         self.username = dict.get('username', None)
 
     def login(self):
+        self._login_attempts += 1
+        if self._login_attempts > 1:
+            raise exceptions.LoginError('Batoto login error')
         if not self.username:
             username = click.prompt('Batoto username')
         else:

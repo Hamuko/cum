@@ -158,6 +158,24 @@ class TestBatoto(cumtest.CumTest):
         chapter = batoto.BatotoChapter(url=URL)
         assert chapter.available() is False
 
+    def test_outdated_session(self):
+        URL = 'http://bato.to/comic/_/comics/femme-fatale-r468'
+        config.get().batoto.cookie = '0da7ed'
+        config.get().batoto.member_id = '0da7ed'
+        config.get().batoto.pass_hash = '0da7ed'
+        config.get().write()
+        series = batoto.BatotoSeries(url=URL)
+
+    def test_outdated_session_max_retries(self):
+        URL = 'http://bato.to/comic/_/comics/femme-fatale-r468'
+        config.get().batoto._login_attempts = 1
+        config.get().batoto.cookie = '0da7ed'
+        config.get().batoto.member_id = '0da7ed'
+        config.get().batoto.pass_hash = '0da7ed'
+        config.get().write()
+        with self.assertRaises(exceptions.LoginError):
+            series = batoto.BatotoSeries(url=URL)
+
     def test_series_invalid_login(self):
         URL = 'https://bato.to/comic/_/comics/stretch-r11259'
         config.get().batoto.password = '12345'

@@ -14,13 +14,24 @@ class BatotoSeries(BaseSeries):
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
-        r = requests.get(url, cookies=config.get().batoto.login_cookies)
-        self.soup = BeautifulSoup(r.text, config.get().html_parser)
+        self._get_page()
         self.chapters = self.get_chapters()
 
+    def _get_page(self):
+        r = requests.get(self.url, cookies=config.get().batoto.login_cookies)
+        self.soup = BeautifulSoup(r.text, config.get().html_parser)
+
     def get_chapters(self):
-        if self.soup.find('div', id='register_notice'):
-            raise exceptions.LoginError('Batoto login error')
+        # Loops through as many times necessary until either registeration
+        # notice is no longer found on the series page or login attempt limit
+        # is reached, at which point LoginError is raised by config.
+        while True:
+            if self.soup.find('div', id='register_notice'):
+                config.get().batoto.login()
+                self._get_page()
+            else:
+                break
+
         rows = self.soup.find_all('tr', class_="row lang_English chapter_row")
         chapters = []
         for row in rows:
