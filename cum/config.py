@@ -1,4 +1,5 @@
 from cum import exceptions
+import threading
 import click
 import json
 import os
@@ -94,6 +95,7 @@ class BatotoConfig(object):
 
     def __init__(self, config, dict):
         self._config = config
+        self._lock = threading.Lock()
         self._login_attempts = 0
         self.cookie = dict.get('cookie', None)
         self.member_id = dict.get('member_id', None)
@@ -131,8 +133,10 @@ class BatotoConfig(object):
 
     @property
     def login_cookies(self):
+        self._lock.acquire()
         if not (self.cookie and self.member_id and self.pass_hash):
             self.login()
+        self._lock.release()
         return {'session_id': self.cookie,
                 'member_id': self.member_id,
                 'pass_hash': self.pass_hash}
