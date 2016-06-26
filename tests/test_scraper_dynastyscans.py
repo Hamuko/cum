@@ -1,20 +1,16 @@
 from cum import config
+from cumtest import CumTest
 import os
 import tempfile
 import unittest
 import zipfile
 
 
-class TestDynastyScans(unittest.TestCase):
+class TestDynastyScans(CumTest):
     def setUp(self):
+        super().setUp()
         global dynastyscans
-        self.directory = tempfile.TemporaryDirectory()
-        config.initialize(directory=self.directory.name)
-        config.get().download_directory = self.directory.name
         from cum.scrapers import dynastyscans
-
-    def tearDown(self):
-        self.directory.cleanup()
 
     def test_chapter_information_shikinami_doujin(self):
         ALIAS = 'a-doujin-where-shikinami-became-the-secretary-ship'

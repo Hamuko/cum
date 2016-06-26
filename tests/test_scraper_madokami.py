@@ -1,21 +1,18 @@
 from cum import config, exceptions
+import cumtest
 import os
-import tempfile
 import unittest
 
 
-class TestMadokami(unittest.TestCase):
-    def setUp(self):
-        global madokami
-        self.directory = tempfile.TemporaryDirectory()
-        config.initialize(directory=self.directory.name)
-        config.get().madokami.password = os.environ['MADOKAMI_PASSWORD']
-        config.get().madokami.username = os.environ['MADOKAMI_USERNAME']
-        config.get().download_directory = self.directory.name
-        from cum.scrapers import madokami
+class TestMadokami(cumtest.CumTest):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        NO_MADOKAMI_LOGIN = self.no_madokami_login
 
-    def tearDown(self):
-        self.directory.cleanup()
+    def setUp(self):
+        super().setUp()
+        global madokami
+        from cum.scrapers import madokami
 
     def series_information_tester(self, data):
         series = madokami.MadokamiSeries(data['url'])
@@ -34,6 +31,7 @@ class TestMadokami(unittest.TestCase):
             assert chapter.directory is None
         assert len(data['chapters']) == 0
 
+    @cumtest.skipIfNoMadokamiLogin
     def test_chapter_filename_no_group(self):
         URL = ('https://manga.madokami.al/Manga/_/__/__DA/7-Daime%20no%20'
                'Tomari%21/7-Daime%20no%20Tomari%21%20v01%20c01.zip')
@@ -47,11 +45,15 @@ class TestMadokami(unittest.TestCase):
         assert chapter.filename == path
 
     def test_chapter_invalid_login(self):
+        URL = ('https://manga.madokami.al/Manga/Oneshots/100%20Dollar%20wa%20'
+               'Yasu%20Sugiru/100%24%20is%20Too%20Cheap%20%5BYAMAMOTO%20Kazune'
+               '%5D%20-%20000%20%5BOneshot%5D%20%5BPeebs%5D.zip')
         config.get().madokami.password = '12345'
         config.get().madokami.username = 'Koala'
         with self.assertRaises(exceptions.LoginError):
-            self.test_chapter_100_dollar_too_cheap()
+            madokami.MadokamiChapter.from_url(URL)
 
+    @cumtest.skipIfNoMadokamiLogin
     def test_chapter_100_dollar_too_cheap(self):
         URL = ('https://manga.madokami.al/Manga/Oneshots/100%20Dollar%20wa%20'
                'Yasu%20Sugiru/100%24%20is%20Too%20Cheap%20%5BYAMAMOTO%20Kazune'
@@ -73,6 +75,7 @@ class TestMadokami(unittest.TestCase):
         chapter.download()
         assert os.path.isfile(path) is True
 
+    @cumtest.skipIfNoMadokamiLogin
     def test_series_kami_nomi(self):
         data = {
             'alias': 'kami-nomi-zo-shiru-sekai',
@@ -89,6 +92,7 @@ class TestMadokami(unittest.TestCase):
         }
         self.series_information_tester(data)
 
+    @cumtest.skipIfNoMadokamiLogin
     def test_series_medaka_box(self):
         data = {
             'alias': 'medaka-box',
@@ -103,6 +107,3 @@ class TestMadokami(unittest.TestCase):
             'url': 'https://manga.madokami.al/Manga/M/ME/MEDA/Medaka%20Box'
         }
         self.series_information_tester(data)
-
-if __name__ == '__main__':
-    unittest.main()

@@ -8,8 +8,7 @@ install:
   - pip install .[testing]
 script:
   - pycodestyle cum
-  - cd tests
-  - coverage run test.py
+  - nose2
 notifications:
   irc:
     channels:

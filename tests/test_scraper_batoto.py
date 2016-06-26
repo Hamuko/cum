@@ -1,24 +1,21 @@
-from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from cum import config, exceptions
+from urllib.parse import urljoin
+import cumtest
 import os
+import re
 import requests
 import tempfile
 import unittest
 import zipfile
-import re
 
 
-class TestBatoto(unittest.TestCase):
+class TestBatoto(cumtest.CumTest):
     BATOTO_URL = 'http://bato.to/'
 
     def setUp(self):
+        super().setUp()
         global batoto
-        self.directory = tempfile.TemporaryDirectory()
-        config.initialize(directory=self.directory.name)
-        config.get().batoto.password = os.environ['BATOTO_PASSWORD']
-        config.get().batoto.username = os.environ['BATOTO_USERNAME']
-        config.get().download_directory = self.directory.name
         from cum.scrapers import batoto
 
     def tearDown(self):
@@ -52,6 +49,7 @@ class TestBatoto(unittest.TestCase):
             assert chapter.directory is None
         assert len(data['chapters']) == 0
 
+    @cumtest.skipIfNoBatotoLogin
     def test_chapter_download_latest(self):
         latest_releases = self.get_five_latest_releases()
         for release in latest_releases:
@@ -62,6 +60,7 @@ class TestBatoto(unittest.TestCase):
             else:
                 chapter.get(use_db=False)
 
+    @cumtest.skipIfNoBatotoLogin
     def test_chapter_filename_decimal(self):
         URL = 'http://bato.to/reader#ecd20142e8159ad0'
         chapter = batoto.BatotoChapter.from_url(URL)
@@ -72,6 +71,7 @@ class TestBatoto(unittest.TestCase):
         assert chapter.chapter == '5.2'
         assert chapter.filename == path
 
+    @cumtest.skipIfNoBatotoLogin
     def test_chapter_filename_version2(self):
         URL = 'http://bato.to/reader#619ea101f703ecb2'
         chapter = batoto.BatotoChapter.from_url(URL)
@@ -82,6 +82,7 @@ class TestBatoto(unittest.TestCase):
         assert chapter.chapter == '5v2'
         assert chapter.filename == path
 
+    @cumtest.skipIfNoBatotoLogin
     def test_chapter_information_bakuon(self):
         URL = 'http://bato.to/reader#eb862784d9eff2be'
         chapter = batoto.BatotoChapter.from_url(URL)
@@ -102,6 +103,7 @@ class TestBatoto(unittest.TestCase):
             files = chapter_zip.infolist()
             assert len(files) == 37
 
+    @cumtest.skipIfNoBatotoLogin
     def test_chapter_information_rotte_no_omocha(self):
         URL = 'http://bato.to/reader#d647e1267a7c2c54'
         chapter = batoto.BatotoChapter.from_url(URL)
@@ -122,6 +124,7 @@ class TestBatoto(unittest.TestCase):
             files = chapter_zip.infolist()
             assert len(files) == 38
 
+    @cumtest.skipIfNoBatotoLogin
     def test_chapter_information_tomochan(self):
         URL = 'http://bato.to/reader#cf03b01bd9e90ba8'
         config.get().cbz = True
@@ -143,11 +146,13 @@ class TestBatoto(unittest.TestCase):
             files = chapter_zip.infolist()
             assert len(files) == 10
 
+    @cumtest.skipIfNoBatotoLogin
     def test_chapter_unavailable_deleted(self):
         URL = 'http://bato.to/reader#ba173e587bdc9325'
         chapter = batoto.BatotoChapter(url=URL)
         assert chapter.available() is False
 
+    @cumtest.skipIfNoBatotoLogin
     def test_chapter_unavailable_old_url(self):
         URL = 'http://bato.to/read/_/203799/shokugeki-no-soma_ch46_by_casanova'
         chapter = batoto.BatotoChapter(url=URL)
@@ -170,6 +175,7 @@ class TestBatoto(unittest.TestCase):
         with self.assertRaises(exceptions.LoginError):
             series = batoto.BatotoSeries(url=URL)
 
+    @cumtest.skipIfNoBatotoLogin
     def test_series_molester_man(self):
         data = {'alias': 'molester-man',
                 'chapters': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
@@ -180,6 +186,7 @@ class TestBatoto(unittest.TestCase):
                 'url': 'http://bato.to/comic/_/comics/molester-man-r7471'}
         self.series_information_tester(data)
 
+    @cumtest.skipIfNoBatotoLogin
     def test_series_prunus_girl(self):
         data = {'alias': 'prunus-girl',
                 'chapters': ['1', '2', '3', '4', '5', '6', '6.5', '7', '8',
