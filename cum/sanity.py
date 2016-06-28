@@ -23,6 +23,12 @@ class DatabaseSanity(object):
         for table_name in self.inspection_engine.get_table_names():
             yield table_name
 
+    def find_database_column(self, table, column):
+        """Looks for a column from the database file."""
+        for engine_column in self.inspection_engine.get_columns(table):
+            if engine_column['name'] == column.key:
+                return engine_column
+
     @property
     def is_sane(self):
         """Returns a boolean value that indicates whether the database file
@@ -73,6 +79,7 @@ class DatabaseSanity(object):
                 for column in column_property.columns:
                     if column.key in column_names:
                         self.test_datatype(table, column)
+                        self.test_nullable(table, column)
                     else:
                         self.errors.append(MissingColumn(table, column.key,
                                                          parent=self))
@@ -81,12 +88,7 @@ class DatabaseSanity(object):
         """Tests that database column datatype matches the one defined in the
         models.
         """
-
-        # Search a matching database column for the model.
-        for c in self.inspection_engine.get_columns(table):
-            if c['name'] == column.key:
-                database_column = c
-                break
+        database_column = self.find_database_column(table, column)
 
         if isinstance(column.type, sqltypes.String):
             expected_type = sqltypes.VARCHAR
@@ -122,6 +124,17 @@ class DatabaseSanity(object):
             if results:
                 error = IncorrectDomain(model, old_domain, new_domain)
                 self.errors.append(error)
+
+    def test_nullable(self, table, column):
+        """Tests that database column nullable status matches the one defined
+        in the models.
+        """
+        database_column = self.find_database_column(table, column)
+
+        if column.nullable != database_column['nullable']:
+            error = NullableMismatch(table, column.key, column.nullable,
+                                     parent=self)
+            self.errors.append(error)
 
     def test_tables(self):
         """Tests if all the defined models are found in the database. If a
@@ -242,3 +255,33 @@ class MissingTable(SanityError):
             if table.name == self.name:
                 table.create(bind=self.parent.engine)
                 break
+
+
+class NullableMismatch(SanityError):
+    """Class used for database columns where NULLABLE differs from the model.
+    """
+
+    def __init__(self, table, name, is_nullable, parent=None):
+        self.table = table
+        self.name = name
+        self.is_nullable = is_nullable
+        self.parent = parent
+
+    def __str__(self):
+        if self.is_nullable:
+            msg = 'is not nullable'
+        else:
+            msg = 'is nullable'
+        return '{s.table}.{s.name} {msg}'.format(s=self, msg=msg)
+
+    def fix(self):
+        context = MigrationContext.configure(self.parent.engine.connect())
+        op = Operations(context)
+        for table in self.parent.base.metadata.sorted_tables:
+            if table.name == self.table:
+                for column in table.columns:
+                    if column.name == self.name:
+                        with op.batch_alter_table(table.name) as batch_op:
+                            batch_op.alter_column(column.name,
+                                                  nullable=self.is_nullable)
+                        return

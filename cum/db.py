@@ -35,7 +35,7 @@ class Series(Base):
     id = Column(Integer, primary_key=True)
 
     name = Column(String)
-    alias = Column(String, unique=True)
+    alias = Column(String, unique=True, nullable=False)
     url = Column(String, unique=True)
     following = Column(Boolean, default=True)
     directory = Column(String)

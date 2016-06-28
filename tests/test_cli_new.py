@@ -56,12 +56,15 @@ class TestCLINew(cumtest.CumCLITest):
         self.assertFalse(result.output)
 
     def test_new_broken_database(self):
-        MESSAGES = ['groups table is missing from database',
-                    'chapters.title column has inappropriate datatype INTEGER '
-                    '(should be VARCHAR)',
-                    'series.directory column is missing from database',
-                    'Database has failed sanity check; run `cum repair-db` to '
-                    'repair database']
+        MESSAGES = [
+            'groups table is missing from database',
+            'chapters.title column has inappropriate datatype INTEGER '
+            '(should be VARCHAR)',
+            'chapters.title is not nullable',
+            'series.directory column is missing from database',
+            'series.alias is nullable',
+            'Database has failed sanity check'
+        ]
 
         self.copy_broken_database()
 
