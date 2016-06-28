@@ -37,10 +37,10 @@ See the [Configuration](../../wiki/Configuration) wiki page for more details and
 ### Commands
 
 ```
-alias      Assign a new alias to series.
 chapters   List all chapters for a manga series.
 config     Get or set configuration options.
 download   Download all available chapters.
+edit       Modify settings for a follow.
 follow     Follow a series.
   --directory TEXT  Directory which download the series chapters into.
   --download        Downloads the chapters for the added follows.
@@ -78,7 +78,7 @@ $ cum chapters gakkou-gurashi
 $ cum ignore gakkou-gurashi 2 3 1
 
 # Change the alias for the added series.
-$ cum alias gakkou-gurashi school-live
+$ cum edit gakkou-gurashi alias school-live
 
 # Download all new, non-ignored chapters for the added series using the new alias.
 $ cum download school-live

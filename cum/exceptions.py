@@ -1,4 +1,5 @@
 from requests.exceptions import ConnectionError
+from sqlalchemy.exc import IntegrityError as DatabaseIntegrityError
 
 
 class CumException(Exception):

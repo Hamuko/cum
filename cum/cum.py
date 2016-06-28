@@ -40,21 +40,6 @@ def cli(cum_directory=None):
 
 @cli.command()
 @click.argument('alias')
-@click.argument('new_alias')
-def alias(alias, new_alias):
-    """Assign a new alias to series."""
-    s = db.Series.alias_lookup(alias)
-    s.alias = new_alias
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
-    else:
-        output.chapter('Changing alias "{}" to "{}"'.format(alias, new_alias))
-
-
-@cli.command()
-@click.argument('alias')
 def chapters(alias):
     """List all chapters for a manga series.
 
@@ -166,6 +151,42 @@ def download(aliases):
             output.warning('Could not download {c.alias} {c.chapter}: {e}'
                            .format(c=chapter, e=e.message))
             continue
+
+
+@cli.command()
+@click.argument('alias')
+@click.argument('setting')
+@click.argument('value')
+def edit(alias, setting, value):
+    """Modify settings for a follow.
+
+    The following settings can be edited: alias, directory.
+    """
+    series = db.Series.alias_lookup(alias)
+    alias = series.alias
+    if value.lower() == 'none' or value.lower() == '-':
+        value = None
+    if setting == 'alias':
+        series.alias = value
+    elif setting == 'directory':
+        series.directory = value
+    else:
+        setting = click.style(setting, bold=True)
+        output.error('Invalid setting {}'.format(setting))
+        exit(1)
+
+    if not value:
+        value = click.style('none', dim=True)
+    else:
+        value = click.style(value, bold=True)
+    try:
+        db.session.commit()
+    except exceptions.DatabaseIntegrityError:
+        db.session.rollback()
+        output.error('Illegal value {}'.format(value))
+        exit(1)
+    else:
+        output.chapter('Changed {} for {} to {}'.format(setting, alias, value))
 
 
 @cli.command()
