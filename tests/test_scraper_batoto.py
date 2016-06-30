@@ -159,6 +159,7 @@ class TestBatoto(cumtest.CumTest):
         chapter = batoto.BatotoChapter(url=URL)
         self.assertFalse(chapter.available())
 
+    @cumtest.skipIfNoBatotoLogin
     def test_outdated_session(self):
         URL = 'http://bato.to/comic/_/comics/femme-fatale-r468'
         config.get().batoto.cookie = '0da7ed'
