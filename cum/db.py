@@ -101,6 +101,7 @@ class Chapter(Base):
     url = Column(String, unique=True)
     title = Column(String)
     added_on = Column(DateTime)
+    api_id = Column(String)
 
     groups = relationship('Group', secondary=group_table, backref='chapters')
 
@@ -110,6 +111,7 @@ class Chapter(Base):
         self.title = chapter.title
         self.url = chapter.url
         self.added_on = datetime.datetime.now()
+        self.api_id = getattr(chapter, 'api_id', None)
 
         self.groups = []
         for group in chapter.groups:
@@ -154,12 +156,15 @@ class Chapter(Base):
         site by parsing the URL.
         """
         parse = urlparse(self.url)
-        kwargs = {'name': self.series.name,
-                  'alias': self.series.alias,
-                  'chapter': self.chapter,
-                  'url': self.url,
-                  'groups': self.groups,
-                  'directory': self.series.directory}
+        kwargs = {
+            'name': self.series.name,
+            'alias': self.series.alias,
+            'chapter': self.chapter,
+            'url': self.url,
+            'groups': self.groups,
+            'directory': self.series.directory,
+            'api_id': self.api_id
+        }
         if parse.netloc == 'bato.to':
             from cum.scrapers.batoto import BatotoChapter
             return BatotoChapter(**kwargs)
@@ -169,8 +174,6 @@ class Chapter(Base):
         elif parse.netloc == 'manga.madokami.al':
             from cum.scrapers.madokami import MadokamiChapter
             return MadokamiChapter(**kwargs)
-        else:
-            return None
 
 
 class Group(Base):

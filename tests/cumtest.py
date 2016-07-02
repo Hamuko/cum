@@ -56,9 +56,11 @@ class CumCLITest(CumTest):
         self.directory.cleanup()
 
     def create_mock_chapter(self, alias='', chapter='', directory=None,
-                            groups=[], name='', title=None, url=''):
+                            groups=[], name='', title=None, url='',
+                            api_id=None):
         kwargs = {'alias': alias, 'chapter': chapter, 'directory': directory,
-                  'groups': groups, 'name': name, 'title': title, 'url': url}
+                  'groups': groups, 'name': name, 'title': title, 'url': url,
+                  'api_id': api_id}
         chapter = unittest.mock.MagicMock(**kwargs)
 
         def save(*args, **kwargs):
