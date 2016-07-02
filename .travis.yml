@@ -9,6 +9,14 @@ install:
 script:
   - pycodestyle cum
   - nose2
+deploy:
+  provider: pypi
+  user: cumbottler
+  password:
+    secure: 74h3/CN0Bk71B5OepjQ5oC/VUzRKESZIccB97mRkJnjY9d7NrMBfZfF0l6u3APCshgjM0M9Lbsc0HPYSGf9c/rPGr/WLuQxXBNNrH3simqwPm5Gg3M9iMQAxU9s7C22gZMXT6EmGtpFafBF1t0h0IocwKDN0VY22O1urqJAarIejr6yVurQvTjax16ytQHMnvjpTgTIyH7da/VtMG/7TvV1owxjifQM0Ei7cz9dUPJcAcnBQLoruA0wanrvhLjD+ROkBFPK4xRAp7b2kZzTYG7UEl41Dm0lTDtjLtKM7u+q/8ziXWtGqVpnJuInvUD3lbusXLLRNO7+466cMGHTf3fC59z6rD66/JsB8hhhyFHYqeTFgYc6pvGseMiNU96XHbetKOyQUkx7xIZzwfCrwLN9JjZWRrl81m6NMnAuAQysOlROPuhOyiMXZhytR2Bsy0I/vDHy5ZUKc9mz4nWmpEDTOF4Wqd4F2k6vHU26KKM6UPJLyfDJEnMd9lfzIVLdwmdyt4BL+G8pJc6vmkrdJsef2D+5bQ0v1NvS3Jww7D2Cda30Jz+eMelQN6WB7OI1OwapzGdAlb0nKV63TZGXtSsQcymb3XaRmUe8hMz2UOgzA3qjKBgK4bM9uARbWOz4PoUCz0UY/oczM5LlHFu2YpkSqiRhWxqTr8KGXH+fn0DU=
+  distributions: "sdist bdist_wheel"
+  on:
+    tags: true
 notifications:
   irc:
     channels:
