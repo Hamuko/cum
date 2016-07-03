@@ -162,7 +162,7 @@ def edit(alias, setting, value):
 
     The following settings can be edited: alias, directory.
     """
-    series = db.Series.alias_lookup(alias)
+    series = db.Series.alias_lookup(alias, unfollowed=True)
     alias = series.alias
     if value.lower() == 'none' or value.lower() == '-':
         value = None

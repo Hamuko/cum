@@ -49,14 +49,15 @@ class Series(Base):
         self.directory = series.directory
 
     @staticmethod
-    def alias_lookup(alias):
+    def alias_lookup(alias, unfollowed=False):
         """Returns a DB object for a series by alias name. Prints an error if
         an invalid alias is specified.
         """
+        filters = {'alias': alias}
+        if not unfollowed:
+            filters['following'] = not unfollowed
         try:
-            s = (session.query(Series)
-                 .filter_by(alias=alias, following=True)
-                 .one())
+            s = session.query(Series).filter_by(**filters).one()
         except NoResultFound:
             output.error('Could not find alias "{}"'.format(alias))
             exit(1)
