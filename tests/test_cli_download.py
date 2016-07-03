@@ -71,6 +71,28 @@ class TestCLIDownload(cumtest.CumCLITest):
         self.assertNotIn(NOT_MESSAGE, result.output)
         self.assertTrue(os.path.isfile(path))
 
+    def test_download_dokireader(self):
+        CHAPTER = {'url': 'https://kobato.hologfx.com/reader/read/'
+                          'sorairo_waterblue/en/0/1',
+                   'chapter': '1', 'api_id': '88', 'groups': ['Doki Fansubs']}
+        FOLLOW = {'url': 'https://kobato.hologfx.com/reader/series/'
+                         'sorairo_waterblue/',
+                  'name': 'Sorairo Waterblue',
+                  'alias': 'sorairo-waterblue'}
+        MESSAGE = 'sorairo-waterblue 1'
+        FILENAME = '{0}/{0} - c001 [Doki Fansubs].zip'.format(FOLLOW['name'])
+
+        series = self.create_mock_series(**FOLLOW)
+        chapter = self.create_mock_chapter(**CHAPTER)
+        series.chapters.append(chapter)
+        series.follow()
+
+        path = os.path.join(self.directory.name, FILENAME)
+        result = self.invoke('download')
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn(MESSAGE, result.output)
+        self.assertTrue(os.path.isfile(path))
+
     def test_download_invalid_login(self):
         CHAPTER = {'url': 'https://manga.madokami.al/Manga/Oneshots/100%20'
                           'Dollar%20wa%20Yasu%20Sugiru/100%24%20is%20Too%20'

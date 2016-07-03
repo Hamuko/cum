@@ -174,6 +174,9 @@ class Chapter(Base):
         elif parse.netloc == 'manga.madokami.al':
             from cum.scrapers.madokami import MadokamiChapter
             return MadokamiChapter(**kwargs)
+        elif parse.netloc == 'kobato.hologfx.com':
+            from cum.scrapers.dokireader import DokiReaderChapter
+            return DokiReaderChapter(**kwargs)
 
 
 class Group(Base):

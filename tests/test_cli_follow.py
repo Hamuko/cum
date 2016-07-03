@@ -98,6 +98,14 @@ class TestCLIFollow(cumtest.CumCLITest):
         self.assertTrue(series.following)
         self.assertEqual(series.directory, DIRECTORY2)
 
+    def test_follow_dokireader(self):
+        URL = 'https://kobato.hologfx.com/reader/series/new_game/'
+        MESSAGE = 'Adding follow for New Game! (new-game)'
+
+        result = self.invoke('follow', URL)
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn(MESSAGE, result.output)
+
     def test_follow_dynastyscans(self):
         URL = 'http://dynasty-scans.com/series/akuma_no_riddle'
         MESSAGE = 'Adding follow for Akuma no Riddle (akuma-no-riddle)'
