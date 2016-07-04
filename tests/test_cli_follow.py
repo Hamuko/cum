@@ -164,3 +164,11 @@ class TestCLIFollow(cumtest.CumCLITest):
         self.assertEqual(len(follows), len(URLS))
         for alias in ALIASES:
             self.assertIn(alias, [x.alias for x in follows])
+
+    def test_follow_yuriism(self):
+        URL = 'http://www.yuri-ism.net/slide/series/granblue_fantasy/'
+        MESSAGE = 'Adding follow for Granblue Fantasy (granblue-fantasy)'
+
+        result = self.invoke('follow', URL)
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn(MESSAGE, result.output)

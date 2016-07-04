@@ -177,6 +177,9 @@ class Chapter(Base):
         elif parse.netloc == 'kobato.hologfx.com':
             from cum.scrapers.dokireader import DokiReaderChapter
             return DokiReaderChapter(**kwargs)
+        elif parse.netloc == 'www.yuri-ism.net':
+            from cum.scrapers.yuriism import YuriismChapter
+            return YuriismChapter(**kwargs)
 
 
 class Group(Base):
