@@ -65,13 +65,24 @@ class Series(Base):
             return s
 
     def check_alias_uniqueness(self):
-        """Check if the series alias is unique before initalizing the series object.
+        """Check if the series alias is unique before initalizing the series
+        object. If the alias is not unique, "-X" is appended to the end of the
+        alias where the X is the next available integer. However, if the alias
+        is not unique and the series with the same alias is unfollowed, the
+        unfollowed series gets the new alias.
         """
         alias = self.alias
+        changed = False
         count = 1
         while session.query(Series).filter_by(alias=alias).all():
+            changed = True
             alias = '{}-{}'.format(self.alias, count)
             count += 1
+        if changed:
+            series = session.query(Series).filter_by(alias=self.alias).one()
+            if not series.following:
+                series.alias = alias
+                return
         self.alias = alias
 
     @property
