@@ -165,6 +165,32 @@ class TestCLIFollow(cumtest.CumCLITest):
         for alias in ALIASES:
             self.assertIn(alias, [x.alias for x in follows])
 
+    @cumtest.skipIfNoBatotoLogin
+    @cumtest.skipIfNoMadokamiLogin
+    def test_follow_non_unique_alias_with_unfollow(self):
+        URLS = ['https://bato.to/comic/_/comics/happiness-oshimi-shuzo-r14710',
+                'https://manga.madokami.al/Manga/H/HA/HAPP/Happiness%20'
+                '%28OSHIMI%20Shuzo%29']
+        ALIASES = ['happiness-oshimi-shuzo', 'happiness-oshimi-shuzo-1']
+        MESSAGE = ('Adding follow for Happiness (OSHIMI Shuzo) '
+                   '(happiness-oshimi-shuzo)')
+
+        result = self.invoke('follow', URLS[0])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn(MESSAGE, result.output)
+
+        result = self.invoke('unfollow', ALIASES[0])
+        self.assertEqual(result.exit_code, 0)
+
+        result = self.invoke('follow', URLS[1])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn(MESSAGE, result.output)
+
+        follows = self.db.session.query(self.db.Series).order_by('id').all()
+        self.assertEqual(len(follows), len(URLS))
+        self.assertEqual(follows[0].alias, ALIASES[1])
+        self.assertEqual(follows[1].alias, ALIASES[0])
+
     def test_follow_yuriism(self):
         URL = 'http://www.yuri-ism.net/slide/series/granblue_fantasy/'
         MESSAGE = 'Adding follow for Granblue Fantasy (granblue-fantasy)'
