@@ -90,6 +90,7 @@ class FoOlSlideChapter(BaseChapter, metaclass=ABCMeta):
     uses_pages = True
     chapter_id_re = re.compile(r'"chapter_id":"([0-9]*)"')
     url_name_re = re.compile(r'/read/(.*?)/')
+    no_pages_re = re.compile(r'(^.*)page.*$')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -118,8 +119,9 @@ class FoOlSlideChapter(BaseChapter, metaclass=ABCMeta):
         self.create_zip(files)
 
     def from_url(url, series_object):
+        url = re.search(FoOlSlideChapter.no_pages_re, url).group(1)
         url_name = re.search(FoOlSlideChapter.url_name_re, url).group(1)
         series = series_object(None, stub=url_name)
         for chapter in series.chapters:
-            if url.startswith(chapter.url):
+            if chapter.url == url:
                 return chapter
