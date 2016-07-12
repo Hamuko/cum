@@ -192,6 +192,9 @@ class Chapter(Base):
         elif parse.netloc == 'www.yuri-ism.net':
             from cum.scrapers.yuriism import YuriismChapter
             return YuriismChapter(**kwargs)
+        elif parse.netloc == 'manga.famatg.com':
+            from cum.scrapers.fallenangels import FallenAngelsChapter
+            return FallenAngelsChapter(**kwargs)
 
 
 class Group(Base):

@@ -114,6 +114,14 @@ class TestCLIFollow(cumtest.CumCLITest):
         self.assertEqual(result.exit_code, 0)
         self.assertIn(MESSAGE, result.output)
 
+    def test_follow_fallenangels(self):
+        URL = 'http://manga.famatg.com/series/chronos_ruler/'
+        MESSAGE = 'Adding follow for Chronos Ruler (chronos-ruler)'
+
+        result = self.invoke('follow', URL)
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn(MESSAGE, result.output)
+
     def test_follow_invalid(self):
         URL = 'http://www.google.com'
         MESSAGE = 'Invalid URL "{}"'.format(URL)
