@@ -1,9 +1,11 @@
 from abc import ABCMeta
 from cum import config, exceptions
-from cum.scrapers.base import BaseChapter, BaseSeries
+from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
+from functools import partial
 from mimetypes import guess_extension
 from tempfile import NamedTemporaryFile
 from urllib.parse import urljoin, urlparse
+import concurrent.futures
 import re
 import requests
 
@@ -104,19 +106,17 @@ class FoOlSlideChapter(BaseChapter, metaclass=ABCMeta):
     def download(self):
         response = requests.get(self.api_hook_details).json()
         pages = response['pages']
-        files = []
+        files = [None] * len(pages)
+        futures = []
         with self.progress_bar(pages) as bar:
-            for page in pages:
+            for i, page in enumerate(pages):
                 r = requests.get(page['url'], stream=True)
-                ext = guess_extension(r.headers.get('content-type'))
-                f = NamedTemporaryFile(suffix=ext, delete=False)
-                for chunk in r.iter_content(chunk_size=4096):
-                    if chunk:
-                        f.write(chunk)
-                f.flush()
-                files.append(f)
-                bar.update(1)
-        self.create_zip(files)
+                fut = download_pool.submit(self.page_download_task, i, r)
+                fut.add_done_callback(partial(self.page_download_finish,
+                                              bar, files))
+                futures.append(fut)
+            concurrent.futures.wait(futures)
+            self.create_zip(files)
 
     def from_url(url, series_object):
         url = re.search(FoOlSlideChapter.no_pages_re, url).group(1)
