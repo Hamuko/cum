@@ -11,10 +11,11 @@ import requests
 
 
 class FoOlSlideSeries(BaseSeries, metaclass=ABCMeta):
-    def __init__(self, url, directory=None, stub=None):
+    def __init__(self, url, directory=None, stub=None, use_https=False):
         self.url = url
         self.directory = directory
         self.stub = stub
+        self.use_https = use_https
         self._page = 1
         self.get_comic_details()
         self.chapters = self.get_chapters()
@@ -97,6 +98,10 @@ class FoOlSlideChapter(BaseChapter, metaclass=ABCMeta):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.api_id = kwargs.get('api_id')
+        if self.url.split("://")[0] == "https":
+            self.use_https = True
+        else:
+            self.use_https = False
 
     @property
     def api_hook_details(self):
@@ -121,7 +126,8 @@ class FoOlSlideChapter(BaseChapter, metaclass=ABCMeta):
     def from_url(url, series_object):
         url = re.search(FoOlSlideChapter.no_pages_re, url).group(1)
         url_name = re.search(FoOlSlideChapter.url_name_re, url).group(1)
-        series = series_object(None, stub=url_name)
+        series = series_object(None, stub=url_name,
+                               use_https=(url.split("://")[0] == "https"))
         for chapter in series.chapters:
-            if chapter.url == url:
+            if chapter.url.split("://")[1] == url.split("://")[1]:
                 return chapter
