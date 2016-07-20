@@ -12,8 +12,27 @@ class TestCLIGet(cumtest.CumCLITest):
         self.assertEqual(result.exit_code, 0)
         self.assertIn(MESSAGE, result.output)
 
-    @cumtest.skipIfNoBatotoLogin
     def test_get_alias_batoto(self):
+        CHAPTER = {'url': 'http://bato.to/reader#350d13938df0a8c4',
+                   'chapter': '0', 'groups': ['Kotonoha']}
+        FOLLOW = {'url': 'http://bato.to/comic/_/comics/green-beans-r15344',
+                  'alias': 'green-beans', 'name': 'Green Beans'}
+        MESSAGE = 'green-beans 0'
+
+        series = self.create_mock_series(**FOLLOW)
+        chapter = self.create_mock_chapter(**CHAPTER)
+        series.chapters.append(chapter)
+        series.follow()
+        path = os.path.join(self.directory.name, 'Green Beans',
+                            'Green Beans - c000 [Kotonoha].zip')
+
+        result = self.invoke('get', 'green-beans')
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn(MESSAGE, result.output)
+        self.assertTrue(os.path.isfile(path))
+
+    @cumtest.skipIfNoBatotoLogin
+    def test_get_alias_chapter_batoto(self):
         CHAPTER = {'url': 'http://bato.to/reader#5822e2f0b9beee46',
                    'chapter': '5', 'groups': ['Underdog Scans']}
         FOLLOW = {'url': 'http://bato.to/comic/_/comics/girls-go-around-r9856',

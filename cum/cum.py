@@ -252,48 +252,49 @@ def follows():
 def get(input, directory):
     """Download chapters by URL or by alias:chapter.
 
-    The command accepts input as either the chapter of the URL or the
-    alias:chapter combination (e.g. 'bakuon:11'), if the chapter is already
-    found in the database through a follow. The command will not enter the
-    downloads in the database in case of URLs and ignores downloaded status
-    in case of alias:chapter, so it can be used to download one-shots that
-    don't require follows or for redownloading already downloaded chapters.
+    The command accepts input as either the chapter of the URL, the alias of a
+    followed series, or the alias:chapter combination (e.g. 'bakuon:11'), if
+    the chapter is already found in the database through a follow. The command
+    will not enter the downloads in the database in case of URLs and ignores
+    downloaded status in case of alias:chapter, so it can be used to download
+    one-shots that don't require follows or for redownloading already
+    downloaded chapters.
     """
     chapter_list = []
-    for i in input:
+    for item in input:
         try:
-            series = utility.series_by_url(i)
+            series = utility.series_by_url(item)
         except exceptions.ScrapingError:
-            output.warning('Scraping error ({})'.format(i))
+            output.warning('Scraping error ({})'.format(item))
             continue
         except exceptions.LoginError as e:
-            output.warning('{} ({})'.format(e.message, i))
+            output.warning('{} ({})'.format(e.message, item))
             continue
         if series:
             chapter_list += series.chapters
         try:
-            chapter = utility.chapter_by_url(i)
+            chapter = utility.chapter_by_url(item)
         except exceptions.ScrapingError:
-            output.warning('Scraping error ({})'.format(i))
+            output.warning('Scraping error ({})'.format(item))
             continue
         except exceptions.LoginError as e:
-            output.warning('{} ({})'.format(e.message, i))
+            output.warning('{} ({})'.format(e.message, item))
             continue
         if chapter:
             chapter_list.append(chapter)
         if not series or chapter:
+            chapters = db.session.query(db.Chapter).join(db.Series)
             try:
-                a, c = i.split(':')
+                alias, chapter = item.split(':')
+                chapters = chapters.filter(db.Series.alias == alias,
+                                           db.Chapter.chapter == chapter)
             except ValueError:
-                output.warning('Invalid selection "{}"'.format(i))
-            else:
-                chapters = (db.session.query(db.Chapter)
-                            .join(db.Series)
-                            .filter(db.Series.alias == a,
-                                    db.Chapter.chapter == c)
-                            .all())
-                for chapter in chapters:
-                    chapter_list.append(chapter.to_object())
+                chapters = chapters.filter(db.Series.alias == item)
+            chapters = chapters.all()
+            if not chapters:
+                output.warning('Invalid selection "{}"'.format(item))
+            for chapter in chapters:
+                chapter_list.append(chapter.to_object())
     for chapter in chapter_list:
         chapter.directory = directory
         try:
