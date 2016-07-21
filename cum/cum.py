@@ -150,7 +150,6 @@ def download(aliases):
         except exceptions.LoginError as e:
             output.warning('Could not download {c.alias} {c.chapter}: {e}'
                            .format(c=chapter, e=e.message))
-            continue
 
 
 @cli.command()
@@ -228,7 +227,6 @@ def follow(urls, directory, download, ignore):
             except exceptions.LoginError as e:
                 output.warning('Could not download {c.alias} {c.chapter}: {e}'
                                .format(c=chapter, e=e.message))
-                continue
 
 
 @cli.command()
@@ -302,7 +300,6 @@ def get(input, directory):
         except exceptions.LoginError as e:
             output.warning('Could not download {c.alias} {c.chapter}: {e}'
                            .format(c=chapter, e=e.message))
-            continue
 
 
 @cli.command()
