@@ -78,9 +78,9 @@ class BaseSeries(metaclass=ABCMeta):
         the database.
         """
         s = db.session.query(db.Series).filter_by(url=self.url).one()
-
         for chapter in self.chapters:
             chapter.save(s)
+        s.mark_as_updated()
 
 
 class BaseChapter(metaclass=ABCMeta):

@@ -39,6 +39,7 @@ class Series(Base):
     url = Column(String, unique=True)
     following = Column(Boolean, default=True)
     directory = Column(String)
+    last_updated = Column(DateTime)
 
     chapters = relationship("Chapter", backref="series")
 
@@ -94,6 +95,11 @@ class Series(Base):
             return updates[0].added_on
         else:
             return None
+
+    def mark_as_updated(self):
+        """Updates the timestamp for the last update."""
+        self.last_updated = datetime.datetime.now()
+        session.commit()
 
     @property
     def ordered_chapters(self):
