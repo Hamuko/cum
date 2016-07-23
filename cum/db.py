@@ -17,6 +17,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from urllib.parse import urlparse
 import click
 import datetime
+import statistics
 import os
 import sqlalchemy.engine.url
 
@@ -102,8 +103,50 @@ class Series(Base):
         session.commit()
 
     @property
+    def needs_update(self):
+        """Returns a boolean indicating if the series is in need of an update
+        based on the average release interval.
+        """
+        if not self.last_added:
+            return True
+        next_update = self.last_added + self.release_interval
+        return datetime.datetime.now() >= next_update
+
+    @property
     def ordered_chapters(self):
         return humansorted(self.chapters, key=lambda x: x.chapter)
+
+    @property
+    def release_interval(self):
+        """Calculates the average second interval for the series chapter
+        releases by calculating an average between new release scrapes and
+        subtracting the standard deviation from that. Returns the interval as a
+        timedelta object.
+
+        Current time is added to release dates to add an interval between the
+        last released chapter and current time.
+
+        Since there is a massive number of chapters added right after each
+        other when the series is first added, the interval between two chapter
+        releases must be greater than 60 seconds to be counter.
+        """
+        release_dates = [x.added_on for x in self.chapters if x.added_on]
+        release_dates.append(datetime.datetime.now())
+        release_dates = sorted(release_dates)
+        intervals = []
+        for i in range(len(release_dates) - 1):
+            interval = (release_dates[i+1] - release_dates[i]).total_seconds()
+            if interval > 60:
+                intervals.append(interval)
+        if len(intervals) == 0:
+            average_seconds = 0
+        elif len(intervals) == 1:
+            average_seconds = intervals[0]
+        else:
+            mean = statistics.mean(intervals)
+            dev = statistics.stdev(intervals)
+            average_seconds = max((mean - dev/2), 0)
+        return datetime.timedelta(seconds=average_seconds)
 
 
 class Chapter(Base):

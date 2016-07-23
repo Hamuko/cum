@@ -397,14 +397,25 @@ def unignore(alias, chapters):
 
 
 @cli.command()
-def update():
+@click.option('--fast/--no-fast', default=False,
+              help='Run updates based on average release interval.')
+def update(fast):
     """Gather new chapters from followed series."""
     pool = concurrent.futures.ThreadPoolExecutor(config.get().download_threads)
     futures = []
     warnings = []
     aliases = {}
     query = db.session.query(db.Series).filter_by(following=True).all()
-    output.series('Updating {} series'.format(len(query)))
+    if fast:
+        skip_count = 0
+        for series in query.copy():
+            if not series.needs_update:
+                skip_count += 1
+                query.remove(series)
+        output.series('Updating {} series ({} skipped)'
+                      .format(len(query), skip_count))
+    else:
+        output.series('Updating {} series'.format(len(query)))
     for follow in query:
         fut = pool.submit(utility.series_by_url, follow.url)
         futures.append(fut)
