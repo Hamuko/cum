@@ -1,4 +1,5 @@
 from cum import config, output, sanity
+from math import sqrt
 from natsort import humansorted
 from shutil import copyfile
 from sqlalchemy import (
@@ -17,7 +18,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from urllib.parse import urlparse
 import click
 import datetime
-import statistics
 import os
 import sqlalchemy.engine.url
 
@@ -143,8 +143,9 @@ class Series(Base):
         elif len(intervals) == 1:
             average_seconds = intervals[0]
         else:
-            mean = statistics.mean(intervals)
-            dev = statistics.stdev(intervals)
+            mean = float(sum(intervals)) / len(intervals)
+            devsum = sum((x - mean) ** 2 for x in intervals)
+            dev = sqrt(float(devsum) / len(intervals))
             average_seconds = max((mean - dev/2), 0)
         return datetime.timedelta(seconds=average_seconds)
 
