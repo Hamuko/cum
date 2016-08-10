@@ -1,8 +1,8 @@
 # cum
 
 [![Build Status](https://travis-ci.org/Hamuko/cum.svg?branch=master)](https://travis-ci.org/Hamuko/cum)
-[![codecov.io](https://img.shields.io/codecov/c/github/Hamuko/cum.svg?maxAge=2592000)](https://codecov.io/github/Hamuko/cum?branch=master)
-[![PyPI](https://img.shields.io/pypi/v/cum.svg?maxAge=2592000)](https://pypi.python.org/pypi/cum)
+[![codecov.io](https://img.shields.io/codecov/c/github/Hamuko/cum.svg?maxAge=86400)](https://codecov.io/github/Hamuko/cum?branch=master)
+[![PyPI](https://img.shields.io/pypi/v/cum.svg?maxAge=86400)](https://pypi.python.org/pypi/cum)
 
 comic updater, mangafied
 
@@ -57,6 +57,7 @@ repair-db  Runs an automated database repair.
 unfollow   Unfollow manga.
 unignore   Unignore chapters for a series.
 update     Gather new chapters from followed series.
+  --fast            Skips series based on average release interval.
 ```
 
 ### Examples
