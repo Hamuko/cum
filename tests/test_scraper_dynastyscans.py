@@ -85,6 +85,21 @@ class TestDynastyScans(CumTest):
             files = chapter_zip.infolist()
             self.assertEqual(len(files), 8)
 
+    def test_series_lily_love(self):
+        ALIAS = 'lily-love'
+        CHAPTERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11',
+                    '12', '13', '14', '15', '16', '17', 'Special 1',
+                    'Special 2', '18', '19', '20']
+        URL = 'http://dynasty-scans.com/series/lily_love'
+        series = dynastyscans.DynastyScansSeries(URL)
+        scraped_chapters = [x.chapter for x in series.chapters]
+        for c in CHAPTERS:
+            self.assertEqual(scraped_chapters.count(c), 1)
+        filenames = []
+        for sc in series.chapters:
+            self.assertNotIn(sc.filename, filenames)
+            filenames.append(sc.filename)
+
     def test_series_stretch(self):
         ALIAS = 'stretch'
         CHAPTERS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',

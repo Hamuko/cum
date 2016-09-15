@@ -7,8 +7,9 @@ import concurrent.futures
 import re
 import requests
 
-name_re = re.compile(r'Chapter ([0-9\.]+)(?:$|\: )(.*)')
-fallback_re = re.compile(r'(.*?)(?:$|\: )(.*)')
+name_re = re.compile(r'(?P<type>Chapter|Special) (?P<num>[0-9\.]+)(?:$|\: )'
+                     r'(?P<title>.*)')
+fallback_re = re.compile(r'(?P<num>.*?)(?:$|\: )(?P<title>.*)')
 
 
 class DynastyScansSeries(BaseSeries):
@@ -28,8 +29,12 @@ class DynastyScansSeries(BaseSeries):
             name_parts = re.search(name_re, link.string)
             if not name_parts:
                 name_parts = re.search(fallback_re, link.string)
-            chapter = name_parts.group(1)
-            title = name_parts.group(2)
+                chapter = name_parts.group('num')
+            elif name_parts.group('type') == 'Special':
+                chapter = 'Special ' + name_parts.group('num')
+            else:
+                chapter = name_parts.group('num')
+            title = name_parts.group('title')
             url = urljoin(self.url, link.get('href'))
             c = DynastyScansChapter(name=self.name, alias=self.alias,
                                     chapter=chapter, url=url, title=title)
