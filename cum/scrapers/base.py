@@ -217,13 +217,16 @@ class BaseChapter(metaclass=ABCMeta):
         # Format the filename somewhat based on Daiz's manga naming scheme.
         # Remove any '/' characters to prevent the name of the manga splitting
         # the files into an unwanted sub-directory.
-        filename = '{} - {} {}.{}'.format(name, chapter, group,
-                                          ext).replace('/', '')
+        filename = '{} - {} {}'.format(name, chapter, group,).replace('/', '')
         filename = self._strip_unwanted_characters(filename)
 
-        # Join the path parts and sanitize any unwanted characters that might
-        # cause issues with filesystems. Remove repeating whitespaces.
-        target = os.path.join(download_dir, filename)
+        # Ensure that the filename is unique to avoid overwrites.
+        i = 1
+        target = os.path.join(download_dir, '.'.join([filename, ext]))
+        while os.path.isfile(target):
+            i += 1
+            new_filename = '-'.join([filename, str(i)])
+            target = os.path.join(download_dir, '.'.join([new_filename, ext]))
 
         return target
 

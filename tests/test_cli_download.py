@@ -119,6 +119,33 @@ class TestCLIDownload(cumtest.CumCLITest):
         self.assertEqual(result.exit_code, 0)
         self.assertIn(MESSAGE, result.output)
 
+    def test_download_overwriting(self):
+        CHAPTERS = [
+            {'url': 'http://bato.to/reader#5ebba7f678a1a7ba', 'chapter': '0',
+             'groups': ['Test']},
+            {'url': 'http://bato.to/reader#cf03b01bd9e90ba8', 'chapter': '0',
+             'groups': ['Test']}
+        ]
+        FOLLOW = {'url': 'https://bato.to/comic/_/comics/'
+                         'tomo-chan-wa-onna-no-ko-r15722',
+                  'name': 'Tomo-chan',
+                  'alias': 'tomo-chan'}
+        FILENAMES = ['Tomo-chan - c000 [Test].zip',
+                     'Tomo-chan - c000 [Test]-2.zip']
+
+        series = self.create_mock_series(**FOLLOW)
+        for chapter in CHAPTERS:
+            chapter = self.create_mock_chapter(**chapter)
+            series.chapters.append(chapter)
+        series.follow()
+
+        result = self.invoke('download')
+        self.assertEqual(result.exit_code, 0)
+        # print(os.listdir(self.directory.name))
+        for filename in FILENAMES:
+            path = os.path.join(self.directory.name, 'Tomo-chan', filename)
+            self.assertTrue(os.path.isfile(path))
+
     @cumtest.skipIfNoBatotoLogin
     def test_download_removed(self):
         CHAPTER = {
