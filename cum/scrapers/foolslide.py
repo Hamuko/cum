@@ -2,7 +2,6 @@ from abc import ABCMeta
 from cum import config, exceptions
 from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
 from functools import partial
-from mimetypes import guess_extension
 from tempfile import NamedTemporaryFile
 from urllib.parse import urljoin, urlparse
 import concurrent.futures
