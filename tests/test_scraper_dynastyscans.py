@@ -23,7 +23,7 @@ class TestDynastyScans(CumTest):
         self.assertEqual(chapter.alias, ALIAS)
         self.assertTrue(chapter.available())
         self.assertEqual(chapter.chapter, CHAPTER)
-        self.assertEqual(chapter.groups, ['/a/nonymous'])
+        self.assertEqual(chapter.groups, ['Anonymous'])
         self.assertEqual(chapter.name, NAME)
         self.assertIs(chapter.directory, None)
         self.assertEqual(chapter.url, URL)
@@ -32,7 +32,7 @@ class TestDynastyScans(CumTest):
             'A Doujin Where Shikinami Became the Secretary Ship',
             'A Doujin Where Shikinami Became the Secretary Ship - c000 '
             '[ More A Doujin Where Shikinami Became the Secretary Ship] '
-            '[anonymous].zip'
+            '[Anonymous].zip'
         )
         self.assertEqual(chapter.filename, path)
         chapter.download()
@@ -73,11 +73,11 @@ class TestDynastyScans(CumTest):
         self.assertTrue(chapter.available())
         self.assertEqual(chapter.chapter, '0')
         self.assertIs(chapter.directory, None)
-        self.assertEqual(chapter.groups, ['/a/nonymous'])
+        self.assertEqual(chapter.groups, ['Anonymous'])
         self.assertEqual(chapter.name, NAME)
         self.assertEqual(chapter.url, URL)
         path = os.path.join(self.directory.name, NAME,
-                            'Troubled Mutsuki-Chan - c000 [anonymous].zip')
+                            'Troubled Mutsuki-Chan - c000 [Anonymous].zip')
         self.assertEqual(chapter.filename, path)
         chapter.download()
         self.assertTrue(os.path.isfile(path))
