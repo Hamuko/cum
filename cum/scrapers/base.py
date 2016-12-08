@@ -251,6 +251,14 @@ class BaseChapter(metaclass=ABCMeta):
                            .format(self.name, self.chapter))
             self.db_remove()
 
+    @staticmethod
+    def guess_extension(mime_type):
+        """Wrapper for mimetypes.guess_extension() to normalize extensions."""
+        ext = guess_extension(mime_type)
+        if ext in ['.jpeg', '.jpe']:
+            return '.jpg'
+        return ext
+
     def ignore(self):
         """Fetches the chapter from the database and marks it ignored."""
         c = db.session.query(db.Chapter).filter_by(url=self.url).one()
@@ -285,7 +293,7 @@ class BaseChapter(metaclass=ABCMeta):
         handle and the passed through number of the page to allow for non-
         sequential downloads in parallel.
         """
-        ext = guess_extension(r.headers.get('content-type'))
+        ext = BaseChapter.guess_extension(r.headers.get('content-type'))
         f = NamedTemporaryFile(suffix=ext, delete=False)
         for chunk in r.iter_content(chunk_size=4096):
             if chunk:
