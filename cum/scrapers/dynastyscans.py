@@ -22,10 +22,19 @@ class DynastyScansSeries(BaseSeries):
         self.chapters = self.get_chapters()
 
     def get_chapters(self):
+
+        def volumegen(clist):
+            v = None
+            for t in clist.find_all(['dd','dt']):
+                if t.name == 'dt':
+                    v = t
+                if t.name == 'dd':
+                    yield (v, t.find('a', class_='name'))
+
+
         chapter_list = self.soup.find('dl', class_='chapter-list')
-        links = chapter_list.find_all('a', class_='name')
         chapters = []
-        for link in links:
+        for vol, link in volumegen(chapter_list):
             name_parts = re.search(name_re, link.string)
             if not name_parts:
                 name_parts = re.search(fallback_re, link.string)
@@ -36,6 +45,9 @@ class DynastyScansSeries(BaseSeries):
                 chapter = name_parts.group('num')
             title = name_parts.group('title')
             url = urljoin(self.url, link.get('href'))
+            if vol:
+                if vol.string.lower().startswith("special"):
+                    chapter = "Special %s" % chapter
             c = DynastyScansChapter(name=self.name, alias=self.alias,
                                     chapter=chapter, url=url, title=title)
             chapters.append(c)
