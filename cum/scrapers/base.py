@@ -101,7 +101,7 @@ class BaseChapter(metaclass=ABCMeta):
         path_start = None
         if sys.platform in ['cygwin', 'win32']:
             KEEP_CHARACTERS += ['\\']
-            path_start, path = path[:1], path[1:]
+            path_start, path = path[:2], path[2:]
         path = ''.join([char for char in path if char.isalpha() or
                         char.isdigit() or char in KEEP_CHARACTERS]).rstrip()
         path = sub(' +', ' ', path)
