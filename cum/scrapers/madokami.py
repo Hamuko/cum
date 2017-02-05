@@ -49,7 +49,7 @@ class MadokamiSeries(BaseSeries):
                 name_parts = re.search(fallback_re, name)
             try:
                 chapter = name_parts.group(1)
-            except:
+            except AttributeError:
                 continue
             if name_parts.group(2):
                 groups = name_parts.group(2).split('][')

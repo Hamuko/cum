@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from cum import config, db, output
 from mimetypes import guess_extension
 from re import match, sub
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from tempfile import NamedTemporaryFile
 import click
@@ -167,7 +167,7 @@ class BaseChapter(metaclass=ABCMeta):
         db.session.delete(c)
         try:
             db.session.commit()
-        except:
+        except SQLAlchemyError:
             db.session.rollback()
 
     @abstractmethod

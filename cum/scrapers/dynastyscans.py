@@ -77,7 +77,7 @@ class DynastyScansChapter(BaseChapter):
                              soup.find('h3', id='chapter-title').a['href'])
         try:
             series = DynastyScansSeries(series_url)
-        except:
+        except Exception:
             name = soup.find('h3', id='chapter-title').b.text
             return DynastyScansChapter(name=name, chapter='0', url=url)
         else:
