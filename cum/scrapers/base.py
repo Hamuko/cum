@@ -98,11 +98,15 @@ class BaseChapter(metaclass=ABCMeta):
     def _strip_unwanted_characters(self, path):
         """Strips unwanted characters from paths or filenames."""
         KEEP_CHARACTERS = [' ', '.', '-', '_', '[', ']', '/', "'"]
+        path_start = None
         if sys.platform in ['cygwin', 'win32']:
-            KEEP_CHARACTERS += [':', '\\']
+            KEEP_CHARACTERS += ['\\']
+            path_start, path = path[:1], path[1:]
         path = ''.join([char for char in path if char.isalpha() or
                         char.isdigit() or char in KEEP_CHARACTERS]).rstrip()
         path = sub(' +', ' ', path)
+        if path_start:
+            path = ''.join([path_start, path])
         return path
 
     def _windows_name_directory(self, directory):
