@@ -96,8 +96,8 @@ class DynastyScansChapter(BaseChapter):
         if author_link:
             series = DynastyScansSeries(author_link)
             for chapter in series.chapters:
-                    if chapter.url == url:
-                        return chapter
+                if chapter.url == url:
+                    return chapter
         # if the chapter is a one-shot
         name = j['title']
         return DynastyScansChapter(name=name, chapter='0', url=url)
