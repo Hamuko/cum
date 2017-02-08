@@ -1,9 +1,8 @@
-from bs4 import BeautifulSoup
-from cum import config
 from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
 from functools import partial
 from urllib.parse import urljoin
 import concurrent.futures
+import json
 import re
 import requests
 
@@ -17,33 +16,36 @@ class DynastyScansSeries(BaseSeries):
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
-        r = requests.get(url)
-        self.soup = BeautifulSoup(r.text, config.get().html_parser)
+        if url.endswith('/'):
+            url = url[:-1]
+        jurl = url + '.json'
+        r = requests.get(jurl)
+        self.json = json.loads(r.text)
         self.chapters = self.get_chapters()
 
     def get_chapters(self):
-        chapter_list = self.soup.find('dl', class_='chapter-list')
-        links = chapter_list.find_all('a', class_='name')
         chapters = []
-        for link in links:
-            name_parts = re.search(name_re, link.string)
-            if not name_parts:
-                name_parts = re.search(fallback_re, link.string)
-                chapter = name_parts.group('num')
-            elif name_parts.group('type') == 'Special':
-                chapter = 'Special ' + name_parts.group('num')
-            else:
-                chapter = name_parts.group('num')
-            title = name_parts.group('title')
-            url = urljoin(self.url, link.get('href'))
-            c = DynastyScansChapter(name=self.name, alias=self.alias,
-                                    chapter=chapter, url=url, title=title)
-            chapters.append(c)
+        for t in self.json['taggings']:
+            if 'permalink' in t and 'title' in t:
+                name_parts = re.search(name_re, t['title'])
+                if not name_parts:
+                    name_parts = re.search(fallback_re, t['title'])
+                    chapter = name_parts.group('num')
+                elif name_parts.group('type') == 'Special':
+                    chapter = 'Special ' + name_parts.group('num')
+                else:
+                    chapter = name_parts.group('num')
+                title = name_parts.group('title')
+                url = urljoin('http://dynasty-scans.com/chapters/',
+                              t['permalink'])
+                c = DynastyScansChapter(name=self.name, alias=self.alias,
+                                        chapter=chapter, url=url, title=title)
+                chapters.append(c)
         return chapters
 
     @property
     def name(self):
-        return self.soup.find('h2', class_='tag-title').contents[0].string
+        return self.json['name']
 
 
 class DynastyScansChapter(BaseChapter):
@@ -52,12 +54,16 @@ class DynastyScansChapter(BaseChapter):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if self.url.endswith('/'):
+            self.url = self.url[:-1]
+        r = requests.get(self.url + '.json')
+        self.json = json.loads(r.text)
         if not self.groups:
             self.groups = self.get_groups()
 
     def download(self):
-        r = requests.get(self.url)
-        pages = re.findall(r'"image":"(.*?)"', r.text)
+        pages = [urljoin('http://dynasty-scans.com',
+                 u['url']) for u in self.json['pages']]
         files = [None] * len(pages)
         futures = []
         with self.progress_bar(pages) as bar:
@@ -71,33 +77,25 @@ class DynastyScansChapter(BaseChapter):
             self.create_zip(files)
 
     def from_url(url):
-        r = requests.get(url)
-        soup = BeautifulSoup(r.text, config.get().html_parser)
-        series_url = urljoin(url,
-                             soup.find('h3', id='chapter-title').a['href'])
-        try:
-            series = DynastyScansSeries(series_url)
-        except Exception:
-            name = soup.find('h3', id='chapter-title').b.text
-            return DynastyScansChapter(name=name, chapter='0', url=url)
-        else:
-            for chapter in series.chapters:
-                if chapter.url == url:
-                    return chapter
-        return None
+        if url.endswith('/'):
+            url = url[:-1]
+        r = requests.get(url + '.json')
+        j = json.loads(r.text)
+        for t in j['tags']:
+            if t['type'] == 'Series':
+                series_url = urljoin('http://dynasty-scans.com/series/',
+                                     t['permalink'])
+                series = DynastyScansSeries(series_url)
+                for chapter in series.chapters:
+                    if chapter.url == url:
+                        return chapter
+        # if the chapter is a one-shot
+        name = j['title']
+        return DynastyScansChapter(name=name, chapter='0', url=url)
 
     def get_groups(self):
-        r = requests.get(self.url)
-        soup = BeautifulSoup(r.text, config.get().html_parser)
-        scanlators = soup.find('span', class_='scanlators')
-        if scanlators:
-            links = scanlators.find_all('a')
-        else:
-            links = []
         groups = []
-        for link in links:
-            r = requests.get(urljoin(self.url, link.get('href')))
-            s = BeautifulSoup(r.text, config.get().html_parser)
-            g = s.find('h2', class_='tag-title').b.string
-            groups.append(g)
+        for t in self.json['tags']:
+            if t['type'] == 'Scanlator':
+                groups.append(t['name'])
         return groups
