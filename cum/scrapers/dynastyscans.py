@@ -81,12 +81,21 @@ class DynastyScansChapter(BaseChapter):
             url = url[:-1]
         r = requests.get(url + '.json')
         j = json.loads(r.text)
+        author_link = None
         for t in j['tags']:
             if t['type'] == 'Series':
                 series_url = urljoin('http://dynasty-scans.com/series/',
                                      t['permalink'])
                 series = DynastyScansSeries(series_url)
                 for chapter in series.chapters:
+                    if chapter.url == url:
+                        return chapter
+            elif t['type'] == 'Author':
+                author_link = urljoin('http://dynasty-scans.com/authors/',
+                                      t['permalink'])
+        if author_link:
+            series = DynastyScansSeries(author_link)
+            for chapter in series.chapters:
                     if chapter.url == url:
                         return chapter
         # if the chapter is a one-shot
