@@ -32,8 +32,13 @@ def edit_defaults():
                       message=version.version_string())
 def cli(cum_directory=None):
     global db, output, sanity, utility
-    config.initialize(directory=cum_directory)
-    from cum import db, output, sanity, utility
+    from cum import output
+    try:
+        config.initialize(directory=cum_directory)
+    except exceptions.ConfigError as e:
+        output.configuration_error(e)
+        exit(1)
+    from cum import db, sanity, utility
     db.initialize()
     edit_defaults()
 

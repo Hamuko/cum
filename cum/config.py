@@ -36,8 +36,16 @@ class BaseConfig(object):
         except FileNotFoundError:
             j = {}
         else:
-            j = json.load(f)
-            f.close()
+            try:
+                j = json.load(f)
+            except json.decoder.JSONDecodeError as e:
+                f.seek(0, 0)
+                raise exceptions.ConfigError(config=f.read(),
+                                             cursor=(e.lineno, e.colno),
+                                             message='Error reading config: {}'
+                                                     .format(e.msg))
+            finally:
+                f.close()
 
         self.batoto = BatotoConfig(self, j.get('batoto', {}))
         self.cbz = j.get('cbz', False)

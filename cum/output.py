@@ -15,6 +15,25 @@ def configuration(dictionary):
             click.echo('{} = {}'.format(setting, value))
 
 
+def configuration_error(config_error):
+    """Prints up to 5 lines of the configuration file, with an arrow pointing
+    towards the position at which the configuration error was encountered,
+    and an error message describing it.
+    """
+
+    sc = config_error.config.splitlines()
+    max_num_len = len(str(config_error.cursor[0]))
+    start_line = max(config_error.cursor[0] - 5, 0)
+    for l in range(start_line, config_error.cursor[0]):
+        click.echo(
+            click.style(str(l).rjust(max_num_len) + ': ', fg='blue') + sc[l]
+        )
+    # column count - 1 as it starts with 0, + line num length, + separator
+    arrow = (config_error.cursor[1] - 1 + max_num_len + 2) * ' ' + '^'
+    click.secho(arrow, fg='red', bold=True)
+    error(config_error.message)
+
+
 def configuration_flatten(dictionary, parent_key=None):
     items = []
     for key, value in dictionary.items():
