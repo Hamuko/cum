@@ -15,6 +15,15 @@ class CumTest(unittest.TestCase):
         self.madokami_password = os.environ.get('MADOKAMI_PASSWORD', None)
         self.madokami_username = os.environ.get('MADOKAMI_USERNAME', None)
 
+    def copy_broken_config(self):
+        """Copies a pre-defined broken configuration file into the current
+        directory.
+        """
+        test_directory = os.path.dirname(os.path.realpath(__file__))
+        broken_config_path = os.path.join(test_directory, 'broken_config.json')
+        target_config_path = os.path.join(self.directory.name, 'config.json')
+        copyfile(broken_config_path, target_config_path)
+
     def copy_broken_database(self):
         """Copies a pre-defined broken database into the current directory."""
         test_directory = os.path.dirname(os.path.realpath(__file__))

@@ -1,8 +1,29 @@
 from cum import config
+from cum import exceptions
 import cumtest
 
 
 class TestCLIConfig(cumtest.CumCLITest):
+    def test_config_corrupt(self):
+        self.copy_broken_config()
+        with self.assertRaises(exceptions.ConfigError):
+            config.initialize(self.directory.name)
+
+    def test_config_corrupt_output(self):
+        MESSAGES = ['10:   "download_directory": "invalid",',
+                    '11:   "madokami": {',
+                    '12:     "password": "invalid",',
+                    '13:     "username": "invalid"',
+                    '14:     I am so broken',
+                    '        ^',
+                    '==> Error reading config: Expecting \',\' delimiter']
+
+        self.copy_broken_config()
+        result = self.invoke('config', 'initialise', self.directory.name)
+        self.assertEqual(result.exit_code, 1)
+        for message in MESSAGES:
+            self.assertIn(message, result.output)
+
     @cumtest.skipIfNoBatotoLogin
     @cumtest.skipIfNoMadokamiLogin
     def test_config_get(self):
