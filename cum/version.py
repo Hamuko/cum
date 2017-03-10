@@ -1,5 +1,5 @@
-__version__ = '0.7'
-__version_name__ = 'Yagami Ko'
+__version__ = '0.8'
+__version_name__ = 'Miyamo Chio'
 
 
 def version_string():
