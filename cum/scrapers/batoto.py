@@ -60,10 +60,10 @@ class BatotoSeries(BaseSeries):
 class BatotoChapter(BaseChapter):
     error_re = re.compile(r'ERROR \[10010\]')
     img_path_re = re.compile(
-        r'(http://img.bato.to/comics/.*?/img)([0-9]*)(\.[A-Za-z]+)'
+        r'(https?://\w+\.bato\.to/comics/.*?/img)([0-9]*)(\.[A-Za-z]+)'
     )
     ch_img_path_re = re.compile(
-        r'(http://img.bato.to/comics/.*?/ch[0-9]*p)([0-9]*)(\.[A-Za-z]+)'
+        r'(https?://\w+\.bato\.to/comics/.*?/ch[0-9]*p)([0-9]*)(\.[A-Za-z]+)'
     )
     next_img_path_re = re.compile(r'img.src = "(.+)";')
     url_re = re.compile(r'https?://bato.to/reader#(.*)')
