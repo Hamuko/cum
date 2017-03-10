@@ -38,12 +38,24 @@ class BaseConfig(object):
         else:
             try:
                 j = json.load(f)
-            except json.decoder.JSONDecodeError as e:
+            except ValueError as e:
                 f.seek(0, 0)
-                raise exceptions.ConfigError(config=f.read(),
-                                             cursor=(e.lineno, e.colno),
-                                             message='Error reading config: {}'
-                                                     .format(e.msg))
+                cfargs = {}
+                if hasattr(json.decoder, 'JSONDecodeError'):
+                    cfargs = {'config': f.read(),
+                              'cursor': (e.lineno, e.colno),
+                              'message': 'Error reading config: {}'
+                                         .format(e.msg)}
+                else:
+                    # Remove this hack when we drop Python 3.4 support
+                    msg, pos = str(e).split(':')
+                    m = re.match(r'\s*line (\d+) column (\d+).*', pos)
+                    cur = (int(m.group(1)), int(m.group(2)))
+                    cfargs = {'config': f.read(),
+                              'cursor': cur,
+                              'message': 'Error reading config: {}'
+                                         .format(msg)}
+                raise exceptions.ConfigError(**cfargs)
             finally:
                 f.close()
 
