@@ -54,8 +54,6 @@ class DynastyScansChapter(BaseChapter):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.url.endswith('/'):
-            self.url = self.url[:-1]
         r = requests.get(self.url + '.json')
         self.json = json.loads(r.text)
         if not self.groups:

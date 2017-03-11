@@ -66,7 +66,7 @@ class TestDynastyScans(CumTest):
             self.assertEqual(len(files), 23)
 
     def test_chapter_no_series_or_artist(self):
-        URL = 'http://dynasty-scans.com/chapters/troubled_mutsuki_chan'
+        URL = 'http://dynasty-scans.com/chapters/troubled_mutsuki_chan/'
         NAME = 'Troubled Mutsuki-Chan'
         chapter = dynastyscans.DynastyScansChapter.from_url(URL)
         self.assertIs(chapter.alias, None)
@@ -75,7 +75,7 @@ class TestDynastyScans(CumTest):
         self.assertIs(chapter.directory, None)
         self.assertEqual(chapter.groups, ['Anonymous'])
         self.assertEqual(chapter.name, NAME)
-        self.assertEqual(chapter.url, URL)
+        self.assertEqual(chapter.url, URL[:-1])
         path = os.path.join(self.directory.name, NAME,
                             'Troubled Mutsuki-Chan - c000 [Anonymous].zip')
         self.assertEqual(chapter.filename, path)
@@ -90,7 +90,7 @@ class TestDynastyScans(CumTest):
         CHAPTERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11',
                     '12', '13', '14', '15', '16', '17', 'Special 1',
                     'Special 2', '18', '19', '20']
-        URL = 'http://dynasty-scans.com/series/lily_love'
+        URL = 'http://dynasty-scans.com/series/lily_love/'
         series = dynastyscans.DynastyScansSeries(URL)
         scraped_chapters = [x.chapter for x in series.chapters]
         for c in CHAPTERS:
