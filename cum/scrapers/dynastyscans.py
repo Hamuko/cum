@@ -12,10 +12,11 @@ fallback_re = re.compile(r'(?P<num>.*?)(?:$|\: )(?P<title>.*)')
 
 
 class DynastyScansSeries(BaseSeries):
-    url_re = re.compile(r'http://dynasty-scans\.com/series/')
+    url_re = re.compile(r'https?://dynasty-scans\.com/series/')
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
+        url = url.replace('http://', 'https://')
         if url.endswith('/'):
             url = url[:-1]
         jurl = url + '.json'
@@ -36,7 +37,7 @@ class DynastyScansSeries(BaseSeries):
                 else:
                     chapter = name_parts.group('num')
                 title = name_parts.group('title')
-                url = urljoin('http://dynasty-scans.com/chapters/',
+                url = urljoin('https://dynasty-scans.com/chapters/',
                               t['permalink'])
                 c = DynastyScansChapter(name=self.name, alias=self.alias,
                                         chapter=chapter, url=url, title=title)
@@ -49,7 +50,7 @@ class DynastyScansSeries(BaseSeries):
 
 
 class DynastyScansChapter(BaseChapter):
-    url_re = re.compile(r'http://dynasty-scans\.com/chapters/')
+    url_re = re.compile(r'https?://dynasty-scans\.com/chapters/')
     uses_pages = True
 
     def __init__(self, *args, **kwargs):
@@ -60,7 +61,7 @@ class DynastyScansChapter(BaseChapter):
             self.groups = self.get_groups()
 
     def download(self):
-        pages = [urljoin('http://dynasty-scans.com',
+        pages = [urljoin('https://dynasty-scans.com',
                  u['url']) for u in self.json['pages']]
         files = [None] * len(pages)
         futures = []
@@ -75,6 +76,7 @@ class DynastyScansChapter(BaseChapter):
             self.create_zip(files)
 
     def from_url(url):
+        url = url.replace('http://', 'https://')
         if url.endswith('/'):
             url = url[:-1]
         r = requests.get(url + '.json')
@@ -82,14 +84,14 @@ class DynastyScansChapter(BaseChapter):
         author_link = None
         for t in j['tags']:
             if t['type'] == 'Series':
-                series_url = urljoin('http://dynasty-scans.com/series/',
+                series_url = urljoin('https://dynasty-scans.com/series/',
                                      t['permalink'])
                 series = DynastyScansSeries(series_url)
                 for chapter in series.chapters:
                     if chapter.url == url:
                         return chapter
             elif t['type'] == 'Author':
-                author_link = urljoin('http://dynasty-scans.com/authors/',
+                author_link = urljoin('https://dynasty-scans.com/authors/',
                                       t['permalink'])
         if author_link:
             series = DynastyScansSeries(author_link)
