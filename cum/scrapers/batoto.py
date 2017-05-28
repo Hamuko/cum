@@ -37,7 +37,12 @@ class BatotoSeries(BaseSeries):
         for row in rows:
             columns = row.find_all('td')
 
-            name = columns[0].img.next_sibling.strip()
+            name = columns[0].img.next_sibling
+            if not name:
+                # Fallback behavior when BeautifulSoup interprets "<img />TEXT"
+                # as "<img>TEXT</img>".
+                name = columns[0].img.string
+            name = name.strip()
             name_parts = re.search(self.name_re, name)
             chapter = name_parts.group(1)
             title = name_parts.group(2)
