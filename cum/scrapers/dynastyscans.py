@@ -2,7 +2,6 @@ from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
 from functools import partial
 from urllib.parse import urljoin
 import concurrent.futures
-import json
 import re
 import requests
 
@@ -20,8 +19,7 @@ class DynastyScansSeries(BaseSeries):
         if url.endswith('/'):
             url = url[:-1]
         jurl = url + '.json'
-        r = requests.get(jurl)
-        self.json = json.loads(r.text)
+        self.json = requests.get(jurl).json()
         self.chapters = self.get_chapters()
 
     def get_chapters(self):
@@ -55,14 +53,13 @@ class DynastyScansChapter(BaseChapter):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        r = requests.get(self.url + '.json')
-        self.json = json.loads(r.text)
         if not self.groups:
             self.groups = self.get_groups()
 
     def download(self):
+        data = requests.get(self.url + '.json').json()
         pages = [urljoin('https://dynasty-scans.com',
-                 u['url']) for u in self.json['pages']]
+                 u['url']) for u in data['pages']]
         files = [None] * len(pages)
         futures = []
         with self.progress_bar(pages) as bar:
@@ -79,8 +76,7 @@ class DynastyScansChapter(BaseChapter):
         url = url.replace('http://', 'https://')
         if url.endswith('/'):
             url = url[:-1]
-        r = requests.get(url + '.json')
-        j = json.loads(r.text)
+        j = requests.get(url + '.json').json()
         author_link = None
         for t in j['tags']:
             if t['type'] == 'Series':
@@ -103,8 +99,9 @@ class DynastyScansChapter(BaseChapter):
         return DynastyScansChapter(name=name, chapter='0', url=url)
 
     def get_groups(self):
+        data = requests.get(self.url + '.json').json()
         groups = []
-        for t in self.json['tags']:
+        for t in data['tags']:
             if t['type'] == 'Scanlator':
                 groups.append(t['name'])
         return groups
