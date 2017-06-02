@@ -12,7 +12,7 @@ install:
   - pip install -e .[testing]
 script:
   - pycodestyle cum
-  - nose2
+  - nose2 --verbose
 deploy:
   provider: pypi
   user: cumbottler

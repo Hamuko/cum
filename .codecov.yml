@@ -1,0 +1,10 @@
+coverage:
+  range: 70..95
+  round: nearest
+  precision: 2
+
+  status:
+    project:
+      target: 97.00
+    patch:
+      target: 90.00
