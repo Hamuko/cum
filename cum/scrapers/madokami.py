@@ -11,7 +11,7 @@ name_re = re.compile(r'-? c([0-9-]+).*?(?: \[(.*)\])?\.')
 
 
 class MadokamiSeries(BaseSeries):
-    url_re = re.compile(r'https://manga\.madokami\.al/Manga/[^.]+$')
+    url_re = re.compile(r'https://manga\.madokami\.al/(?:Manga|Raws)/[^.]+$')
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
