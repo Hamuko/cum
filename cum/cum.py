@@ -285,7 +285,7 @@ def get(input, directory):
             continue
         if chapter:
             chapter_list.append(chapter)
-        if not series or chapter:
+        if not (series or chapter):
             chapters = db.session.query(db.Chapter).join(db.Series)
             try:
                 alias, chapter = item.split(':')
