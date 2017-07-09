@@ -179,7 +179,7 @@ class BatotoChapter(BaseChapter):
             raise exceptions.ScrapingError('Chapter has no parent series link')
         series = BatotoSeries(series_url)
         for chapter in series.chapters:
-            if chapter.url == url:
+            if chapter.url.lstrip('htps') == url.lstrip('htps'):
                 return chapter
 
     def reader_get(self, page_index):
