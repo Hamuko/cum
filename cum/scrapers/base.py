@@ -105,6 +105,9 @@ class BaseChapter(metaclass=ABCMeta):
         path = ''.join([char for char in path if char.isalpha() or
                         char.isdigit() or char in KEEP_CHARACTERS]).rstrip()
         path = sub(' +', ' ', path)
+        if sys.platform in ['cygwin', 'win32']:
+            no_end_dots_re = r'[\.\s]*$'
+            path = sub( no_end_dots_re, '', path )
         if path_start:
             path = ''.join([path_start, path])
         return path
