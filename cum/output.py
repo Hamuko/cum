@@ -78,6 +78,8 @@ def list(items):
         width = click.get_terminal_size()[0]
         longest = len(max(items, key=len))
         columns = int(width // (longest + 0.5))
+        if columns < 1:
+            columns = 1
         rows = ceil(len(items) / columns)
 
         for row in range(rows):
