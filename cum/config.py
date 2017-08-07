@@ -189,14 +189,39 @@ def initialize(directory=None):
     """Initializes the cum directory and config file either with specified
     directory or ~/.cum.
     """
-    global _config, config_path, cum_dir
+    global _config, config_path, config_dir, data_dir
+    cum_dir = None
     if directory:
         cum_dir = directory
     elif sys.platform in ['cygwin', 'win32']:
         cum_dir = os.path.join(os.environ['APPDATA'], 'cum')
-    else:
+    elif sys.platform != 'linux':
         cum_dir = os.path.join(os.environ['HOME'], '.cum')
-    if not os.path.exists(cum_dir):
-        os.mkdir(cum_dir)
-    config_path = os.path.join(cum_dir, 'config.json')
+    else:
+        old_cummies = os.path.join(os.environ['HOME'], '.cum')
+        if 'XDG_DATA_HOME' in os.environ:
+            data_dir = os.path.join(os.environ['XDG_DATA_HOME'], 'cum')
+        else:
+            data_dir = os.path.join(os.environ['HOME'], '.local', 'share',
+                                    'cum')
+        if 'XDG_CONFIG_HOME' in os.environ:
+            config_dir = os.path.join(os.environ['XDG_CONFIG_HOME'], 'cum')
+        else:
+            config_dir = os.path.join(os.environ['HOME'], '.config', 'cum')
+        if not os.path.exists(config_dir):
+            if os.path.exists(old_cummies):     # There is an old cum dir
+                config_dir = old_cummies
+            else:                               # This is a fresh install
+                os.mkdir(config_dir)
+        if not os.path.exists(data_dir):
+            if os.path.exists(old_cummies):
+                data_dir = old_cummies
+            else:
+                os.mkdir(data_dir)
+    if cum_dir:     # Single directory for data and config
+        config_dir = cum_dir
+        data_dir = cum_dir
+        if not os.path.exists(cum_dir):
+            os.mkdir(cum_dir)
+    config_path = os.path.join(config_dir, 'config.json')
     _config = BaseConfig()

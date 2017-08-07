@@ -262,14 +262,14 @@ class Group(Base):
 
 def backup_database():
     """Backs up the database file to a file called cum.db.bak."""
-    db_path = os.path.join(config.cum_dir, 'cum.db')
-    backup_path = os.path.join(config.cum_dir, 'cum.db.bak')
+    db_path = os.path.join(config.data_dir, 'cum.db')
+    backup_path = os.path.join(config.data_dir, 'cum.db.bak')
     copyfile(db_path, backup_path)
 
 
 def initialize():
     global db_path, engine, session
-    db_path = os.path.join(config.cum_dir, 'cum.db')
+    db_path = os.path.join(config.data_dir, 'cum.db')
     db_url = sqlalchemy.engine.url.URL('sqlite', database=db_path)
     engine = create_engine(db_url)
     if not os.path.exists(db_path):
