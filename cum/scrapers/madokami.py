@@ -64,7 +64,10 @@ class MadokamiSeries(BaseSeries):
 
     @property
     def name(self):
-        return self.soup.find('span', class_='title').string
+        title_span = self.soup.find('span', class_='title')
+        if title_span is None:
+            title_span = self.soup.find('span', attrs={'itemprop': 'title'})
+        return title_span.string
 
 
 class MadokamiChapter(BaseChapter):
