@@ -66,7 +66,8 @@ class MadokamiSeries(BaseSeries):
     def name(self):
         title_span = self.soup.find('span', class_='title')
         if title_span is None:
-            title_span = self.soup.find_all('span', attrs={'itemprop': 'title'})[-1]
+            title_span = self.soup.find_all('span',
+                                            attrs={'itemprop': 'title'})[-1]
         return title_span.string
 
 
