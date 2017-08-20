@@ -76,6 +76,15 @@ class TestMadokami(cumtest.CumTest):
         self.assertTrue(os.path.isfile(path))
 
     @cumtest.skipIfNoMadokamiLogin
+    def test_name_fallback(self):
+        NAME = '!Koukaku no Pandora - Ghost Urn [Seven Seas]'
+        URL = ('https://manga.madokami.al/Manga/K/KO/KOUK/Koukaku%20no%20'
+               'Pandora%20-%20Ghost%20Urn/%21Koukaku%20no%20Pandora%20-%20'
+               'Ghost%20Urn%20%5BSeven%20Seas%5D')
+        series = madokami.MadokamiSeries(URL)
+        self.assertEqual(series.name, NAME)
+
+    @cumtest.skipIfNoMadokamiLogin
     def test_series_kami_nomi(self):
         data = {
             'alias': 'kami-nomi-zo-shiru-sekai',
