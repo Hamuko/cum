@@ -5,18 +5,18 @@ import datetime
 
 
 class TestCLIUpdate(cumtest.CumCLITest):
-    @cumtest.skipIfNoBatotoLogin
     def test_update(self):
         FOLLOWS = [
-            {'url': 'http://bato.to/comic/_/comics/femme-fatale-r468',
-             'alias': 'femme-fatale', 'name': 'Femme Fatale'},
-            {'url': 'http://bato.to/comic/_/comics/houkago-r9187',
-             'alias': 'houkago', 'name': 'Houkago'}
+            {'url': 'https://dynasty-scans.com/series/himegoto_1',
+             'alias': 'himegoto', 'name': 'Himegoto+'},
+            {'url': ('https://manga.madokami.al/Manga/N/NU/NUSA/'
+                     'Nusantara%20Droid%20War'),
+             'alias': 'nusantara-droid-war',
+             'name': 'Nusantara Droid War'}
         ]
         MESSAGES = [
             'Updating 2 series',
-            'femme-fatale 1  2  3  4  4.5  5  6  7  8  8.5  9  10  11  12',
-            'houkago      1  2'
+            'himegoto 1  2  3  4  5  6  7'
         ]
 
         config.get().compact_new = True
@@ -33,34 +33,44 @@ class TestCLIUpdate(cumtest.CumCLITest):
         self.assertEqual(result.exit_code, 0)
         for message in MESSAGES:
             self.assertIn(message, result.output)
-        self.assertEqual(len(chapters), 16)
+        self.assertEqual(len(chapters), 7)
 
     def test_update_fast(self):
         CHAPTERS2 = [
-            {'chapter': '1', 'url': 'http://bato.to/reader#e9df010324a94b03'},
-            {'chapter': '2', 'url': 'http://bato.to/reader#6e8bf206e9f79b85'},
+            {'chapter': '1',
+             'url': ('https://kobato.hologfx.com/reader/read/'
+                     'hitoribocchi_no_oo_seikatsu/en/1/1/')},
+            {'chapter': '2',
+             'url': ('https://kobato.hologfx.com/reader/read/'
+                     'hitoribocchi_no_oo_seikatsu/en/1/2/')},
         ]
         CHAPTERS3 = [
-            {'chapter': '0', 'url': 'http://bato.to/reader#f04036c7567ca8ab'},
-            {'chapter': '1', 'url': 'http://bato.to/reader#4ae6ff5a17b049ed'},
-            {'chapter': '2', 'url': 'http://bato.to/reader#7b3c06767fc2652c'},
-            {'chapter': '3', 'url': 'http://bato.to/reader#f1ad5d28d81d4235'},
-            {'chapter': '4', 'url': 'http://bato.to/reader#53b515ec0296fc09'}
+            {'chapter': '1',
+             'url': 'https://dynasty-scans.com/chapters/i_girl_ch01'},
+            {'chapter': '2',
+             'url': 'https://dynasty-scans.com/chapters/i_girl_ch02'}
         ]
         CHAPTERS4 = [
-            {'chapter': '0', 'url': 'http://bato.to/reader#b989b624047f3e38'}
+            {'chapter': '3',
+             'url': ('https://manga.madokami.al/Manga/N/NU/NUSA/Nusantara%20'
+                     'Droid%20War/Nusantara%20Droid%20War%20Ch.003%20And%20The'
+                     '%20Winner%20Is....%20%5BKissManga%5D.zip')}
         ]
-        FOLLOW1 = {'url': 'http://bato.to/comic/_/comics/femme-fatale-r468',
-                   'alias': 'femme-fatale', 'name': 'Femme Fatale'}
-        FOLLOW2 = {'url': 'http://bato.to/comic/_/comics/houkago-r9187',
-                   'alias': 'houkago', 'name': 'Houkago'}
-        FOLLOW3 = {'url': 'http://bato.to/comic/_/comics/dog-days-r6928',
-                   'alias': 'dog-days', 'name': 'Houkago'}
-        FOLLOW4 = {'url': 'http://bato.to/comic/_/comics/cat-gravity-r11269',
-                   'alias': 'cat-gravity', 'name': 'Cat Gravity'}
+        FOLLOW1 = {'url': 'https://dynasty-scans.com/series/himegoto_1',
+                   'alias': 'himegoto', 'name': 'Himegoto+'}
+        FOLLOW2 = {'url': ('https://kobato.hologfx.com/reader/series/'
+                           'hitoribocchi_no_oo_seikatsu/'),
+                   'alias': 'hitoribocchi-no-oo-seikatsu',
+                   'name': 'Hitoribocchi no OO Seikatsu'}
+        FOLLOW3 = {'url': 'https://dynasty-scans.com/series/i_girl',
+                   'alias': 'i-girl', 'name': 'I Girl'}
+        FOLLOW4 = {'url': ('https://manga.madokami.al/Manga/N/NU/NUSA/'
+                           'Nusantara%20Droid%20War'),
+                   'alias': 'nusantara-droid-war',
+                   'name': 'Nusantara Droid War'}
         MESSAGES = [
             'Updating 3 series (1 skipped)',
-            'femme-fatale 1  2  3  4  4.5  5  6  7  8  8.5  9  10  11  12',
+            'himegoto 1  2  3  4  5  6  7',
         ]
 
         config.get().compact_new = True
@@ -114,22 +124,3 @@ class TestCLIUpdate(cumtest.CumCLITest):
         self.assertEqual(result.exit_code, 0)
         for message in MESSAGES:
             self.assertIn(message, result.output)
-
-    def test_update_invalid_login(self):
-        FOLLOW = {'url': 'http://bato.to/comic/_/comics/femme-fatale-r468',
-                  'alias': 'femme-fatale', 'name': 'Femme Fatale'}
-        MESSAGE = 'Unable to update femme-fatale (Batoto login error)'
-
-        series = self.create_mock_series(**FOLLOW)
-        series.follow()
-
-        config.get().batoto.cookie = None
-        config.get().batoto.member_id = None
-        config.get().batoto.pass_hash = None
-        config.get().batoto.password = 'Notvalid'
-        config.get().batoto.username = 'Notvalid'
-        config.get().write()
-
-        result = self.invoke('update')
-        self.assertEqual(result.exit_code, 0)
-        self.assertIn(MESSAGE, result.output)

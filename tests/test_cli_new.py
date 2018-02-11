@@ -5,14 +5,21 @@ import cumtest
 
 class TestCLINew(cumtest.CumCLITest):
     CHAPTERS = [
-        {'url': 'http://bato.to/reader#4a9eb84cb52b62f6', 'chapter': '1-4'},
-        {'url': 'http://bato.to/reader#63f3517dd93f7168', 'chapter': '5-8'},
-        {'url': 'http://bato.to/reader#9a7916fddd6cdbf7', 'chapter': '9-12'},
-        {'url': 'http://bato.to/reader#c80a8e4a99753d33', 'chapter': '13-16'},
-        {'url': 'http://bato.to/reader#1505b31c009f51aa', 'chapter': '17-20'},
+        {'url': 'https://dynasty-scans.com/chapters/nijipuri_ch01',
+         'chapter': '1'},
+        {'url': 'https://dynasty-scans.com/chapters/nijipuri_ch02',
+         'chapter': '2'},
+        {'url': 'https://dynasty-scans.com/chapters/nijipuri_ch03',
+         'chapter': '3'},
+        {'url': 'https://dynasty-scans.com/chapters/nijipuri_ch04',
+         'chapter': '4'},
+        {'url': 'https://dynasty-scans.com/chapters/nijipuri_ch05',
+         'chapter': '5'},
+        {'url': 'https://dynasty-scans.com/chapters/nijipuri_ch06',
+         'chapter': '6'},
     ]
-    FOLLOW = {'url': 'http://bato.to/comic/_/comics/blood-r5840',
-              'name': 'BLOOD+', 'alias': 'blood'}
+    FOLLOW = {'url': 'https://dynasty-scans.com/series/nijipuri',
+              'name': 'Nijipuri', 'alias': 'nijipuri'}
 
     def create_test_data(self):
         series = self.create_mock_series(**self.FOLLOW)
@@ -22,7 +29,7 @@ class TestCLINew(cumtest.CumCLITest):
         series.follow()
 
     def test_new(self):
-        MESSAGES = ['blood', '1-4  5-8  9-12  13-16  17-20']
+        MESSAGES = ['nijipuri', '1  2  3  4  5  6']
 
         self.create_test_data()
 
@@ -37,7 +44,7 @@ class TestCLINew(cumtest.CumCLITest):
         self.assertFalse(result.output)
 
     def test_new_compact(self):
-        MESSAGE = 'blood 1-4  5-8  9-12  13-16  17-20'
+        MESSAGE = 'nijipuri 1  2  3  4  5  6'
 
         config.get().compact_new = True
         config.get().write()
