@@ -53,6 +53,20 @@ class DatabaseSanity(object):
         for table in self.database_tables:
             self.test_columns(table)
         self.test_madokami_url()  # TODO: Remove in the future.
+        self.test_batoto_follows()
+
+    def test_batoto_follows(self):
+        """Test that there are no Batoto follows in the database as the scraper
+        has been removed in cum v0.9.
+        """
+        global db
+        from cum import db
+        domain = 'bato.to'
+        condition = db.Series.url.ilike('%bato.to%')
+        results = db.session.query(db.Series).filter(condition).all()
+        for result in results:
+            error = RemovedScraper(result, 'Batoto', domain)
+            self.errors.append(error)
 
     def test_columns(self, table):
         """Tests the columns in database table. If a column exists in the
@@ -285,3 +299,24 @@ class NullableMismatch(SanityError):
                             batch_op.alter_column(column.name,
                                                   nullable=self.is_nullable)
                         return
+
+
+class RemovedScraper(SanityError):
+    def __init__(self, series, scraper_name, domain):
+        self.series = series
+        self.scraper_name = scraper_name
+        self.domain = domain
+
+    def __str__(self):
+        return ('{s.series.alias}: scraper for {s.scraper_name} has been '
+                'removed'.format(s=self))
+
+    def fix(self):
+        condition = db.Series.url.ilike('%{}%'.format(self.domain))
+        results = db.session.query(db.Series).filter(condition).all()
+        for series in results:
+            for chapter in series.chapters:
+                db.session.delete(chapter)
+            db.session.commit()
+            db.session.delete(series)
+        db.session.commit()
