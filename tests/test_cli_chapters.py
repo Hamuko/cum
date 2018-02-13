@@ -4,7 +4,8 @@ import cumtest
 
 class TestCLIChapters(cumtest.CumCLITest):
     def test_chapters(self):
-        FOLLOW = {'url': 'http://bato.to/comic/_/comics/date-a-live-r4555',
+        FOLLOW = {'url': ('https://manga.madokami.al/Manga/D/DA/DATE/Date'
+                          '%20a%20Live'),
                   'alias': 'date-a-live', 'name': 'Date A Live', }
         GROUP = ['Village Idiot']
         CHAPTERS = [

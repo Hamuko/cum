@@ -5,11 +5,14 @@ import time
 
 
 class TestCLILatest(cumtest.CumCLITest):
-    SERIES_KWARGS = {'url': 'http://bato.to/comic/_/comics/cat-gravity-r11269',
-                     'alias': 'cat-gravity', 'name': 'Cat Gravity'}
+    SERIES_KWARGS = {'url': ('https://manga.madokami.al/Manga/K/KA/KANG/'
+                             'Kangoku%20Gakuen'),
+                     'alias': 'kangoku-gakuen', 'name': 'Kangoku Gakuen'}
     CHAPTER_KWARGS = {
         'chapter': '0',
-        'url': 'http://bato.to/reader#b989b624047f3e38'
+        'url': ('https://manga.madokami.al/Manga/K/KA/KANG/Kangoku%20Gakuen/'
+                'Kangoku%20Gakuen%20%28Prison%20School%29%20-%20c001-008%20%28'
+                'v01%29%20%5BEMS%5D.zip')
     }
 
     def setUp(self):
@@ -20,7 +23,7 @@ class TestCLILatest(cumtest.CumCLITest):
         series.follow()
 
     def test_latest(self):
-        MESSAGE = 'cat-gravity   2013-12-11 10:09'
+        MESSAGE = 'kangoku-gakuen   2013-12-11 10:09'
 
         chapter = self.db.session.query(self.db.Chapter).first()
         chapter.added_on = datetime.datetime(2013, 12, 11, hour=10, minute=9)
@@ -31,13 +34,14 @@ class TestCLILatest(cumtest.CumCLITest):
         self.assertIn(MESSAGE, result.output)
 
     def test_latest_alias(self):
-        FOLLOW = {'url': 'http://bato.to/comic/_/comics/cerberus-r1588',
+        FOLLOW = {'url': 'https://manga.madokami.al/Manga/C/CE/CERB/Cerberus',
                   'alias': 'cerberus', 'name': 'Cerberus'}
         CHAPTER = {
             'chapter': '1',
-            'url': 'http://bato.to/reader#e5711cadcf1e387e'
+            'url': ('https://manga.madokami.al/Manga/C/CE/CERB/Cerberus/'
+                    'Cerberus%20v01%20c01-06.rar')
         }
-        MESSAGE = 'cat-gravity   2013-12-11 10:09\n'
+        MESSAGE = 'kangoku-gakuen   2013-12-11 10:09\n'
 
         series = self.create_mock_series(**FOLLOW)
         chapter = self.create_mock_chapter(**CHAPTER)
@@ -48,13 +52,13 @@ class TestCLILatest(cumtest.CumCLITest):
         chapter.added_on = datetime.datetime(2013, 12, 11, hour=10, minute=9)
         self.db.session.commit()
 
-        result = self.invoke('latest', 'cat-gravity')
+        result = self.invoke('latest', 'kangoku-gakuen')
         self.assertEqual(result.exit_code, 0)
         self.assertIn(MESSAGE, result.output)
         self.assertNotIn(FOLLOW['alias'], result.output)
 
     def test_latest_never(self):
-        MESSAGE = 'cat-gravity   never'
+        MESSAGE = 'kangoku-gakuen   never'
 
         chapter = self.db.session.query(self.db.Chapter).first()
         self.db.session.delete(chapter)
@@ -65,7 +69,7 @@ class TestCLILatest(cumtest.CumCLITest):
         self.assertIn(MESSAGE, result.output)
 
     def test_latest_relative_days(self):
-        MESSAGE = 'cat-gravity   14 days ago'
+        MESSAGE = 'kangoku-gakuen   14 days ago'
 
         chapter = self.db.session.query(self.db.Chapter).first()
         time = datetime.datetime.now() - datetime.timedelta(days=14)
@@ -77,7 +81,7 @@ class TestCLILatest(cumtest.CumCLITest):
         self.assertIn(MESSAGE, result.output)
 
     def test_latest_relative_hours(self):
-        MESSAGE = 'cat-gravity   3 hours ago'
+        MESSAGE = 'kangoku-gakuen   3 hours ago'
 
         chapter = self.db.session.query(self.db.Chapter).first()
         time = datetime.datetime.now() - datetime.timedelta(hours=3)
@@ -89,7 +93,7 @@ class TestCLILatest(cumtest.CumCLITest):
         self.assertIn(MESSAGE, result.output)
 
     def test_latest_relative_minutes(self):
-        MESSAGE = 'cat-gravity   1 minute ago'
+        MESSAGE = 'kangoku-gakuen   1 minute ago'
 
         chapter = self.db.session.query(self.db.Chapter).first()
         time = datetime.datetime.now() - datetime.timedelta(minutes=1)
@@ -101,7 +105,7 @@ class TestCLILatest(cumtest.CumCLITest):
         self.assertIn(MESSAGE, result.output)
 
     def test_latest_relative_months(self):
-        MESSAGE = 'cat-gravity   2 months ago'
+        MESSAGE = 'kangoku-gakuen   2 months ago'
 
         chapter = self.db.session.query(self.db.Chapter).first()
         time = datetime.datetime.now() - datetime.timedelta(days=69)
@@ -113,7 +117,7 @@ class TestCLILatest(cumtest.CumCLITest):
         self.assertIn(MESSAGE, result.output)
 
     def test_latest_relative_seconds(self):
-        MESSAGES = ['cat-gravity   ', 'seconds ago']
+        MESSAGES = ['kangoku-gakuen   ', 'seconds ago']
 
         result = self.invoke('latest', '--relative')
         self.assertEqual(result.exit_code, 0)

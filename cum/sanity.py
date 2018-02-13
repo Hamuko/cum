@@ -63,7 +63,10 @@ class DatabaseSanity(object):
         from cum import db
         domain = 'bato.to'
         condition = db.Series.url.ilike('%bato.to%')
-        results = db.session.query(db.Series).filter(condition).all()
+        try:
+            results = db.session.query(db.Series).filter(condition).all()
+        except SQLAlchemyError:
+            return
         for result in results:
             error = RemovedScraper(result, 'Batoto', domain)
             self.errors.append(error)
