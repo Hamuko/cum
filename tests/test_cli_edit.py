@@ -3,7 +3,8 @@ import cumtest
 
 
 class TestCLIEdit(cumtest.CumCLITest):
-    FOLLOW = {'url': 'http://bato.to/comic/_/comics/molester-man-r7471',
+    FOLLOW = {'url': ('https://manga.madokami.al/Manga/M/MO/MOLE/'
+                      'Molester%20Man'),
               'alias': 'molester-man', 'name': 'Molester Man'}
 
     def setUp(self):

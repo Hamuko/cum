@@ -24,12 +24,9 @@ class TestCLIConfig(cumtest.CumCLITest):
         for message in MESSAGES:
             self.assertIn(message, result.output)
 
-    @cumtest.skipIfNoBatotoLogin
     @cumtest.skipIfNoMadokamiLogin
     def test_config_get(self):
-        MESSAGES = ['batoto.password = ' + config.get().batoto.password,
-                    'batoto.username = ' + config.get().batoto.username,
-                    'download_directory = ' + config.get().download_directory,
+        MESSAGES = ['download_directory = ' + config.get().download_directory,
                     'madokami.password = ' + config.get().madokami.password,
                     'madokami.username = ' + config.get().madokami.username]
 
@@ -37,21 +34,6 @@ class TestCLIConfig(cumtest.CumCLITest):
         self.assertEqual(result.exit_code, 0)
         for message in MESSAGES:
             self.assertIn(message, result.output)
-
-    @cumtest.skipIfNoBatotoLogin
-    def test_config_get_batoto_username(self):
-        MESSAGE = 'batoto.username = ' + config.get().batoto.username
-
-        result = self.invoke('config', 'get', 'batoto.username')
-        self.assertEqual(result.exit_code, 0)
-        self.assertIn(MESSAGE, result.output)
-
-    def test_config_get_batoto_invalid_value(self):
-        MESSAGE = 'Setting not found'
-
-        result = self.invoke('config', 'get', 'batoto.wrongkey')
-        self.assertEqual(result.exit_code, 1)
-        self.assertIn(MESSAGE, result.output)
 
     def test_config_get_download_directory(self):
         MESSAGE = 'download_directory = ' + config.get().download_directory
@@ -73,16 +55,6 @@ class TestCLIConfig(cumtest.CumCLITest):
         result = self.invoke('config', 'poke')
         self.assertEqual(result.exit_code, 1)
         self.assertIn(MESSAGE, result.output)
-
-    def test_config_set_batoto_password(self):
-        PASSWORD = 'password4testing'
-
-        config.get().batoto.password = None
-        config.get().write()
-
-        result = self.invoke('config', 'set', 'batoto.password', PASSWORD)
-        self.assertEqual(result.exit_code, 0)
-        self.assertEqual(config.get().batoto.password, PASSWORD)
 
     def test_config_set_cbz(self):
         result = self.invoke('config', 'set', 'cbz', 'True')

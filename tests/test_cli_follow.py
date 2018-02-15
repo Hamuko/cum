@@ -5,18 +5,57 @@ import os
 
 
 class TestCLIFollow(cumtest.CumCLITest):
-    @cumtest.skipIfNoBatotoLogin
-    def test_follow_batoto(self):
-        URL = 'http://bato.to/comic/_/comics/akuma-no-riddle-r9759'
+    def test_follow_dokireader(self):
+        URL = 'https://kobato.hologfx.com/reader/series/new_game/'
+        MESSAGE = 'Adding follow for New Game! (new-game)'
+
+        result = self.invoke('follow', URL)
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn(MESSAGE, result.output)
+
+    def test_follow_dokireader_download(self):
+        URL = ('https://kobato.hologfx.com/reader/series/'
+               'rem_kara_hajimeru_isei_kouyuu/')
+        FILENAMES = ['Rem kara Hajimeru Isei Kouyuu - c001 [Doki Fansubs].zip']
+        MESSAGES = ['Adding follow for Rem kara Hajimeru Isei Kouyuu '
+                    '(rem-kara-hajimeru-isei-kouyuu)',
+                    'Downloading 1 chapter']
+
+        result = self.invoke('follow', URL, '--download')
+        files = [os.path.join(self.directory.name,
+                              'Rem kara Hajimeru Isei Kouyuu', x)
+                 for x in FILENAMES]
+        self.assertEqual(result.exit_code, 0)
+        for message in MESSAGES:
+            self.assertIn(message, result.output)
+        for file in files:
+            self.assertTrue(os.path.isfile(file))
+
+    def test_follow_dokireader_ignore(self):
+        URL = ('https://kobato.hologfx.com/reader/series/'
+               'rem_kara_hajimeru_isei_kouyuu/')
+        MESSAGES = ['Adding follow for Rem kara Hajimeru Isei Kouyuu '
+                    '(rem-kara-hajimeru-isei-kouyuu)',
+                    'Ignoring 1 chapter']
+
+        result = self.invoke('follow', URL, '--ignore')
+        chapters = self.db.session.query(self.db.Chapter).all()
+        self.assertEqual(result.exit_code, 0)
+        for message in MESSAGES:
+            self.assertIn(message, result.output)
+        for chapter in chapters:
+            self.assertEqual(chapter.downloaded, -1)
+
+    def test_follow_dynastyscans(self):
+        URL = 'http://dynasty-scans.com/series/akuma_no_riddle'
         MESSAGE = 'Adding follow for Akuma no Riddle (akuma-no-riddle)'
 
         result = self.invoke('follow', URL)
         self.assertEqual(result.exit_code, 0)
         self.assertIn(MESSAGE, result.output)
 
-    @cumtest.skipIfNoBatotoLogin
-    def test_follow_batoto_duplicate(self):
-        FOLLOW = {'url': 'http://bato.to/comic/_/comics/akuma-no-riddle-r9759',
+    def test_follow_dynastyscans_duplicate(self):
+        FOLLOW = {'url': 'http://dynasty-scans.com/series/akuma_no_riddle',
                   'alias': 'akuma-no-riddle', 'name': 'Akuma no Riddle'}
         MESSAGES = ('You are already following Akuma no Riddle '
                     '(akuma-no-riddle)')
@@ -28,91 +67,6 @@ class TestCLIFollow(cumtest.CumCLITest):
         self.assertEqual(result.exit_code, 0)
         for message in MESSAGES:
             self.assertIn(message, result.output)
-
-    @cumtest.skipIfNoBatotoLogin
-    def test_follow_batoto_download(self):
-        URL = 'http://bato.to/comic/_/comics/dog-days-r6928'
-        FILENAMES = ['Dog Days - c000 [CXC Scans].zip',
-                     'Dog Days - c001 [CXC Scans].zip',
-                     'Dog Days - c002 [CXC Scans].zip',
-                     'Dog Days - c003 [CXC Scans].zip',
-                     'Dog Days - c004 [CXC Scans].zip']
-        MESSAGES = ['Adding follow for Dog Days (dog-days)',
-                    'Downloading 5 chapters']
-
-        result = self.invoke('follow', URL, '--download')
-        files = [os.path.join(self.directory.name, 'Dog Days', x)
-                 for x in FILENAMES]
-        self.assertEqual(result.exit_code, 0)
-        for message in MESSAGES:
-            self.assertIn(message, result.output)
-        for file in files:
-            self.assertTrue(os.path.isfile(file))
-
-    @cumtest.skipIfNoBatotoLogin
-    def test_follow_batoto_ignore(self):
-        URL = 'http://bato.to/comic/_/comics/dog-days-r6928'
-        MESSAGES = ['Adding follow for Dog Days (dog-days)',
-                    'Ignoring 5 chapters']
-
-        result = self.invoke('follow', URL, '--ignore')
-        chapters = self.db.session.query(self.db.Chapter).all()
-        self.assertEqual(result.exit_code, 0)
-        for message in MESSAGES:
-            self.assertIn(message, result.output)
-        for chapter in chapters:
-            self.assertEqual(chapter.downloaded, -1)
-
-    def test_follow_batoto_invalid_login(self):
-        URL = 'http://bato.to/comic/_/comics/hot-road-r2243'
-        MESSAGE = 'Batoto login error ({})'.format(URL)
-
-        config.get().batoto.password = 'Notvalid'
-        config.get().batoto.username = 'Notvalid'
-        config.get().write()
-
-        result = self.invoke('follow', URL)
-        self.assertEqual(result.exit_code, 0)
-        self.assertIn(MESSAGE, result.output)
-
-    @cumtest.skipIfNoBatotoLogin
-    def test_follow_batoto_refollow_with_directory(self):
-        URL = 'http://bato.to/comic/_/comics/dog-days-r6928'
-        DIRECTORY1 = 'olddirectory'
-        DIRECTORY2 = 'newdirectory'
-
-        result = self.invoke('follow', '--directory', DIRECTORY1, URL)
-        series = self.db.session.query(self.db.Series).one()
-        self.assertEqual(result.exit_code, 0)
-        self.assertTrue(series.following)
-        self.assertEqual(series.directory, DIRECTORY1)
-
-        result = self.invoke('unfollow', 'dog-days')
-        series = self.db.session.query(self.db.Series).one()
-        self.assertEqual(result.exit_code, 0)
-        self.assertFalse(series.following)
-
-        result = self.invoke('follow', '--directory', DIRECTORY2, URL)
-        series = self.db.session.query(self.db.Series).one()
-        self.assertEqual(result.exit_code, 0)
-        self.assertTrue(series.following)
-        self.assertEqual(series.directory, DIRECTORY2)
-
-    def test_follow_dokireader(self):
-        URL = 'https://kobato.hologfx.com/reader/series/new_game/'
-        MESSAGE = 'Adding follow for New Game! (new-game)'
-
-        result = self.invoke('follow', URL)
-        self.assertEqual(result.exit_code, 0)
-        self.assertIn(MESSAGE, result.output)
-
-    def test_follow_dynastyscans(self):
-        URL = 'http://dynasty-scans.com/series/akuma_no_riddle'
-        MESSAGE = 'Adding follow for Akuma no Riddle (akuma-no-riddle)'
-
-        result = self.invoke('follow', URL)
-        self.assertEqual(result.exit_code, 0)
-        self.assertIn(MESSAGE, result.output)
 
     def test_follow_invalid(self):
         URL = 'http://www.google.com'
@@ -143,17 +97,13 @@ class TestCLIFollow(cumtest.CumCLITest):
         self.assertEqual(result.exit_code, 0)
         self.assertIn(MESSAGE, result.output)
 
-    @cumtest.skipIfNoBatotoLogin
     @cumtest.skipIfNoMadokamiLogin
     def test_follow_non_unique_alias(self):
-        URLS = ['https://bato.to/comic/_/comics/happiness-oshimi-shuzo-r14710',
-                'https://manga.madokami.al/Manga/H/HA/HAPP/Happiness%20'
-                '%28OSHIMI%20Shuzo%29']
-        ALIASES = ['happiness-oshimi-shuzo', 'happiness-oshimi-shuzo-1']
-        MESSAGES = ['Adding follow for Happiness (OSHIMI Shuzo) '
-                    '(happiness-oshimi-shuzo)',
-                    'Adding follow for Happiness (OSHIMI Shuzo) '
-                    '(happiness-oshimi-shuzo-1)']
+        URLS = ['https://kobato.hologfx.com/reader/series/new_game/',
+                'https://manga.madokami.al/Manga/N/NE/NEW_/New%20Game%21']
+        ALIASES = ['new-game', 'new-game-1']
+        MESSAGES = ['Adding follow for New Game! (new-game)',
+                    'Adding follow for New Game! (new-game-1)']
 
         for index in range(len(URLS)):
             result = self.invoke('follow', URLS[index])
@@ -165,15 +115,12 @@ class TestCLIFollow(cumtest.CumCLITest):
         for alias in ALIASES:
             self.assertIn(alias, [x.alias for x in follows])
 
-    @cumtest.skipIfNoBatotoLogin
     @cumtest.skipIfNoMadokamiLogin
     def test_follow_non_unique_alias_with_unfollow(self):
-        URLS = ['https://bato.to/comic/_/comics/happiness-oshimi-shuzo-r14710',
-                'https://manga.madokami.al/Manga/H/HA/HAPP/Happiness%20'
-                '%28OSHIMI%20Shuzo%29']
-        ALIASES = ['happiness-oshimi-shuzo', 'happiness-oshimi-shuzo-1']
-        MESSAGE = ('Adding follow for Happiness (OSHIMI Shuzo) '
-                   '(happiness-oshimi-shuzo)')
+        URLS = ['https://kobato.hologfx.com/reader/series/new_game/',
+                'https://manga.madokami.al/Manga/N/NE/NEW_/New%20Game%21']
+        ALIASES = ['new-game', 'new-game-1']
+        MESSAGE = 'Adding follow for New Game! (new-game)'
 
         result = self.invoke('follow', URLS[0])
         self.assertEqual(result.exit_code, 0)
@@ -198,3 +145,25 @@ class TestCLIFollow(cumtest.CumCLITest):
         result = self.invoke('follow', URL)
         self.assertEqual(result.exit_code, 0)
         self.assertIn(MESSAGE, result.output)
+
+    def test_follow_yuriism_refollow_with_directory(self):
+        URL = 'http://www.yuri-ism.net/slide/series/granblue_fantasy/'
+        DIRECTORY1 = 'olddirectory'
+        DIRECTORY2 = 'newdirectory'
+
+        result = self.invoke('follow', '--directory', DIRECTORY1, URL)
+        series = self.db.session.query(self.db.Series).one()
+        self.assertEqual(result.exit_code, 0)
+        self.assertTrue(series.following)
+        self.assertEqual(series.directory, DIRECTORY1)
+
+        result = self.invoke('unfollow', 'granblue-fantasy')
+        series = self.db.session.query(self.db.Series).one()
+        self.assertEqual(result.exit_code, 0)
+        self.assertFalse(series.following)
+
+        result = self.invoke('follow', '--directory', DIRECTORY2, URL)
+        series = self.db.session.query(self.db.Series).one()
+        self.assertEqual(result.exit_code, 0)
+        self.assertTrue(series.following)
+        self.assertEqual(series.directory, DIRECTORY2)

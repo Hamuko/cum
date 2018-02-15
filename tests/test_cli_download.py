@@ -5,25 +5,29 @@ import os
 
 
 class TestCLIDownload(cumtest.CumCLITest):
-    @cumtest.skipIfNoBatotoLogin
     def test_download(self):
         CHAPTERS = [
-            {'url': 'http://bato.to/reader#aef716a5a8acc5a7', 'chapter': '0',
+            {'url': ('https://manga.madokami.al/Manga/G/GO/GOOD/Goodbye%2C%20'
+                     'Everybody/Goodbye%2C%20Everybody%20%28Complete%29.zip'),
+             'chapter': '0',
              'groups': ['Bird Collective Translations']},
-            {'url': 'http://bato.to/reader#350d13938df0a8c4', 'chapter': '0',
+            {'url': ('https://manga.madokami.al/Manga/G/GR/GREE/Green%20Beans/'
+                     'Green%20Beans.zip'),
+             'chapter': '0',
              'groups': ['Kotonoha']}
         ]
         FOLLOWS = [
-            {'url': 'http://bato.to/comic/_/comics/goodbye-body-r13725',
-             'alias': 'goodbye-body', 'name': 'Goodbye Body'},
-            {'url': 'http://bato.to/comic/_/comics/green-beans-r15344',
+            {'url': ('https://manga.madokami.al/Manga/G/GO/GOOD/'
+                     'Goodbye%2C%20Everybody'),
+             'alias': 'goodbye-everybody', 'name': 'Goodbye Everybody'},
+            {'url': 'https://manga.madokami.al/Manga/G/GR/GREE/Green%20Beans',
              'alias': 'green-beans', 'name': 'Green Beans'}
         ]
         FILENAMES = [
-            'Goodbye Body - c000 [Bird Collective Translations].zip',
+            'Goodbye Everybody - c000 [Bird Collective Translations].zip',
             'Green Beans - c000 [Kotonoha].zip'
         ]
-        MESSAGES = ['goodbye-body 0', 'green-beans 0']
+        MESSAGES = ['goodbye-everybody 0', 'green-beans 0']
 
         for index, follow in enumerate(FOLLOWS):
             series = self.create_mock_series(**follow)
@@ -40,18 +44,22 @@ class TestCLIDownload(cumtest.CumCLITest):
             path = os.path.join(self.directory.name, filename)
             self.assertTrue(os.path.isfile(path))
 
-    @cumtest.skipIfNoBatotoLogin
     def test_download_alias(self):
         CHAPTERS = [
-            {'url': 'http://bato.to/reader#aef716a5a8acc5a7', 'chapter': '0',
+            {'url': ('https://manga.madokami.al/Manga/G/GO/GOOD/Goodbye%2C%20'
+                     'Everybody/Goodbye%2C%20Everybody%20%28Complete%29.zip'),
+             'chapter': '0',
              'groups': ['Bird Collective Translations']},
-            {'url': 'http://bato.to/reader#350d13938df0a8c4', 'chapter': '0',
+            {'url': ('https://manga.madokami.al/Manga/G/GR/GREE/Green%20Beans/'
+                     'Green%20Beans.zip'),
+             'chapter': '0',
              'groups': ['Kotonoha']}
         ]
         FOLLOWS = [
-            {'url': 'http://bato.to/comic/_/comics/goodbye-body-r13725',
-             'alias': 'goodbye-body', 'name': 'Goodbye Body'},
-            {'url': 'http://bato.to/comic/_/comics/green-beans-r15344',
+            {'url': ('https://manga.madokami.al/Manga/G/GO/GOOD/'
+                     'Goodbye%2C%20Everybody'),
+             'alias': 'goodbye-everybody', 'name': 'Goodbye, Everybody'},
+            {'url': 'https://manga.madokami.al/Manga/G/GR/GREE/Green%20Beans',
              'alias': 'green-beans', 'name': 'Green Beans'}
         ]
         FILENAME = 'Green Beans/Green Beans - c000 [Kotonoha].zip'
@@ -121,17 +129,21 @@ class TestCLIDownload(cumtest.CumCLITest):
 
     def test_download_overwriting(self):
         CHAPTERS = [
-            {'url': 'http://bato.to/reader#5ebba7f678a1a7ba', 'chapter': '0',
-             'groups': ['Test']},
-            {'url': 'http://bato.to/reader#cf03b01bd9e90ba8', 'chapter': '0',
-             'groups': ['Test']}
+            {'url': ('https://manga.madokami.al/Manga/B/BO/BOKU/Boku%20no%20'
+                     'Hero%20Academia/Boku%20no%20Hero%20Academia%20-%20c148'
+                     '%20%28mag%29%20%5BFallen%20Angels%5D.zip'),
+             'chapter': '148', 'groups': ['Test']},
+            {'url': ('https://manga.madokami.al/Manga/B/BO/BOKU/Boku%20no%20'
+                     'Hero%20Academia/Boku%20no%20Hero%20Academia%20-%20c148'
+                     '%20%28mag%29%20%5BMangaStream%5D.zip'),
+             'chapter': '148', 'groups': ['Test']},
         ]
-        FOLLOW = {'url': 'https://bato.to/comic/_/comics/'
-                         'tomo-chan-wa-onna-no-ko-r15722',
-                  'name': 'Tomo-chan',
-                  'alias': 'tomo-chan'}
-        FILENAMES = ['Tomo-chan - c000 [Test].zip',
-                     'Tomo-chan - c000 [Test]-2.zip']
+        FOLLOW = {'url': ('https://manga.madokami.al/Manga/B/BO/BOKU/Boku%20no'
+                          '%20Hero%20Academia'),
+                  'name': 'Boku no Hero Academia',
+                  'alias': 'boku-no-hero-academia'}
+        FILENAMES = ['Boku no Hero Academia - c148 [Test].zip',
+                     'Boku no Hero Academia - c148 [Test]-2.zip']
 
         series = self.create_mock_series(**FOLLOW)
         for chapter in CHAPTERS:
@@ -143,21 +155,22 @@ class TestCLIDownload(cumtest.CumCLITest):
         self.assertEqual(result.exit_code, 0)
         # print(os.listdir(self.directory.name))
         for filename in FILENAMES:
-            path = os.path.join(self.directory.name, 'Tomo-chan', filename)
+            path = os.path.join(self.directory.name, 'Boku no Hero Academia',
+                                filename)
             self.assertTrue(os.path.isfile(path))
 
-    @cumtest.skipIfNoBatotoLogin
     def test_download_removed(self):
         CHAPTER = {
-            'url': 'http://bato.to/reader#ba173e587bdc9325',
-            'chapter': '210'
+            'url': 'https://dynasty-scans.com/chapters/slow_start_ch404',
+            'chapter': '404',
+            'groups': ['/u/']
         }
         FOLLOW = {
-            'url': 'http://bato.to/comic/_/comics/tomo-chan-wa-onna-no-r15722',
-            'alias': 'tomo-chan-wa-onna-no-ko',
-            'name': 'Tomo-chan wa Onna no ko!'
+            'url': 'https://dynasty-scans.com/series/slow_start',
+            'alias': 'slow-start',
+            'name': 'Slow Start'
         }
-        MESSAGE = 'Removing Tomo-chan wa Onna no ko! 210: missing from remote'
+        MESSAGE = 'Removing Slow Start 404: missing from remote'
 
         series = self.create_mock_series(**FOLLOW)
         chapter = self.create_mock_chapter(**CHAPTER)
@@ -165,7 +178,8 @@ class TestCLIDownload(cumtest.CumCLITest):
         series.follow()
 
         result = self.invoke('download')
-        chapters = (self.db.session.query(self.db.Chapter).all())
-        self.assertEqual(len(chapters), 0)
         self.assertEqual(result.exit_code, 0)
         self.assertIn(MESSAGE, result.output)
+
+        chapters = self.db.session.query(self.db.Chapter).all()
+        self.assertEqual(len(chapters), 0)

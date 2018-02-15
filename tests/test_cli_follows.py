@@ -5,11 +5,13 @@ import cumtest
 class TestCLIFollows(cumtest.CumCLITest):
     def test_follows(self):
         FOLLOWS = [
-            {'url': 'http://bato.to/comic/_/comics/b-gata-h-kei-r500',
+            {'url': ('https://manga.madokami.al/Manga/B/B_/B_GA/B%20Gata%20H'
+                     '%20Kei'),
              'alias': 'b-gata-h-kei'},
-            {'url': 'http://bato.to/comic/_/comics/cerberus-r1588',
+            {'url': 'https://manga.madokami.al/Manga/C/CE/CERB/Cerberus',
              'alias': 'cerberus'},
-            {'url': 'http://bato.to/comic/_/comics/cromartie-highschool-r2189',
+            {'url': ('https://manga.madokami.al/Manga/S/SA/SAKI/Sakigake%21%21'
+                     '%20Cromartie%20Koukou'),
              'alias': 'cromartie-high-school'}
         ]
 

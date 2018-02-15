@@ -10,8 +10,6 @@ class CumTest(unittest.TestCase):
     """Base class for all cum test cases."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.batoto_password = os.environ.get('BATOTO_PASSWORD', None)
-        self.batoto_username = os.environ.get('BATOTO_USERNAME', None)
         self.madokami_password = os.environ.get('MADOKAMI_PASSWORD', None)
         self.madokami_username = os.environ.get('MADOKAMI_USERNAME', None)
 
@@ -32,10 +30,6 @@ class CumTest(unittest.TestCase):
         copyfile(broken_db_path, target_db_path)
 
     @property
-    def no_batoto_login(self):
-        return not (self.batoto_username and self.batoto_password)
-
-    @property
     def no_madokami_login(self):
         return not (self.madokami_username and self.madokami_password)
 
@@ -43,8 +37,6 @@ class CumTest(unittest.TestCase):
         self.directory = tempfile.TemporaryDirectory()
         config.initialize(self.directory.name)
         config.get().download_directory = self.directory.name
-        config.get().batoto.password = self.batoto_password
-        config.get().batoto.username = self.batoto_username
         config.get().madokami.password = self.madokami_password
         config.get().madokami.username = self.madokami_username
         config.get().write()
@@ -97,15 +89,6 @@ class CumCLITest(CumTest):
         default_args = ['--cum-directory', self.directory.name]
         args = default_args + list(arguments)
         return self.runner.invoke(cum.cli, args, **kwargs)
-
-
-def skipIfNoBatotoLogin(test):
-    def wrapper(self, *args, **kwargs):
-        if getattr(self, 'no_batoto_login'):
-            raise unittest.SkipTest('No Batoto login')
-        else:
-            return test(self, *args, **kwargs)
-    return wrapper
 
 
 def skipIfNoMadokamiLogin(test):
