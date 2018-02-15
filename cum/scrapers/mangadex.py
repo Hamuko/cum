@@ -8,6 +8,7 @@ import concurrent.futures
 import re
 import requests
 
+
 class MangadexSeries(BaseSeries):
     url_re = re.compile(r'(?:https?://mangadex\.com)?/manga/([0-9]+)')
     # Example chapter-name inputs:
@@ -17,7 +18,7 @@ class MangadexSeries(BaseSeries):
     # Oneshot
     name_re = re.compile(r'Ch\. ?([A-Za-z0-9\.\-]*)(?: - (.*))')
     language_re = re.compile(r'/images/flags/')
-    group_re =  re.compile(r'/group/([0-9]+)')
+    group_re = re.compile(r'/group/([0-9]+)')
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
@@ -44,8 +45,9 @@ class MangadexSeries(BaseSeries):
             chapter = name_parts.group(1) if name_parts else name
             title = name_parts.group(2) if name_parts else None
             title = None if title == 'Read Online' else title
-            language = a.parent.parent.find('img', src=self.language_re)['title']
-            # TODO add an option to filter by language
+            language = a.parent.parent.find('img', src=self.language_re)\
+                                      .get('title')
+            # TODO: Add an option to filter by language.
             if language != 'English':
                 continue
             groups = [a.parent.parent.find('a', href=self.group_re).string]
@@ -137,7 +139,9 @@ class MangadexChapter(BaseChapter):
             raise exceptions.ScrapingError('Chapter has no parent series link')
         series = MangadexSeries(urljoin('https://mangadex.com', series_url))
         for chapter in series.chapters:
-            if ''.join(urlparse(chapter.url)[1:]) == ''.join(urlparse(url)[1:]):
+            parsed_chapter_url = ''.join(urlparse(chapter.url)[1:])
+            parsed_url = ''.join(urlparse(url)[1:])
+            if parsed_chapter_url == parsed_url:
                 return chapter
 
     def reader_get(self, page_index):
