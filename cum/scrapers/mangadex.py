@@ -10,13 +10,17 @@ import requests
 
 
 class MangadexSeries(BaseSeries):
+    """Scraper for mangadex.com.
+
+    Some examples of chapter info used by Mangadex (matched with `name_re`):
+        Vol. 2 Ch. 18 - Strange-flavored Ramen
+        Ch. 7 - Read Online
+        Vol. 01 Ch. 001-013 - Read Online
+        Vol. 2 Ch. 8 v2 - Read Online
+        Oneshot
+    """
     url_re = re.compile(r'(?:https?://mangadex\.com)?/manga/([0-9]+)')
-    # Example chapter-name inputs:
-    # Vol. 2 Ch. 18 - Strange-flavored Ramen
-    # Ch. 7 - Read Online
-    # Vol. 01 Ch. 001-013 - Read Online
-    # Oneshot
-    name_re = re.compile(r'Ch\. ?([A-Za-z0-9\.\-]*)(?: - (.*))')
+    name_re = re.compile(r'Ch\. ?([A-Za-z0-9\.\-]*)(?: v[0-9]+)?(?: - (.*))')
     language_re = re.compile(r'/images/flags/')
     group_re = re.compile(r'/group/([0-9]+)')
 
