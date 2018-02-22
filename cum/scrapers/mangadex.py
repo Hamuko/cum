@@ -40,7 +40,7 @@ class MangadexSeries(BaseSeries):
         manga_name = self.name
         for a in links:
             url = a.get('href')
-            url_match = re.search(MangadexChapter.url_re, url)
+            url_match = re.search(MangadexChapter.url_re, url) if url else None
             if not url_match:
                 continue
             name = a.string
