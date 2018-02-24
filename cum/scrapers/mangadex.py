@@ -26,12 +26,29 @@ class MangadexSeries(BaseSeries):
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
-        self._get_page()
+        self._get_page(self.url)
         self.chapters = self.get_chapters()
+        # fetch paginated chapters
+        while True:
+            next_url = self._get_next_url()
+            if not next_url:
+                break
+            self._get_page(next_url)
+            self.chapters = self.get_chapters() + self.chapters
 
-    def _get_page(self):
-        r = requests.get(self.url)
+    def _get_page(self, url):
+        r = requests.get(url)
         self.soup = BeautifulSoup(r.text, config.get().html_parser)
+
+    def _get_next_url(self):
+        pagination = self.soup.find('ul', class_='pagination')
+        active_item = (pagination.find('li', class_='active')
+            if pagination else None)
+        next_item = (active_item.find_next_sibling('li', class_='paging')
+            if active_item else None)
+        next_link = next_item.find('a') if next_item else None
+        next_url = next_link.get('href') if next_link else None
+        return urljoin('https://mangadex.com', next_url) if next_url else None
 
     def get_chapters(self):
         links = self.soup.find_all('a')
