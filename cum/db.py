@@ -227,7 +227,7 @@ class Chapter(Base):
             'directory': self.series.directory,
             'api_id': self.api_id
         }
-        if parse.netloc == 'mangadex.com':
+        if parse.netloc in ('mangadex.com', 'mangadex.org'):
             from cum.scrapers.mangadex import MangadexChapter
             return MangadexChapter(**kwargs)
         if parse.netloc == 'bato.to':
