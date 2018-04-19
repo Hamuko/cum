@@ -61,6 +61,9 @@ class MangadexSeries(BaseSeries):
             if not url_match:
                 continue
             name = a.string
+            if not name:
+                print("no name for {}".format(url))
+                continue
             name = name.strip()
             name_parts = re.search(self.name_re, name)
             chapter = name_parts.group(1) if name_parts else name
@@ -87,7 +90,10 @@ class MangadexSeries(BaseSeries):
 
 
 class MangadexChapter(BaseChapter):
-    url_re = re.compile(r'(?:https?://mangadex\.com)?/chapter/([0-9]+)')
+    # match /chapter/12345 and avoid urls like /chapter/1235/comments
+    url_re = re.compile(
+        r'(?:https?://mangadex\.com)?/chapter/([0-9]+)(?:/[^a-zA-Z0-9]|/?$)'
+    )
     # There is an inlined js with a bunch of useful variables
     hash_re = re.compile(r'var dataurl ?= ?\'([A-Za-z0-9]{32})\'')
     # Example: (mind that the trailing comma is invalid json)
