@@ -71,7 +71,7 @@ $ cum update
 $ cum new
 
 # Add a follow for a manga series.
-$ cum follow http://bato.to/comic/_/comics/gakkou-gurashi-r9554
+$ cum follow https://dynasty-scans.com/series/gakkou_gurashi
 
 # Print out the chapter list for the added series.
 $ cum chapters gakkou-gurashi
