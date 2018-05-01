@@ -11,7 +11,7 @@ series_scrapers = [
     MadokamiSeries,
     MangadexSeries,
     YuriismSeries,
-	MangaSupaSeries
+    MangaSupaSeries
 ]
 chapter_scrapers = [
     DokiReaderChapter,
@@ -19,5 +19,5 @@ chapter_scrapers = [
     MadokamiChapter,
     MangadexChapter,
     YuriismChapter,
-	MangaSupaChapter
+    MangaSupaChapter
 ]

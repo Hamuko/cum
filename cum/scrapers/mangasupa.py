@@ -22,12 +22,10 @@ class MangaSupaSeries(BaseSeries):
         self.soup = BeautifulSoup(r.text, config.get().html_parser)
         self.chapters = self.get_chapters()
 
-
     @property
     def name(self):
         title = self.soup.find('title').string.strip()
         return re.search(self.title_re, title).group(1)
-
 
     def get_chapters(self):
         links = self.soup.find_all('a')
@@ -37,25 +35,28 @@ class MangaSupaSeries(BaseSeries):
         manga_name = self.name
         for a in links:
             url = a.get('href')
-            url_match = re.search(MangaSupaChapter.url_re, url) if url else None
+            url_match = (re.search(MangaSupaChapter.url_re, url)
+                         if url else None)
             if url_match and url_match.group(1) == id:
                 chapter = url_match.group(2)
-                title = re.search(MangaSupaChapter.title_re, a.text).group(1).strip()
+                title = re.search(MangaSupaChapter.title_re, a.text)\
+                          .group(1).strip()
                 c = MangaSupaChapter(name=manga_name, alias=self.alias,
-                                    chapter=chapter,
-                                    url=url,
-                                    groups=[], title=title)
+                                     chapter=chapter,
+                                     url=url,
+                                     groups=[], title=title)
                 chapters = [c] + chapters
-        
+
         return chapters
 
 
 class MangaSupaChapter(BaseChapter):
-    url_re = re.compile(r'http://mangasupa.com/chapter/([^/]+)/chapter_([0-9]+)')
+    url_re = re.compile(
+        r'http://mangasupa.com/chapter/([^/]+)/chapter_([0-9]+)'
+    )
     title_re = re.compile(r'(?:vol[\.0-9 ]+)?chapter[\.0-9v ]+:?(.*)$')
     alt_re = re.compile(r'page [0-9]+ - MangaSupa.com')
     uses_pages = False
-
 
     def from_url(url):
         series_id = re.search(MangaSupaSeries.from_url_re, url).group(1)
@@ -64,7 +65,6 @@ class MangaSupaChapter(BaseChapter):
             if chapter.url == url:
                 return chapter
         return None
-
 
     def download(self):
         if getattr(self, 'r', None):
