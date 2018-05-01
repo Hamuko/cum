@@ -194,7 +194,8 @@ class DatatypeMismatch(SanityError):
                         self.column['type'], self.expected_type.__name__))
 
     def fix(self):
-        """Uses Alembic batch operations to alter the column datatype in the table.
+        """Uses Alembic batch operations to alter the column datatype in the
+        table.
         """
         context = MigrationContext.configure(self.parent.engine.connect())
         op = Operations(context)

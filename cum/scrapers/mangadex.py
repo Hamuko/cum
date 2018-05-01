@@ -43,9 +43,9 @@ class MangadexSeries(BaseSeries):
     def _get_next_url(self):
         pagination = self.soup.find('ul', class_='pagination')
         active_item = (pagination.find('li', class_='active')
-            if pagination else None)
+                       if pagination else None)
         next_item = (active_item.find_next_sibling('li', class_='paging')
-            if active_item else None)
+                     if active_item else None)
         next_link = next_item.find('a') if next_item else None
         next_url = next_link.get('href') if next_link else None
         return urljoin('https://mangadex.com', next_url) if next_url else None
