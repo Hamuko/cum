@@ -10,7 +10,7 @@ import requests
 
 
 class MangadexSeries(BaseSeries):
-    """Scraper for mangadex.com.
+    """Scraper for mangadex.org.
 
     Some examples of chapter info used by Mangadex (matched with `name_re`):
         Vol. 2 Ch. 18 - Strange-flavored Ramen
@@ -19,7 +19,7 @@ class MangadexSeries(BaseSeries):
         Vol. 2 Ch. 8 v2 - Read Online
         Oneshot
     """
-    url_re = re.compile(r'(?:https?://mangadex\.com)?/manga/([0-9]+)')
+    url_re = re.compile(r'(?:https?://mangadex\.(?:org|com))?/manga/([0-9]+)')
     name_re = re.compile(r'Ch\. ?([A-Za-z0-9\.\-]*)(?: v[0-9]+)?(?: - (.*))')
     language_re = re.compile(r'/images/flags/')
     group_re = re.compile(r'/group/([0-9]+)')
@@ -77,7 +77,7 @@ class MangadexSeries(BaseSeries):
             groups = [a.parent.parent.find('a', href=self.group_re).string]
             c = MangadexChapter(name=manga_name, alias=self.alias,
                                 chapter=chapter,
-                                url=urljoin('https://mangadex.com', url),
+                                url=urljoin('https://mangadex.org', url),
                                 groups=groups, title=title)
             chapters = [c] + chapters
         return chapters
@@ -92,7 +92,8 @@ class MangadexSeries(BaseSeries):
 class MangadexChapter(BaseChapter):
     # match /chapter/12345 and avoid urls like /chapter/1235/comments
     url_re = re.compile(
-        r'(?:https?://mangadex\.com)?/chapter/([0-9]+)(?:/[^a-zA-Z0-9]|/?$)'
+        r'(?:https?://mangadex\.(?:org|com))?/chapter/([0-9]+)'
+        r'(?:/[^a-zA-Z0-9]|/?$)'
     )
     # There is an inlined js with a bunch of useful variables
     hash_re = re.compile(r'var dataurl ?= ?\'([A-Za-z0-9]{32})\'')
@@ -103,7 +104,7 @@ class MangadexChapter(BaseChapter):
     # Just extract the single page name like: x1.jpg
     single_page_re = re.compile(r'\s?\'([^\']+)\',?')
     # This can be a mirror server or data path. Example:
-    # var server = 'https://s2.mangadex.com/'
+    # var server = 'https://s2.mangadex.org/'
     # var server = '/data/'
     server_re = re.compile(r'var server ?= ?\'([^\']+)\'')
     uses_pages = True
@@ -135,7 +136,7 @@ class MangadexChapter(BaseChapter):
         pages = re.findall(self.single_page_re, pages_var.group(1))
         files = [None] * len(pages)
         mirror = re.search(self.server_re, r.text).group(1)
-        server = urljoin('https://mangadex.com', mirror)
+        server = urljoin('https://mangadex.org', mirror)
         futures = []
         last_image = None
         with self.progress_bar(pages) as bar:
@@ -164,7 +165,7 @@ class MangadexChapter(BaseChapter):
             series_url = soup.find('a', href=MangadexSeries.url_re)['href']
         except TypeError:
             raise exceptions.ScrapingError('Chapter has no parent series link')
-        series = MangadexSeries(urljoin('https://mangadex.com', series_url))
+        series = MangadexSeries(urljoin('https://mangadex.org', series_url))
         for chapter in series.chapters:
             parsed_chapter_url = ''.join(urlparse(chapter.url)[1:])
             parsed_url = ''.join(urlparse(url)[1:])

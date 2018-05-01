@@ -18,7 +18,7 @@ def language_filter(a):
         return None
 
 class TestMangadex(cumtest.CumTest):
-    MANGADEX_URL = 'https://mangadex.com/'
+    MANGADEX_URL = 'https://mangadex.org/'
 
     def setUp(self):
         super().setUp()
@@ -66,7 +66,7 @@ class TestMangadex(cumtest.CumTest):
                 chapter.get(use_db=False)
 
     def test_chapter_filename_decimal(self):
-        URL = 'https://mangadex.com/chapter/24779'
+        URL = 'https://mangadex.org/chapter/24779'
         chapter = mangadex.MangadexChapter.from_url(URL)
         path = os.path.join(
             self.directory.name, 'Citrus Saburouta',
@@ -76,7 +76,7 @@ class TestMangadex(cumtest.CumTest):
         self.assertEqual(chapter.filename, path)
 
     def test_chapter_filename_version2(self):
-        URL = 'https://mangadex.com/chapter/12361'
+        URL = 'https://mangadex.org/chapter/12361'
         chapter = mangadex.MangadexChapter.from_url(URL)
         path = os.path.join(
             self.directory.name, 'Urara Meirochou',
@@ -86,7 +86,7 @@ class TestMangadex(cumtest.CumTest):
         self.assertEqual(chapter.filename, path)
 
     def test_chapter_information_ramen_daisuki_koizumi_san(self):
-        URL = 'https://mangadex.com/chapter/26441'
+        URL = 'https://mangadex.org/chapter/26441'
         chapter = mangadex.MangadexChapter.from_url(URL)
         self.assertEqual(chapter.alias, 'ramen-daisuki-koizumi-san')
         self.assertTrue(chapter.available())
@@ -105,7 +105,7 @@ class TestMangadex(cumtest.CumTest):
             self.assertEqual(len(files), 8)
 
     def test_chapter_information_hidamari_sketch(self):
-        URL = 'https://mangadex.com/chapter/9833'
+        URL = 'https://mangadex.org/chapter/9833'
         chapter = mangadex.MangadexChapter.from_url(URL)
         self.assertEqual(chapter.alias, 'hidamari-sketch')
         self.assertEqual(chapter.chapter, '001-013')
@@ -124,7 +124,7 @@ class TestMangadex(cumtest.CumTest):
             self.assertEqual(len(files), 150)
 
     def test_chapter_information_tomochan(self):
-        URL = 'https://mangadex.com/chapter/28082'
+        URL = 'https://mangadex.org/chapter/28082'
         config.get().cbz = True
         chapter = mangadex.MangadexChapter.from_url(URL)
         self.assertEqual(chapter.alias, 'tomo-chan-wa-onna-no-ko')
@@ -144,7 +144,7 @@ class TestMangadex(cumtest.CumTest):
             self.assertEqual(len(files), 1)
 
     def test_chapter_unavailable(self):
-        URL = ''.join(['https://mangadex.com/chapter/',
+        URL = ''.join(['https://mangadex.org/chapter/',
                        '9999999999999999999999999999999999999999999999',
                        '99999999999999999999999'])
         chapter = mangadex.MangadexChapter(url=URL)
@@ -163,7 +163,7 @@ class TestMangadex(cumtest.CumTest):
                              '57.5', '58', '59', '60', '60.5'],
                 'groups': ['promfret', 'Amano Centric Scans'],
                 'name': 'Aria',
-                'url': 'https://mangadex.com/manga/2007'}
+                'url': 'https://mangadex.org/manga/2007'}
         self.series_information_tester(data)
 
     def test_series_prunus_girl(self):
@@ -176,7 +176,7 @@ class TestMangadex(cumtest.CumTest):
                              '38', '39', '40', '41', '42', '43'],
                 'groups': ['Unknown', 'WOWScans!', 'Maigo'],
                 'name': 'Prunus Girl',
-                'url': 'https://mangadex.com/manga/18'}
+                'url': 'https://mangadex.org/manga/18'}
         self.series_information_tester(data)
 
 if __name__ == '__main__':
