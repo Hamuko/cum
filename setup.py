@@ -16,6 +16,10 @@ SUBPROCESS_KWARGS = {
     'stdout': subprocess.PIPE,
     'stderr': subprocess.PIPE
 }
+TEST_DATA_FILES = [
+    'tests/broken_config.json',
+    'tests/broken_database.db',
+]
 
 
 class PythonVersionException(Exception):
@@ -108,6 +112,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP'
     ],
     packages=find_packages(),
+    data_files=[('', ['LICENSE']), ('tests', TEST_DATA_FILES)],
     install_requires=[
         'alembic',
         'beautifulsoup4',
