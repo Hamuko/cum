@@ -11,7 +11,7 @@ import zipfile
 
 def language_filter(a):
     try:
-        regex = mangadex.MangadexSeries.language_re
+        regex = re.compile(r'/images/flags/')
         return a.find_parent('tr').find('img', src=regex)['title'] == 'English'
     # ignore chapter links that do not state a language
     except TypeError:
@@ -30,7 +30,7 @@ class TestMangadex(cumtest.CumTest):
 
 
     def get_five_latest_releases(self):
-        r = requests.get(self.MANGADEX_URL)
+        r = requests.get(self.MANGADEX_URL + 'updates')
         soup = BeautifulSoup(r.text, config.get().html_parser)
         chapters = soup.find_all('a', href=mangadex.MangadexChapter.url_re)
         chapters = [a for a in chapters if language_filter(a)]
@@ -69,20 +69,21 @@ class TestMangadex(cumtest.CumTest):
         URL = 'https://mangadex.org/chapter/24779'
         chapter = mangadex.MangadexChapter.from_url(URL)
         path = os.path.join(
-            self.directory.name, 'Citrus Saburouta',
-            'Citrus Saburouta - c020 x9 [Chaosteam].zip'
+            self.directory.name, 'Citrus',
+            'Citrus - c020 x9 [Chaosteam].zip'
         )
         self.assertEqual(chapter.chapter, '20.9')
         self.assertEqual(chapter.filename, path)
 
     def test_chapter_filename_version2(self):
+        # 1v2 style version numbers seem to be omitted on the current site
         URL = 'https://mangadex.org/chapter/12361'
         chapter = mangadex.MangadexChapter.from_url(URL)
         path = os.path.join(
             self.directory.name, 'Urara Meirochou',
             'Urara Meirochou - c001 [Kyakka].zip'
         )
-        self.assertEqual(chapter.chapter, '1v2')
+        self.assertEqual(chapter.chapter, '1')
         self.assertEqual(chapter.filename, path)
 
     def test_chapter_information_ramen_daisuki_koizumi_san(self):
@@ -174,7 +175,7 @@ class TestMangadex(cumtest.CumTest):
                              '23', '24', '25', '26', '27', '28', '29', '30',
                              '31', '32', '32.5', '33', '34', '35', '36', '37',
                              '38', '39', '40', '41', '42', '43'],
-                'groups': ['Unknown', 'WOWScans!', 'Maigo'],
+                'groups': ['Unknown', 'WOW!Scans', 'Maigo'],
                 'name': 'Prunus Girl',
                 'url': 'https://mangadex.org/manga/18'}
         self.series_information_tester(data)
