@@ -26,7 +26,7 @@ class MangadexSeries(BaseSeries):
     def get_chapters(self):
         result_chapters = []
         manga_name = self.name
-        chapters = self.json['chapter']
+        chapters = self.json['chapter'] if self.json.get('chapter') else []
         for c in chapters:
             url = 'https://mangadex.org/chapter/' + c
             chapter = chapters[c]['chapter']

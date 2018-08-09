@@ -180,5 +180,13 @@ class TestMangadex(cumtest.CumTest):
                 'url': 'https://mangadex.org/manga/18'}
         self.series_information_tester(data)
 
+    def test_series_no_chapters(self):
+        data = {'alias': 'yorumori-no-kuni-no-sora-ni',
+                'chapters': [],
+                'groups': [],
+                'name': 'Yorumori no Kuni no Sora ni',
+                'url': 'https://mangadex.org/manga/13004'}
+        self.series_information_tester(data)
+
 if __name__ == '__main__':
     unittest.main()
