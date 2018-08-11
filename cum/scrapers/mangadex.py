@@ -4,6 +4,8 @@ from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
 from functools import partial
 from mimetypes import guess_type
 from urllib.parse import urljoin, urlparse
+from time import sleep
+from random import randrange
 import concurrent.futures
 import re
 import requests
@@ -12,6 +14,8 @@ import json
 
 class MangadexSeries(BaseSeries):
     url_re = re.compile(r'(?:https?://mangadex\.(?:org|com))?/manga/([0-9]+)')
+    # TODO remove when there are properly spaced api calls
+    spam_failures = 0
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
@@ -21,6 +25,25 @@ class MangadexSeries(BaseSeries):
     def _get_page(self, url):
         manga_id = re.search(self.url_re, url)
         r = requests.get('https://mangadex.org/api/manga/' + manga_id.group(1))
+        
+        # TODO FIXME replace with properly spaced api calls
+        #            This is a bad workaround for
+        #                '503 please stop spaming the site'
+        #            erros when making requests to /api/ urls quickly.
+        #            It may still break when 4 calls are done at the same time
+        sleep(randrange(0, 900) / 1000.0)
+        if r.status_code == 503 and self.spam_failures < 3:
+            # sleep 10-17 seconds to wait out the spam protection
+            # and make it less likely for all threads to hit at the same time
+            sleep(randrange(10000, 17000) / 1000.0)
+            self.spam_failures = self.spam_failures+1
+            return self._get_page(url)
+        elif self.spam_failures >= 3:
+            print("Error: Mangadex server probably contacted too often\n")
+            print(r.text)
+            raise ScrapingError("Mangadex spam error")
+            
+        self.spam_failures = 0
         self.json = json.loads(r.text)
 
     def get_chapters(self):
