@@ -109,20 +109,20 @@ class TestMangadex(cumtest.CumTest):
         URL = 'https://mangadex.org/chapter/9833'
         chapter = mangadex.MangadexChapter.from_url(URL)
         self.assertEqual(chapter.alias, 'hidamari-sketch')
-        self.assertEqual(chapter.chapter, '001-013')
+        self.assertEqual(chapter.chapter, '0')
         self.assertEqual(chapter.groups, ['Highlanders'])
         self.assertEqual(chapter.name, 'Hidamari Sketch')
         self.assertEqual(chapter.title, None)
         path = os.path.join(
             self.directory.name, 'Hidamari Sketch',
-            'Hidamari Sketch - c001-013 [Highlanders].zip'
+            'Hidamari Sketch - c000 [Highlanders].zip'
         )
         self.assertEqual(chapter.filename, path)
         chapter.download()
         self.assertTrue(os.path.isfile(path))
         with zipfile.ZipFile(path) as chapter_zip:
             files = chapter_zip.infolist()
-            self.assertEqual(len(files), 150)
+            self.assertEqual(len(files), 11)
 
     def test_chapter_information_tomochan(self):
         URL = 'https://mangadex.org/chapter/28082'
