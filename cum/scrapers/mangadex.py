@@ -13,7 +13,7 @@ import json
 
 
 class MangadexSeries(BaseSeries):
-    url_re = re.compile(r'(?:https?://mangadex\.(?:org|com))?/manga/([0-9]+)')
+    url_re = re.compile(r'(?:https?://mangadex\.(?:org|com))?/(?:manga|title)/([0-9]+)')
     # TODO remove when there are properly spaced api calls
     spam_failures = 0
 
