@@ -13,7 +13,7 @@ import json
 
 
 class MangadexSeries(BaseSeries):
-    url_re = re.compile(r'(?:https?://mangadex\.(?:org|com))?/(?:manga|title)/([0-9]+)')
+    url_re = re.compile(r'(?:https?://mangadex\.org)?/(?:manga|title)/([0-9]+)')
     # TODO remove when there are properly spaced api calls
     spam_failures = 0
 
@@ -74,7 +74,7 @@ class MangadexSeries(BaseSeries):
 class MangadexChapter(BaseChapter):
     # match /chapter/12345 and avoid urls like /chapter/1235/comments
     url_re = re.compile(
-        r'(?:https?://mangadex\.(?:org|com))?/chapter/([0-9]+)'
+        r'(?:https?://mangadex\.org)?/chapter/([0-9]+)'
         r'(?:/[^a-zA-Z0-9]|/?$)'
     )
     uses_pages = True
