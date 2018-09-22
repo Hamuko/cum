@@ -9,10 +9,9 @@ class TestCLIUpdate(cumtest.CumCLITest):
         FOLLOWS = [
             {'url': 'https://dynasty-scans.com/series/himegoto_1',
              'alias': 'himegoto', 'name': 'Himegoto+'},
-            {'url': ('https://manga.madokami.al/Manga/N/NU/NUSA/'
-                     'Nusantara%20Droid%20War'),
-             'alias': 'nusantara-droid-war',
-             'name': 'Nusantara Droid War'}
+            {'url': ('https://manga.madokami.al/Manga/N/NU/NUDE/Nude%20na%20Shisen'),
+             'alias': 'nude-na-shisen',
+             'name': 'Nude na Shisen'}
         ]
         MESSAGES = [
             'Updating 2 series',
@@ -64,10 +63,9 @@ class TestCLIUpdate(cumtest.CumCLITest):
                    'name': 'Hitoribocchi no OO Seikatsu'}
         FOLLOW3 = {'url': 'https://dynasty-scans.com/series/i_girl',
                    'alias': 'i-girl', 'name': 'I Girl'}
-        FOLLOW4 = {'url': ('https://manga.madokami.al/Manga/N/NU/NUSA/'
-                           'Nusantara%20Droid%20War'),
-                   'alias': 'nusantara-droid-war',
-                   'name': 'Nusantara Droid War'}
+        FOLLOW4 = {'url': ('https://manga.madokami.al/Manga/N/NU/NUDE/Nude%20na%20Shisen'),
+                   'alias': 'nude-na-shisen',
+                   'name': 'Nude na Shisen'}
         MESSAGES = [
             'Updating 3 series (1 skipped)',
             'himegoto 1  2  3  4  5  6  7',
