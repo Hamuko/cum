@@ -230,27 +230,18 @@ class Chapter(Base):
         if parse.netloc in ('mangadex.com', 'mangadex.org'):
             from cum.scrapers.mangadex import MangadexChapter
             return MangadexChapter(**kwargs)
-        if parse.netloc == 'bato.to':
-            from cum.scrapers.batoto import BatotoChapter
-            return BatotoChapter(**kwargs)
-        elif parse.netloc == 'dynasty-scans.com':
+        if parse.netloc == 'dynasty-scans.com':
             from cum.scrapers.dynastyscans import DynastyScansChapter
             return DynastyScansChapter(**kwargs)
-        elif parse.netloc == 'manga.madokami.al':
+        if parse.netloc == 'manga.madokami.al':
             from cum.scrapers.madokami import MadokamiChapter
             return MadokamiChapter(**kwargs)
-        elif parse.netloc == 'kobato.hologfx.com':
+        if parse.netloc == 'kobato.hologfx.com':
             from cum.scrapers.dokireader import DokiReaderChapter
             return DokiReaderChapter(**kwargs)
-        elif parse.netloc == 'www.yuri-ism.net':
+        if parse.netloc == 'www.yuri-ism.net':
             from cum.scrapers.yuriism import YuriismChapter
             return YuriismChapter(**kwargs)
-        elif parse.netloc == 'manga.famatg.com':
-            from cum.scrapers.fallenangels import FallenAngelsChapter
-            return FallenAngelsChapter(**kwargs)
-        elif parse.netloc == 'mangasupa.com':
-            from cum.scrapers.mangasupa import MangaSupaChapter
-            return MangaSupaChapter(**kwargs)
 
 
 class Group(Base):
