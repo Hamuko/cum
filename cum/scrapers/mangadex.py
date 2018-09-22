@@ -36,7 +36,7 @@ class MangadexSeries(BaseSeries):
             # sleep 10-17 seconds to wait out the spam protection
             # and make it less likely for all threads to hit at the same time
             sleep(randrange(10000, 17000) / 1000.0)
-            self.spam_failures = self.spam_failures+1
+            self.spam_failures = self.spam_failures + 1
             return self._get_page(url)
         elif self.spam_failures >= 3:
             print("Error: Mangadex server probably contacted too often\n")
@@ -71,6 +71,7 @@ class MangadexSeries(BaseSeries):
     def name(self):
         return self.json['manga']['title']
 
+
 class MangadexChapter(BaseChapter):
     # match /chapter/12345 and avoid urls like /chapter/1235/comments
     url_re = re.compile(
@@ -97,7 +98,7 @@ class MangadexChapter(BaseChapter):
         else:
             return True
 
-    def download(self): 
+    def download(self):
         if getattr(self, 'r', None):
             r = self.r
         else:
