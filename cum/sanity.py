@@ -232,8 +232,8 @@ class IncorrectDomain(SanityError):
             # check if there already is an entry with the correct domain
             existing_condition = self.model.url.ilike('{}'.format(new_url))
             existing_result = db.session.query(self.model) \
-                                   .filter(existing_condition) \
-                                   .first()
+                                .filter(existing_condition) \
+                                .first()
             if existing_result:
                 # delete the old entry to avoid a unique constraint error
                 db.session.delete(old_result)

@@ -13,7 +13,9 @@ import json
 
 
 class MangadexSeries(BaseSeries):
-    url_re = re.compile(r'(?:https?://mangadex\.org)?/(?:manga|title)/([0-9]+)')
+    url_re = re.compile(
+        r'(?:https?://mangadex\.org)?/(?:manga|title)/([0-9]+)'
+    )
     # TODO remove when there are properly spaced api calls
     spam_failures = 0
 
@@ -25,7 +27,7 @@ class MangadexSeries(BaseSeries):
     def _get_page(self, url):
         manga_id = re.search(self.url_re, url)
         r = requests.get('https://mangadex.org/api/manga/' + manga_id.group(1))
-        
+
         # TODO FIXME replace with properly spaced api calls
         #            This is a bad workaround for
         #                '503 please stop spaming the site'
@@ -41,8 +43,8 @@ class MangadexSeries(BaseSeries):
         elif self.spam_failures >= 3:
             print("Error: Mangadex server probably contacted too often\n")
             print(r.text)
-            raise ScrapingError("Mangadex spam error")
-            
+            raise exceptions.ScrapingError("Mangadex spam error")
+
         self.spam_failures = 0
         self.json = json.loads(r.text)
 
@@ -59,7 +61,7 @@ class MangadexSeries(BaseSeries):
             if language != 'gb':
                 continue
             groups = [chapters[c]['group_name']]
-            
+
             result = MangadexChapter(name=manga_name, alias=self.alias,
                                      chapter=chapter,
                                      url=url,
