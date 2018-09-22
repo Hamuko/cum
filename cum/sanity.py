@@ -52,7 +52,9 @@ class DatabaseSanity(object):
         self.test_tables()
         for table in self.database_tables:
             self.test_columns(table)
-        self.test_madokami_url()  # TODO: Remove in the future.
+        # TODO: Remove in the future.
+        self.test_old_domain('manga.madokami.com', 'manga.madokami.al')
+        self.test_old_domain('mangadex.com', 'mangadex.org')
         self.test_batoto_follows()
 
     def test_batoto_follows(self):
@@ -122,15 +124,13 @@ class DatabaseSanity(object):
                                  parent=self)
             )
 
-    def test_madokami_url(self):
-        """Temporary function to test if Madokami series and chapters have the
-        correct URL after the top-level domain change. Will be removed after an
-        appropriate time has passed for people have made the switch.
+    def test_old_domain(self, old_domain, new_domain):
+        """Tests for old series/chapter urls.
+        Returns SanityError that can correct them to the new_doamin.
         """
         global db
         from cum import db
-        old_domain = 'manga.madokami.com'
-        new_domain = 'manga.madokami.al'
+
         models = [db.Series, db.Chapter]
         for model in models:
             condition = model.url.ilike('%{}%'.format(old_domain))
@@ -223,10 +223,22 @@ class IncorrectDomain(SanityError):
                 .format(s=self))
 
     def fix(self):
-        condition = self.model.url.ilike('%{}%'.format(self.old_domain))
-        results = db.session.query(self.model).filter(condition).all()
-        for result in results:
-            result.url = result.url.replace(self.old_domain, self.new_domain)
+        old_condition = self.model.url.ilike('%{}%'.format(self.old_domain))
+        old_results = db.session.query(self.model).filter(old_condition).all()
+        needs_update = True
+        for old_result in old_results:
+            new_url = old_result.url.replace(self.old_domain,
+                                             self.new_domain)
+            # check if there already is an entry with the correct domain
+            existing_condition = self.model.url.ilike('{}'.format(new_url))
+            existing_result = db.session.query(self.model) \
+                                   .filter(existing_condition) \
+                                   .first()
+            if existing_result:
+                # delete the old entry to avoid a unique constraint error
+                db.session.delete(old_result)
+            else:
+                old_result.url = new_url
         db.session.commit()
 
 
