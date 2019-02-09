@@ -86,7 +86,7 @@ class MangaseeChapter(BaseChapter):
         with self.progress_bar(pages) as bar:
             for i, page in enumerate(pages):
                 retries = 0
-                while retries < 3:
+                while retries < 10:
                     try:
                         r = requests.get(page, stream=True)
                         break

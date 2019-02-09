@@ -299,9 +299,17 @@ class BaseChapter(metaclass=ABCMeta):
         """
         ext = BaseChapter.guess_extension(r.headers.get('content-type'))
         f = NamedTemporaryFile(suffix=ext, delete=False)
-        for chunk in r.iter_content(chunk_size=4096):
-            if chunk:
-                f.write(chunk)
+        try:
+            for chunk in r.iter_content(chunk_size=4096):
+                if chunk:
+                    f.write(chunk)
+        # basically ignores this exception that requests throws.  my
+        # understanding is that it is raised when you attempt to iter_content()
+        # over the same content twice.  don't understand how that situation
+        # arises with the current code but it did somehow.
+        # https://stackoverflow.com/questions/45379903/
+        except requests.exceptions.StreamConsumedError:
+            pass
         f.flush()
         f.close()
         r.close()
