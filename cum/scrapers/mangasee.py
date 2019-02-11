@@ -83,12 +83,13 @@ class MangaseeChapter(BaseChapter):
 
         futures = []
         files = [None] * len(pages)
+        req_session = requests.Session()
         with self.progress_bar(pages) as bar:
             for i, page in enumerate(pages):
                 retries = 0
                 while retries < 10:
                     try:
-                        r = requests.get(page, stream=True)
+                        r = req_session.get(page, stream=True)
                         break
                     except requests.exceptions.ConnectionError:
                         retries += 1
