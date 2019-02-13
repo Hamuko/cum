@@ -209,13 +209,20 @@ class BaseChapter(metaclass=ABCMeta):
         else:
             ext = 'zip'
 
+        directory_set = False
         if self.directory:
             directory = os.path.expanduser(self.directory)
+            directory_set = True
         else:
             directory = name
         download_dir = os.path.expanduser(config.get().download_directory)
         download_dir = os.path.join(download_dir, directory)
-        download_dir = self._strip_unwanted_characters(download_dir)
+        # only sanitize download_dir if the user did not explicitly set it
+        # assume that if it is set, the user wanted it exactly as set
+        # if they include bad characters and it breaks things, that's their
+        #  fault.
+        if not directory_set:
+            download_dir = self._strip_unwanted_characters(download_dir)
         download_dir = self.create_directory(download_dir)
 
         # Format the filename somewhat based on Daiz's manga naming scheme.
