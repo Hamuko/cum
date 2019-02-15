@@ -100,6 +100,48 @@ class TestMangasee(cumtest.CumTest):
             files = chapter_zip.infolist()
             self.assertEqual(len(files), 51)
 
+    def test_chapter_information_multiseason(self):
+        URL = "https://mangaseeonline.us/read-online/" + \
+            "Kubera-chapter-3-index-2-page-1.html"
+        chapter = mangasee.MangaseeChapter.from_url(URL)
+        self.assertEqual(chapter.alias, 'kubera')
+        self.assertEqual(chapter.chapter, '02.003')
+        self.assertEqual(chapter.name, 'Kubera')
+        self.assertEqual(chapter.title, 'S2 - Chapter 3')
+        path = os.path.join(
+            self.directory.name, 'Kubera',
+            'Kubera - c002 x003 [Unknown].zip')
+        self.assertEqual(chapter.filename, path)
+        chapter.download()
+        self.assertTrue(os.path.isfile(path))
+        with zipfile.ZipFile(path) as chapter_zip:
+            files = chapter_zip.infolist()
+            self.assertEqual(len(files), 39)
+
+    def test_chapter_information_multiseason_decimal(self):
+        URL = "https://mangaseeonline.us/read-online/" + \
+            "Kubera-chapter-164.5-index-2-page-1.html"
+        chapter = mangasee.MangaseeChapter.from_url(URL)
+        self.assertEqual(chapter.alias, 'kubera')
+        self.assertEqual(chapter.chapter, '02.164.5')
+        self.assertEqual(chapter.name, 'Kubera')
+        self.assertEqual(chapter.title, 'S2 - Chapter 164.5')
+        path = os.path.join(
+            self.directory.name, 'Kubera',
+            'Kubera - c002 x164.5 [Unknown].zip')
+        self.assertEqual(chapter.filename, path)
+        chapter.download()
+        self.assertTrue(os.path.isfile(path))
+        with zipfile.ZipFile(path) as chapter_zip:
+            files = chapter_zip.infolist()
+            self.assertEqual(len(files), 45)
+
+    def test_series_invalid(self):
+        URL = "https://mangaseeonline.us/read-online/" + \
+            "not_a_manga"
+        with self.assertRaises(exceptions.ScrapingError):
+            series = mangasee.MangaseeSeries(url=URL)
+
     def test_chapter_unavailable(self):
         URL = "https://mangaseeonline.us/read-online/" + \
             "Oyasumi-Punpun-chapter-999-page-1.html"

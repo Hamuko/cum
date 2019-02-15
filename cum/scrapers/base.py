@@ -195,6 +195,11 @@ class BaseChapter(metaclass=ABCMeta):
         elif match(r'[0-9]*\.[0-9]*$', self.chapter):
             number, decimal = self.chapter.split('.')
             chapter = 'c{:0>3} x{}'.format(number, decimal)
+        # Individually numbered chapter with double-decimal (e.g. '2.164.5').
+        # Used by titles with multiple volumes/seasons and special chapters.
+        elif match(r'[0-9]*(\.[0-9]*){2}$', self.chapter):
+            volume, number, decimal = self.chapter.split('.')
+            chapter = 'c{:0>3} x{:0>3}.{}'.format(volume, number, decimal)
         # Failing all else, e.g. 'Special'. Becomes 'c000 [Special]'.
         else:
             chapter = 'c000 [{}]'.format(self.chapter)

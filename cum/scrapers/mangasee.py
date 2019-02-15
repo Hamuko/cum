@@ -6,17 +6,31 @@ import concurrent.futures
 import json
 import re
 import requests
-import traceback
 
 
 class MangaseeSeries(BaseSeries):
     url_re = re.compile(r'https?://mangaseeonline\.us/manga/.+')
+    multi_season_regex = re.compile((r"(https?://mangaseeonline\.us)"
+                                     r"?/read-online/"
+                                     r".+-chapter-[0-9\.]+-index-"
+                                     r"([0-9]+)-page-[0-9]+\.html"))
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
         spage = requests.get(url)
+        if spage.status_code == 404:
+            raise exceptions.ScrapingError
         self.soup = BeautifulSoup(spage.text, config.get().html_parser)
         self.chapters = self.get_chapters()
+
+    def _get_chapnum_multiseason_series(self, url, chap_num):
+        if not re.match(self.multi_season_regex, url):
+            # chapter is from season 1
+            return "01." + chap_num.zfill(3)
+        else:
+            # chapter is from season >1
+            season = re.match(self.multi_season_regex, url).groups()[1]
+            return season.zfill(2) + "." + chap_num.zfill(3)
 
     def get_chapters(self):
         try:
@@ -27,9 +41,12 @@ class MangaseeSeries(BaseSeries):
         for i, row in enumerate(rows):
             chap_num = re.match(r"Read .+ Chapter ([0-9\.]+) For Free Online",
                                 row["title"]).groups()[0]
+            if not hasattr(self, "is_multi_season"):
+                if re.match(self.multi_season_regex, row["href"]):
+                    self.is_multi_season = True
             chap_url = "https://mangaseeonline.us" + row["href"]
-            chap_name = row.find_all("span")[0].text
-            chap_date = row.find_all("time")[0].text
+            chap_name = row.find("span").text
+            chap_date = row.find("time").text
             result = MangaseeChapter(name=self.name,
                                      alias=self.alias,
                                      chapter=chap_num,
@@ -38,15 +55,24 @@ class MangaseeSeries(BaseSeries):
                                      groups=[],
                                      upload_date=chap_date)
             chapters.append(result)
+        # the chapters in the first season of a multi-season title
+        # are indistinguishable from a non-multi-season title.  thus
+        # we must retroactively reanalyze all chapters and adjust
+        # chapter numbers if *any* are multi-season
+        if hasattr(self, "is_multi_season"):
+            for chapter in chapters:
+                chapter.chapter = self.\
+                    _get_chapnum_multiseason_series(chapter.url,
+                                                    chapter.chapter)
+
         return chapters
 
     @property
     def name(self):
         try:
             return re.match(r"Read (.+) Man[a-z]+ For Free  \| MangaSee",
-                            self.soup.find_all("title")[0].text).groups()[0]
+                            self.soup.find("title").text).groups()[0]
         except AttributeError:
-            print(traceback.format_exc())
             raise exceptions.ScrapingError
 
 
@@ -106,10 +132,10 @@ class MangaseeChapter(BaseChapter):
     def from_url(url):
         cpage = requests.get(url)
         soup = BeautifulSoup(cpage.text, config.get().html_parser)
-        chap_num = soup.find_all("span", class_="CurChapter")[0].text
-        iname = soup.find_all("a", class_="list-link")[0]["href"]
+        # chap_num = soup.find("span", class_="CurChapter").text
+        iname = soup.find("a", class_="list-link")["href"]
         series = MangaseeSeries("https://mangaseeonline.us" + iname)
         for chapter in series.chapters:
-            if chapter.chapter == str(chap_num):
+            if chapter.url == url:
                 return chapter
         return None

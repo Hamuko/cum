@@ -245,6 +245,9 @@ class Chapter(Base):
         if parse.netloc == 'mangaseeonline.us':
             from cum.scrapers.mangasee import MangaseeChapter
             return MangaseeChapter(**kwargs)
+        if parse.netloc in ('www.mangahere.cc', 'm.mangahere.cc'):
+            from cum.scrapers.mangahere import MangahereChapter
+            return MangahereChapter(**kwargs)
 
 
 class Group(Base):
