@@ -12,8 +12,9 @@ class MangahereSeries(BaseSeries):
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
-        # convert mobile link to desktop
-        spage = requests.get(url.replace("m.", "www."))
+        # convert desktop link to mobile
+        # bypasses adult content warning js
+        spage = requests.get(url.replace("www.", "m."))
         if spage.status_code == 404:
             raise exceptions.ScrapingError
         self.soup = BeautifulSoup(spage.text, config.get().html_parser)
@@ -21,14 +22,15 @@ class MangahereSeries(BaseSeries):
 
     def get_chapters(self):
         try:
-            rows = self.soup.find("ul", class_="detail-main-list")\
-                .find_all("li")
+            rows = self.soup.find("div", class_="manga-chapters")\
+                .find("ul").find_all("li")
         except AttributeError:
             raise exceptions.ScrapingError()
         chapters = []
         for i, row in enumerate(rows):
-            chap_num = re.match((r"/manga/[^/]+((/v[0-9]+)?"
-                                r"/c[0-9\.]+)/[0-9]+\.html$"),
+            chap_num = re.match((r"//m\.mangahere\.cc"
+                                r"/manga/[^/]+((/v[0-9]+)?"
+                                r"/c[0-9\.]+)/?$"),
                                 row.find("a")["href"]).groups()[0]\
                                 .replace("/", "")
             if "v" in chap_num:
@@ -40,24 +42,23 @@ class MangahereSeries(BaseSeries):
             else:
                 chap_num = chap_num.lstrip("0")
             # convert mobile link to desktop
-            chap_url = "https://www.mangahere.cc" + \
-                row.find("a")["href"].replace("/roll_manga/", "/manga/")
-            chap_name = row.find("p", class_="title3").text
-            chap_date = row.find("p", class_="title2").text
+            chap_url = "https:" + row.find("a")["href"]\
+                .replace("/roll_manga/", "/manga/")\
+                .replace("m.", "www.")
+            chap_name = row.text
             result = MangahereChapter(name=self.name,
                                       alias=self.alias,
                                       chapter=chap_num,
                                       url=chap_url,
                                       title=chap_name,
-                                      groups=[],
-                                      upload_date=chap_date)
+                                      groups=[])
             chapters.append(result)
         return chapters
 
     @property
     def name(self):
         try:
-            return re.match(r".+ - Read (.+) Online at MangaHere$",
+            return re.match(r"(.+) - MangaHere Mobile$",
                             self.soup.find("title").text).groups()[0]
         except AttributeError:
             raise exceptions.ScrapingError
@@ -73,6 +74,8 @@ class MangahereChapter(BaseChapter):
         if not getattr(self, "cpage", None):
             self.cpage = requests.get(self.url.replace("www.", "m.")
                                       .replace("/manga/", "/roll_manga/"))
+            if self.cpage.status_code == 404:
+                raise exceptions.ScrapingError
         if not getattr(self, "soup", None):
             self.soup = BeautifulSoup(self.cpage.text,
                                       config.get().html_parser)
