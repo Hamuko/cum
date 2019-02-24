@@ -265,21 +265,21 @@ def get(input, directory):
     """
     chapter_list = []
     for item in input:
+        series = None
         try:
             series = utility.series_by_url(item)
         except exceptions.ScrapingError:
-            output.warning('Scraping error ({})'.format(item))
-            continue
+            pass
         except exceptions.LoginError as e:
             output.warning('{} ({})'.format(e.message, item))
             continue
         if series:
             chapter_list += series.chapters
+        chapter = None
         try:
             chapter = utility.chapter_by_url(item)
         except exceptions.ScrapingError:
-            output.warning('Scraping error ({})'.format(item))
-            continue
+            pass
         except exceptions.LoginError as e:
             output.warning('{} ({})'.format(e.message, item))
             continue
