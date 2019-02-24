@@ -92,6 +92,25 @@ class TestMangahere(cumtest.CumTest):
             files = chapter_zip.infolist()
             self.assertEqual(len(files), 8)
 
+    def test_chapter_information_multidigit(self):
+        URL = "https://www.mangahere.cc/manga/" + \
+                "tsurezure_children/c192/1.html"
+        chapter = mangahere.MangahereChapter.from_url(URL)
+        self.assertEqual(chapter.alias, 'tsurezure-children')
+        self.assertTrue(chapter.available())
+        self.assertEqual(chapter.chapter, '192')
+        self.assertEqual(chapter.name, 'Tsurezure Children')
+        self.assertEqual(chapter.title, 'C.192')
+        path = os.path.join(self.directory.name,
+                            'Tsurezure Children',
+                            'Tsurezure Children - c192 [Unknown].zip')
+        self.assertEqual(chapter.filename, path)
+        chapter.download()
+        self.assertTrue(os.path.isfile(path))
+        with zipfile.ZipFile(path) as chapter_zip:
+            files = chapter_zip.infolist()
+            self.assertEqual(len(files), 6)
+
     def test_chapter_information_chapterzero(self):
         URL = "https://www.mangahere.cc/manga/" + \
             "inu_to_hasami_wa_tsukaiyou/c000/1.html"

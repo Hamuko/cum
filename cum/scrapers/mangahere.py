@@ -66,7 +66,7 @@ class MangahereSeries(BaseSeries):
 
 class MangahereChapter(BaseChapter):
     url_re = re.compile((r'https?://((www|m)\.)?mangahere\.cc'
-                        r'/(roll_)?manga(/v[0-9]+)?/c[0-9\.]+/[0-9]+\.html$'))
+                        r'/(roll_)?manga/[^/]+(/v[0-9]+)?/c[0-9\.]+/[0-9]+\.html$'))
     upload_date = None
     uses_pages = True
 
