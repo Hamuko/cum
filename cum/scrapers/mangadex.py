@@ -95,7 +95,7 @@ class MangadexChapter(BaseChapter):
         self.r = self.reader_get(1)
         if not len(self.r.text):
             return False
-        elif self.r.status_code == 404:
+        elif self.r.status_code == 404 or self.r.status_code == 409:
             return False
         elif re.search(re.compile(r'Chapter #[0-9]+ does not exist.'),
                        self.r.text):
