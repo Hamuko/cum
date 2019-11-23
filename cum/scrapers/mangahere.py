@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from cum import config, exceptions
+from cum import config, exceptions, output
 from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
 from functools import partial
 import concurrent.futures
@@ -100,6 +100,7 @@ class MangahereChapter(BaseChapter):
                         retries += 1
                 if r.status_code != 200:
                     r.close()
+                    output.error("Page download got status code {}".format(str(r.status_code)))
                     raise ValueError
                 fut = download_pool.submit(self.page_download_task, i, r)
                 fut.add_done_callback(partial(self.page_download_finish,
