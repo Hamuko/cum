@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from cum import config, exceptions
+from cum import config, exceptions, output
 from cum.scrapers.base import BaseChapter, BaseSeries, download_pool
 from functools import partial
 import concurrent.futures
@@ -116,11 +116,17 @@ class MangaseeChapter(BaseChapter):
                 while retries < 10:
                     try:
                         r = req_session.get(page, stream=True)
-                        break
+                        if r.status_code != 200:
+                            output.warning('Failed to fetch page with status {}, retrying #{}'
+                                            .format(str(r.status_code), str(retries)))
+                            retries += 1
+                        else:
+                            break
                     except requests.exceptions.ConnectionError:
                         retries += 1
                 if r.status_code != 200:
-                    r.close()
+                    output.error('Failed to fetch page with status {}, giving up'
+                                    .format(str(r.status_code)))
                     raise ValueError
                 fut = download_pool.submit(self.page_download_task, i, r)
                 fut.add_done_callback(partial(self.page_download_finish,
