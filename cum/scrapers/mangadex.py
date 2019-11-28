@@ -10,6 +10,7 @@ import concurrent.futures
 import re
 import requests
 import json
+from cum.version import __version__
 
 
 class MangadexSeries(BaseSeries):
@@ -18,6 +19,7 @@ class MangadexSeries(BaseSeries):
     )
     # TODO remove when there are properly spaced api calls
     spam_failures = 0
+    headers = {"User-Agent": "cum/{}".format(__version__)}
 
     def __init__(self, url, **kwargs):
         super().__init__(url, **kwargs)
@@ -26,7 +28,8 @@ class MangadexSeries(BaseSeries):
 
     def _get_page(self, url):
         manga_id = re.search(self.url_re, url)
-        r = requests.get('https://mangadex.org/api/manga/' + manga_id.group(1))
+        r = requests.get('https://mangadex.org/api/manga/' + manga_id.group(1),
+                         headers=MangadexSeries.headers)
 
         # TODO FIXME replace with properly spaced api calls
         #            This is a bad workaround for
@@ -86,7 +89,7 @@ class MangadexChapter(BaseChapter):
     def _reader_get(url, page_index):
         chapter_id = re.search(MangadexChapter.url_re, url)
         api_url = "https://mangadex.org/api/chapter/" + chapter_id.group(1)
-        return requests.get(api_url)
+        return requests.get(api_url, headers=MangadexSeries.headers)
 
     def available(self):
         self.r = self.reader_get(1)
