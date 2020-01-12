@@ -15,7 +15,7 @@ from cum.version import __version__
 
 class MangadexSeries(BaseSeries):
     url_re = re.compile(
-        r'(?:https?://mangadex\.org)?/(?:manga|title)/([0-9]+)'
+        r'(?:https?://mangadex\.(?:org|cc))?/(?:manga|title)/([0-9]+)'
     )
     # TODO remove when there are properly spaced api calls
     spam_failures = 0
@@ -28,7 +28,7 @@ class MangadexSeries(BaseSeries):
 
     def _get_page(self, url):
         manga_id = re.search(self.url_re, url)
-        r = requests.get('https://mangadex.org/api/manga/' + manga_id.group(1),
+        r = requests.get('https://mangadex.cc/api/manga/' + manga_id.group(1),
                          headers=MangadexSeries.headers)
 
         # TODO FIXME replace with properly spaced api calls
@@ -80,7 +80,7 @@ class MangadexSeries(BaseSeries):
 class MangadexChapter(BaseChapter):
     # match /chapter/12345 and avoid urls like /chapter/1235/comments
     url_re = re.compile(
-        r'(?:https?://mangadex\.org)?/chapter/([0-9]+)'
+        r'(?:https?://mangadex\.(?:org|cc))?/chapter/([0-9]+)'
         r'(?:/[^a-zA-Z0-9]|/?$)'
     )
     uses_pages = True
@@ -88,7 +88,7 @@ class MangadexChapter(BaseChapter):
     @staticmethod
     def _reader_get(url, page_index):
         chapter_id = re.search(MangadexChapter.url_re, url)
-        api_url = "https://mangadex.org/api/chapter/" + chapter_id.group(1)
+        api_url = "https://mangadex.cc/api/chapter/" + chapter_id.group(1)
         return requests.get(api_url, headers=MangadexSeries.headers)
 
     def available(self):
@@ -116,7 +116,7 @@ class MangadexChapter(BaseChapter):
         # var server = 'https://s2.mangadex.org/'
         # var server = '/data/'
         mirror = self.json['server']
-        server = urljoin('https://mangadex.org', mirror)
+        server = urljoin('https://mangadex.cc', mirror)
         futures = []
         last_image = None
         with self.progress_bar(pages) as bar:
@@ -127,7 +127,7 @@ class MangadexChapter(BaseChapter):
                     print('Unkown image type for url {}'.format(page))
                     raise ValueError
                 r = requests.get(image, stream=True)
-                if r.status_code == 404:
+                if r.status_code >= 400:
                     r.close()
                     raise ValueError
                 fut = download_pool.submit(self.page_download_task, i, r)
@@ -142,7 +142,7 @@ class MangadexChapter(BaseChapter):
         r = MangadexChapter._reader_get(url, 1)
         data = json.loads(r.text)
         manga_id = data['manga_id']
-        series = MangadexSeries('https://mangadex.org/manga/' + str(manga_id))
+        series = MangadexSeries('https://mangadex.cc/manga/' + str(manga_id))
         for chapter in series.chapters:
             parsed_chapter_url = ''.join(urlparse(chapter.url)[1:])
             parsed_url = ''.join(urlparse(url)[1:])
