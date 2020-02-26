@@ -6,7 +6,7 @@ import os
 import re
 import requests
 import sys
-
+import http.cookiejar
 
 class BaseConfig(object):
     def __init__(self):
@@ -109,8 +109,15 @@ class BaseConfig(object):
 class MadokamiConfig(object):
     def __init__(self, config, dict):
         self._config = config
+        self.cookie_path = os.path.join(cum_dir, 'madokami.cookies')
         self.password = dict.get('password', None)
         self.username = dict.get('username', None)
+        try:
+            self.authenticate()
+        except exceptions.LoginError:
+            pass
+
+        self.cookies = self.get_cookies()
 
     @property
     def login(self):
@@ -123,6 +130,39 @@ class MadokamiConfig(object):
             self.password = click.prompt('Madokami password', hide_input=True)
         return (self.username, self.password)
 
+    def authenticate(self):
+        """Attempt to sign in with stored cookies. If cookies are invalid,
+        expired, or missing, attempt to sign in using basic auth.
+        """
+        url = 'https://manga.madokami.al/'
+        try:
+            self.session = requests.Session()
+            c = self.get_cookies()
+            r = self.session.get(url, cookies=c)
+
+            if r.status_code != 200:
+                c.clear()
+                self.set_cookies(c)
+                raise exceptions.LoginError()
+
+        except (FileNotFoundError, exceptions.LoginError) as e:
+            self.session.auth = requests.auth.HTTPBasicAuth(*self.login)
+            r = self.session.get(url)
+            self.set_cookies(r.cookies)
+
+        if r.status_code != 200:
+            raise exceptions.LoginError('Madokami login error')
+
+    def get_cookies(self):
+        jar = http.cookiejar.LWPCookieJar(filename=self.cookie_path)
+        jar.load(ignore_expires=True,ignore_discard=True)
+        return jar
+
+    def set_cookies(self, cookie):
+        jar = http.cookiejar.LWPCookieJar(filename=self.cookie_path)
+        for c in cookie:
+            jar.set_cookie(c)
+        jar.save(ignore_expires=True,ignore_discard=True)
 
 def get():
     """Returns the active config object."""
