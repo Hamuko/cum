@@ -248,7 +248,9 @@ class Chapter(Base):
         if parse.netloc in ('www.mangahere.cc', 'm.mangahere.cc'):
             from cum.scrapers.mangahere import MangahereChapter
             return MangahereChapter(**kwargs)
-
+        if parse.netloc == 'manganelo.com':
+            from cum.scrapers.manganelo import ManganeloChapter
+            return ManganeloChapter(**kwargs)
 
 class Group(Base):
     __tablename__ = 'groups'
