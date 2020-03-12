@@ -346,15 +346,19 @@ class BaseChapter(metaclass=ABCMeta):
 
     def save(self, series, ignore=False):
         """Save a chapter to database."""
+        # check if chapter already exists in database
         try:
-            c = db.Chapter(self, series)
-        except IntegrityError:
-            db.session.rollback()
-        else:
-            if ignore:
-                c.downloaded = -1
-            db.session.add(c)
+            c = db.session.query(db.Chapter).filter_by(url=self.url).one()
+        except NoResultFound:
             try:
-                db.session.commit()
+                c = db.Chapter(self, series)
             except IntegrityError:
                 db.session.rollback()
+            else:
+                if ignore:
+                    c.downloaded = -1
+                db.session.add(c)
+                try:
+                    db.session.commit()
+                except IntegrityError:
+                    db.session.rollback()
