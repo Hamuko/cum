@@ -259,7 +259,14 @@ class BaseChapter(metaclass=ABCMeta):
         mark the chapter as downloaded if `db_remove` is set to False.
         """
         if self.available():
-            self.download()
+            self.retries = 3
+            while self.retries > 0:
+                try:
+                    self.download()
+                    break
+                except requests.exceptions.ChunkedEncodingError:
+                    output.warnings('Connection terminated, retry #{}'.format(str(3 - self.retries)))
+                    self.retries = self.retries - 1
             if use_db:
                 self.mark_downloaded()
         elif use_db:
