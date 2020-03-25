@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
-from cum import config, db, output
+from cum import config, db, exceptions, output
 from mimetypes import guess_extension
 from re import match, sub
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -259,14 +259,7 @@ class BaseChapter(metaclass=ABCMeta):
         mark the chapter as downloaded if `db_remove` is set to False.
         """
         if self.available():
-            self.retries = 3
-            while self.retries > 0:
-                try:
-                    self.download()
-                    break
-                except requests.exceptions.ChunkedEncodingError:
-                    output.warnings('Connection terminated, retry #{}'.format(str(3 - self.retries)))
-                    self.retries = self.retries - 1
+            self.download()
             if use_db:
                 self.mark_downloaded()
         elif use_db:
@@ -311,24 +304,45 @@ class BaseChapter(metaclass=ABCMeta):
         bar.update(1)
 
     @staticmethod
-    def page_download_task(page_num, r):
+    def page_download_task(page_num, r, page_url = None):
         """Saves the response body of a single request, returning the file
         handle and the passed through number of the page to allow for non-
         sequential downloads in parallel.
         """
         ext = BaseChapter.guess_extension(r.headers.get('content-type'))
         f = NamedTemporaryFile(suffix=ext, delete=False)
-        try:
-            for chunk in r.iter_content(chunk_size=4096):
-                if chunk:
-                    f.write(chunk)
-        # basically ignores this exception that requests throws.  my
-        # understanding is that it is raised when you attempt to iter_content()
-        # over the same content twice.  don't understand how that situation
-        # arises with the current code but it did somehow.
-        # https://stackoverflow.com/questions/45379903/
-        except requests.exceptions.StreamConsumedError:
-            pass
+        retries = 20
+        while retries > 0:
+            try:
+                for chunk in r.iter_content(chunk_size=4096):
+                    if chunk:
+                        f.write(chunk)
+                retries = 0
+            # basically ignores this exception that requests throws.  my
+            # understanding is that it is raised when you attempt to iter_content()
+            # over the same content twice.  don't understand how that situation
+            # arises with the current code but it did somehow.
+            # https://stackoverflow.com/questions/45379903/
+            except requests.exceptions.StreamConsumedError:
+                pass
+            # when under heavy load, Mangadex will often kill the connection in
+            # the middle of an image download.  in the original architecture,
+            # the requests are all opened in the scrapers in stream mode, then
+            # the actual image payloads are downloaded in the asynchronous
+            # callbacks.  when this occurs we have not choice but to re-request
+            # the image from the beginning (easier than playing around with range
+            # headers).  this means each thread may issue multiple new requests.
+            # I have found the performance overhead to be mostly negligible.
+            except requests.exceptions.ChunkedEncodingError:
+                if not page_url:
+                    output.error("Connection killed on page {} but scraper does not support retries".format(str(page_num)))
+                    raise exceptions.ScrapingError
+                output.warning("Connection killed on page {}, {} retries remaining".format(str(page_num), str(retries)))
+                retries = retries - 1
+                if retries <= 0:
+                    output.error("Connection killed on page {}, no retries remaining - aborting chapter".format(str(page_num)))
+                    raise exceptions.ScrapingError
+                r = requests.get(page_url, stream = True)
         f.flush()
         f.close()
         r.close()
