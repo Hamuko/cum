@@ -126,7 +126,18 @@ class MangadexChapter(BaseChapter):
                 else:
                     print('Unknown image type for url {}'.format(page))
                     raise exceptions.ScrapingError
-                r = requests.get(image, stream=True)
+                retries = 3
+                r = None
+                while retries > 0:
+                    try:
+                        r = requests.get(image, stream=True)
+                        break
+                    except requests.exceptions.ConnectionError:
+                        output.warning("Initial request for page {} failed, {} retries remaining".format(str(i), str(retries)))
+                        retries = retries - 1
+                if not r:
+                    output.error("Failed to request page {}".format(str(i)))
+                    raise exceptions.ScrapingError
                 if r.status_code == 404:
                     r.close()
                     raise exceptions.ScrapingError
