@@ -119,7 +119,8 @@ setup(
         'Click',
         'natsort',
         'requests',
-        'SQLAlchemy'
+        'SQLAlchemy',
+        'jsbeautifier'
     ],
     extras_require={
         'testing': ['codecov', 'cov-core', 'nose2', 'pycodestyle']

@@ -80,11 +80,11 @@ class TestMangahere(cumtest.CumTest):
         self.assertEqual(chapter.alias, 'ramen-daisuki-koizumi-san')
         self.assertTrue(chapter.available())
         self.assertEqual(chapter.chapter, '18')
-        self.assertEqual(chapter.name, 'Ramen Daisuki Koizumi-san')
-        self.assertEqual(chapter.title, 'C.18')
+        self.assertEqual(chapter.name, 'Ramen Daisuki Koizumi san')
+        self.assertEqual(chapter.title, 'Ch.018')
         path = os.path.join(self.directory.name,
-                            'Ramen Daisuki Koizumi-san',
-                            'Ramen Daisuki Koizumi-san - c018 [Unknown].zip')
+                            'Ramen Daisuki Koizumi san',
+                            'Ramen Daisuki Koizumi san - c018 [Unknown].zip')
         self.assertEqual(chapter.filename, path)
         chapter.download()
         self.assertTrue(os.path.isfile(path))
@@ -100,7 +100,7 @@ class TestMangahere(cumtest.CumTest):
         self.assertTrue(chapter.available())
         self.assertEqual(chapter.chapter, '192')
         self.assertEqual(chapter.name, 'Tsurezure Children')
-        self.assertEqual(chapter.title, 'C.192')
+        self.assertEqual(chapter.title, 'Ch.192')
         path = os.path.join(self.directory.name,
                             'Tsurezure Children',
                             'Tsurezure Children - c192 [Unknown].zip')
@@ -118,7 +118,7 @@ class TestMangahere(cumtest.CumTest):
         self.assertEqual(chapter.alias, 'inu-to-hasami-wa-tsukaiyou')
         self.assertEqual(chapter.chapter, '0')
         self.assertEqual(chapter.name, 'Inu to Hasami wa Tsukaiyou')
-        self.assertEqual(chapter.title, 'C.0')
+        self.assertEqual(chapter.title, 'Ch.000')
         path = os.path.join(
             self.directory.name, 'Inu to Hasami wa Tsukaiyou',
             'Inu to Hasami wa Tsukaiyou - c000 [Unknown].zip')
@@ -134,12 +134,12 @@ class TestMangahere(cumtest.CumTest):
                 "full_metal_alchemist/v026/c107/1.html"
         chapter = mangahere.MangahereChapter.from_url(URL)
         self.assertEqual(chapter.alias, 'full-metal-alchemist')
-        self.assertEqual(chapter.chapter, '26.107')
+        self.assertEqual(chapter.chapter, '107')
         self.assertEqual(chapter.name, 'Full Metal Alchemist')
-        self.assertEqual(chapter.title, 'V.26 C.107')
+        self.assertEqual(chapter.title, 'Vol.026 Ch.107 - The Final Battle')
         path = os.path.join(
             self.directory.name, 'Full Metal Alchemist',
-            'Full Metal Alchemist - c026 x107 [Unknown].zip')
+            'Full Metal Alchemist - c107 [Unknown].zip')
         self.assertEqual(chapter.filename, path)
         chapter.download()
         self.assertTrue(os.path.isfile(path))
@@ -152,12 +152,12 @@ class TestMangahere(cumtest.CumTest):
             "ai_yori_aoshi/v16/c133.5/1.html"
         chapter = mangahere.MangahereChapter.from_url(URL)
         self.assertEqual(chapter.alias, 'ai-yori-aoshi')
-        self.assertEqual(chapter.chapter, '16.133.5')
+        self.assertEqual(chapter.chapter, '133.5')
         self.assertEqual(chapter.name, 'Ai Yori Aoshi')
-        self.assertEqual(chapter.title, 'V.16 C.133.5')
+        self.assertEqual(chapter.title, 'Vol.16 Ch.133.5 - Special Chapter - Hanakotoba - Language of Flower')
         path = os.path.join(
             self.directory.name, 'Ai Yori Aoshi',
-            'Ai Yori Aoshi - c016 x133.5 [Unknown].zip')
+            'Ai Yori Aoshi - c133 x5 [Unknown].zip')
         self.assertEqual(chapter.filename, path)
         chapter.download()
         self.assertTrue(os.path.isfile(path))
@@ -202,16 +202,16 @@ class TestMangahere(cumtest.CumTest):
 
     def test_series_volumes(self):
         data = {'alias': 'prunus-girl',
-                'chapters': ['1.001', '1.001.5', '1.002', '1.003', '1.004',
-                             '1.005', '1.005.5', '1.006', '1.007', '1.008',
-                             '1.009', '1.010', '1.011', '1.011.5', '2.012',
-                             '2.013', '2.014', '2.015', '3.014', '3.015',
-                             '3.016', '3.017', '3.018', '3.019', '3.020',
-                             '3.021', '3.022', '3.023', '3.024', '3.025',
-                             '3.026', '3.027', '5.028', '5.029', '5.030',
-                             '5.031', '5.032', '5.032.5', '5.033', '5.034',
-                             '5.035', '5.036', '5.037', '5.038', '5.039',
-                             '5.040', '5.041', '5.042', '5.042.5'],
+                'chapters': ['1', '1.5', '2', '3', '4',
+                             '5', '5.5', '6', '7', '8',
+                             '9', '10', '11', '11.5', '12',
+                             '13', '14', '15', '14', '15',
+                             '16', '17', '18', '19', '20',
+                             '21', '22', '23', '24', '25',
+                             '26', '27', '28', '29', '30',
+                             '31', '32', '32.5', '33', '34',
+                             '35', '36', '37', '38', '39',
+                             '40', '41', '42', '42.5'],
                 'name': 'Prunus Girl',
                 'url': 'https://www.mangahere.cc/manga/prunus_girl'}
         self.series_information_tester(data)
