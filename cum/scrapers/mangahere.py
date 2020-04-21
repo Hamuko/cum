@@ -32,7 +32,7 @@ class MangahereSeries(BaseSeries):
         super().__init__(url, **kwargs)
         # convert desktop link to mobile
         # bypasses adult content warning js
-        spage = requests.get(url.replace("www.", "m."), cookies = { "isAdult": "1" })
+        spage = requests.get(url.replace("m.", "www."), cookies = { "isAdult": "1" })
         if spage.status_code == 404:
             raise exceptions.ScrapingError
         self.soup = BeautifulSoup(spage.text, config.get().html_parser)
@@ -43,7 +43,7 @@ class MangahereSeries(BaseSeries):
             # broken 2020/04/04
             # rows = self.soup.find("div", class_="manga-chapters")\
                 # .find("ul").find_all("li")
-            rows = self.soup.find("div", class_="detail-chapters-list")\
+            rows = self.soup.find("ul", class_="detail-main-list")\
                         .find_all("a")
         except AttributeError:
             raise exceptions.ScrapingError()
@@ -64,7 +64,7 @@ class MangahereSeries(BaseSeries):
             # convert mobile link to desktop
             chap_url = "https://www.mangahere.cc" + row.get("href")\
                 .replace("/roll_manga/", "/manga/")
-            chap_name = row.text.strip()
+            chap_name = row.find("p").text
             result = MangahereChapter(name=self.name,
                                       alias=self.alias,
                                       chapter=chap_num,
@@ -77,7 +77,7 @@ class MangahereSeries(BaseSeries):
     @property
     def name(self):
         try:
-            return re.match(r"(.+) - MangaHere Mobile$",
+            return re.match(r"(.+) Manga - Read .+ Online at MangaHere",
                             self.soup.find("title").text).groups()[0]
         except AttributeError:
             raise exceptions.ScrapingError
@@ -90,10 +90,10 @@ class MangahereChapter(BaseChapter):
     uses_pages = True
 
     def _request_pages(self, mid, cid, pages):
-        base_url = re.search(r"(.+/)[0-9]\.html", self.url.replace("www.", "m.")).groups()[0]
+        base_url = re.search(r"(.+/)[0-9]\.html", self.url.replace("m.", "www.")).groups()[0]
         data_url = base_url + "chapterfun.ashx?cid=" + str(cid) + "&page=" + str(len(pages) + 1) + "&key="
         chrome_headers["accept"] = "*/*"
-        chrome_headers["referer"] = self.url.replace("www.", "m.")
+        chrome_headers["referer"] = self.url.replace("m.", "www.")
         chrome_headers["x-requested-with"] = "XMLHttpRequest"
         data = self.session.get(data_url, headers = chrome_headers)
         if data.text == "":
@@ -118,7 +118,7 @@ class MangahereChapter(BaseChapter):
         self.session = requests.Session()
 
         if not getattr(self, "cpage", None):
-            self.cpage = self.session.get(self.url.replace("www.", "m."), headers = chrome_headers)
+            self.cpage = self.session.get(self.url.replace("m.", "www."), headers = chrome_headers)
             if self.cpage.status_code == 404:
                 raise exceptions.ScrapingError
 
@@ -136,7 +136,8 @@ class MangahereChapter(BaseChapter):
         pages = []
         (mid, cid) = (None, None)
         # index of script with ids may vary
-        for f in [ 5, 6 ]:
+        # it may also change as ads are added/removed from the site
+        for f in range(0, len(self.soup.find_all("script"))):
             try:
                 mid = re.search("var comicid = ([0-9]+)", self.soup.find_all("script")[f].text).groups()[0]
                 cid = re.search("var chapterid =([0-9]+)", self.soup.find_all("script")[f].text).groups()[0]
@@ -151,7 +152,13 @@ class MangahereChapter(BaseChapter):
             # some titles (seems to be ones with low page counts like webtoons)
             # don't use progressively-loaded pages.  for these, the image list
             # can be extracted directly off the main page
-            pages = loads(re.search("var newImgs = (.+);var newImginfos", beautify(self.soup.find_all("script")[6].text).replace("\\", "").replace("'", "\"")).groups()[0])
+            for g in range(0, len(self.soup.find_all("script"))):
+                try:
+                    pages = loads(re.search("var newImgs = (.+);var newImginfos", beautify(self.soup.find_all("script")[g].text).replace("\\", "").replace("'", "\"")).groups()[0])
+                except AttributeError:
+                    pass
+            if not len(pages):
+                raise ScrapingError
             for i, page in enumerate(pages):
                 pages[i] = "https:" + page
 
@@ -212,7 +219,5 @@ class MangahereChapter(BaseChapter):
 
     def available(self):
         if not getattr(self, "cpage", None):
-            self.cpage = requests.get(self.url.replace("www.", "m."))
-        if not getattr(self, "soup", None):
-            self.soup = BeautifulSoup(self.cpage.text, config.get().html_parser)
-        return self.soup.find("title").text != "Error - MangaHere Mobile"
+            self.cpage = requests.get(self.url.replace("m.", "www."))
+        return self.cpage.status_code == 200

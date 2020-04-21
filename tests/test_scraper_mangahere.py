@@ -81,7 +81,7 @@ class TestMangahere(cumtest.CumTest):
         self.assertTrue(chapter.available())
         self.assertEqual(chapter.chapter, '18')
         self.assertEqual(chapter.name, 'Ramen Daisuki Koizumi san')
-        self.assertEqual(chapter.title, 'Ch.018')
+        self.assertEqual(chapter.title, 'Ch.018 - Eighteenth Bowl: Strange-flavored Ramen')
         path = os.path.join(self.directory.name,
                             'Ramen Daisuki Koizumi san',
                             'Ramen Daisuki Koizumi san - c018 [Unknown].zip')
@@ -100,7 +100,7 @@ class TestMangahere(cumtest.CumTest):
         self.assertTrue(chapter.available())
         self.assertEqual(chapter.chapter, '192')
         self.assertEqual(chapter.name, 'Tsurezure Children')
-        self.assertEqual(chapter.title, 'Ch.192')
+        self.assertEqual(chapter.title, 'Ch.192 - There\'s Nothing Tying Us Together (Shibasaki/Ubukata)')
         path = os.path.join(self.directory.name,
                             'Tsurezure Children',
                             'Tsurezure Children - c192 [Unknown].zip')
