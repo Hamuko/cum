@@ -90,8 +90,8 @@ class MangaseeChapter(BaseChapter):
                                       config.get().html_parser)
 
         for script in self.soup.find_all("script"):
-            if re.match("\n\tChapterArr=.+", script.text):
-                image_list = script.text
+            if len(script.contents) and re.match("\n\tChapterArr=.+", script.contents[0]):
+                image_list = script.contents[0]
                 continue
 
         image_list = re.sub("\n\tChapterArr=", "", image_list)
@@ -127,13 +127,14 @@ class MangaseeChapter(BaseChapter):
                 if r.status_code != 200:
                     output.error('Failed to fetch page with status {}, giving up'
                                     .format(str(r.status_code)))
-                    raise ValueError
+                    raise exceptions.ScrapingError
                 fut = download_pool.submit(self.page_download_task, i, r)
                 fut.add_done_callback(partial(self.page_download_finish,
                                               bar, files))
                 futures.append(fut)
             concurrent.futures.wait(futures)
             self.create_zip(files)
+        req_session.close()
 
     def from_url(url):
         cpage = requests.get(url)
