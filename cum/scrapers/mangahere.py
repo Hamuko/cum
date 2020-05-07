@@ -77,8 +77,18 @@ class MangahereSeries(BaseSeries):
     @property
     def name(self):
         try:
-            return re.match(r"(.+) Manga - Read .+ Online at MangaHere",
+            # so I'm not sure if this is an anti-scraping measure or not, but
+            # sometimes the name of the series returned in the raw page text
+            # has a space as the first character.  my measurements put it
+            # occurring ~30% of the time.  if that's the case, then we need
+            # to replace the first letter with the capitalized first letter
+            # of the series name from the url
+            tentative_name = re.match(r"(.+) Manga - Read .+ Online at MangaHere",
                             self.soup.find("title").text).groups()[0]
+            if tentative_name.startswith(" "):
+                first_letter = self.url.replace("m.", "www.")[31].upper()
+                tentative_name[0] = first_letter
+            return tentative_name
         except AttributeError:
             raise exceptions.ScrapingError
 
@@ -139,8 +149,9 @@ class MangahereChapter(BaseChapter):
         # it may also change as ads are added/removed from the site
         for f in range(0, len(self.soup.find_all("script"))):
             try:
-                mid = re.search("var comicid = ([0-9]+)", self.soup.find_all("script")[f].text).groups()[0]
-                cid = re.search("var chapterid =([0-9]+)", self.soup.find_all("script")[f].text).groups()[0]
+                if len(self.soup.find_all("script")[f].contents):
+                    mid = re.search("var comicid = ([0-9]+)", self.soup.find_all("script")[f].contents[0]).groups()[0]
+                    cid = re.search("var chapterid =([0-9]+)", self.soup.find_all("script")[f].contents[0]).groups()[0]
             except AttributeError:
                 pass
         if mid and cid:
@@ -158,7 +169,7 @@ class MangahereChapter(BaseChapter):
                 except AttributeError:
                     pass
             if not len(pages):
-                raise ScrapingError
+                raise exceptions.ScrapingError
             for i, page in enumerate(pages):
                 pages[i] = "https:" + page
 

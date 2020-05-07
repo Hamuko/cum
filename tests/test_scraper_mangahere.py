@@ -90,7 +90,7 @@ class TestMangahere(cumtest.CumTest):
         self.assertTrue(os.path.isfile(path))
         with zipfile.ZipFile(path) as chapter_zip:
             files = chapter_zip.infolist()
-            self.assertEqual(len(files), 8)
+            self.assertEqual(len(files), 9)
 
     def test_chapter_information_multidigit(self):
         URL = "https://www.mangahere.cc/manga/" + \
@@ -109,7 +109,7 @@ class TestMangahere(cumtest.CumTest):
         self.assertTrue(os.path.isfile(path))
         with zipfile.ZipFile(path) as chapter_zip:
             files = chapter_zip.infolist()
-            self.assertEqual(len(files), 6)
+            self.assertEqual(len(files), 7)
 
     def test_chapter_information_chapterzero(self):
         URL = "https://www.mangahere.cc/manga/" + \
@@ -127,7 +127,7 @@ class TestMangahere(cumtest.CumTest):
         self.assertTrue(os.path.isfile(path))
         with zipfile.ZipFile(path) as chapter_zip:
             files = chapter_zip.infolist()
-            self.assertEqual(len(files), 32)
+            self.assertEqual(len(files), 33)
 
     def test_chapter_information_volume(self):
         URL = "https://www.mangahere.cc/manga/" + \
@@ -145,7 +145,7 @@ class TestMangahere(cumtest.CumTest):
         self.assertTrue(os.path.isfile(path))
         with zipfile.ZipFile(path) as chapter_zip:
             files = chapter_zip.infolist()
-            self.assertEqual(len(files), 69)
+            self.assertEqual(len(files), 70)
 
     def test_chapter_information_volume_decimal(self):
         URL = "https://www.mangahere.cc/manga/" + \
@@ -163,7 +163,7 @@ class TestMangahere(cumtest.CumTest):
         self.assertTrue(os.path.isfile(path))
         with zipfile.ZipFile(path) as chapter_zip:
             files = chapter_zip.infolist()
-            self.assertEqual(len(files), 14)
+            self.assertEqual(len(files), 15)
 
     def test_series_invalid(self):
         URL = "https://www.mangahere.cc/manga/not_a_manga"
