@@ -124,13 +124,25 @@ class MangadexChapter(BaseChapter):
                 if guess_type(page)[0]:
                     image = server + chapter_hash + '/' + page
                 else:
-                    print('Unkown image type for url {}'.format(page))
-                    raise ValueError
-                r = requests.get(image, stream=True)
+                    print('Unknown image type for url {}'.format(page))
+                    raise exceptions.ScrapingError
+                retries = 3
+                r = None
+                while retries > 0:
+                    try:
+                        r = requests.get(image, stream=True)
+                        break
+                    except requests.exceptions.ConnectionError:
+                        output.warning("Initial request for page {} failed, {} retries remaining".format(str(i), str(retries)))
+                        retries = retries - 1
+                if not r:
+                    output.error("Failed to request page {}".format(str(i)))
+                    raise exceptions.ScrapingError
                 if r.status_code == 404:
                     r.close()
-                    raise ValueError
-                fut = download_pool.submit(self.page_download_task, i, r)
+                    raise exceptions.ScrapingError
+                fut = download_pool.submit(self.page_download_task,
+                                              i, r, page_url = image)
                 fut.add_done_callback(partial(self.page_download_finish,
                                               bar, files))
                 futures.append(fut)
