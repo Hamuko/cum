@@ -3,7 +3,7 @@ from alembic.migration import MigrationContext
 from alembic.operations import Operations
 from sqlalchemy import inspect
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.declarative.clsregistry import _ModuleMarker
+from sqlalchemy.orm.clsregistry import _ModuleMarker
 from sqlalchemy.orm import RelationshipProperty
 from sqlalchemy.sql import sqltypes
 
